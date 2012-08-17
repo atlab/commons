@@ -40,11 +40,11 @@ classdef OriMap < dj.Relvar & dj.Automatic
             X = bsxfun(@rdivide, X, mean(X))-1;  %use dF/F
             if opt.highpass_cutoff>0
                 k = hamming(round(fps/opt.highpass_cutoff)*2+1);
-                X = X - neurosci.dsp.convmirr(X,k);
+                X = X - ne7.dsp.convmirr(X,k);
             end
             
             disp 'computing responses'
-            [B,R2,~,DoF] = neurosci.stats.regress(X, G, 0);
+            [B,R2,~,DoF] = ne7.stats.regress(X, G, 0);
             
             % insert results            
             tuple = key;

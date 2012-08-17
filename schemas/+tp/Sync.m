@@ -25,11 +25,11 @@ classdef Sync < dj.Relvar & dj.Automatic
     methods(Access = protected)
         function makeTuples(self, key)
             f = getFilename(common.TpScan(key));
-            scim = neurosci.scanimage.Reader(f{1});
+            scim = ne7.scanimage.Reader(f{1});
             phd = scim.readPhotodiode;
             fps = fetch1(tp.Align(key), 'fps');
             nlines = scim.hdr.acq.linesPerFrame;
-            [times, psyId] = neurosci.dsp.FlipCode.synch(phd', fps*nlines, psy.Trial(key));
+            [times, psyId] = ne7.dsp.FlipCode.synch(phd', fps*nlines, psy.Trial(key));
             
             key.psy_id = psyId;
             [trialIds, flipTimes] = fetchn(psy.Trial(key), 'trial_idx', 'flip_times');
