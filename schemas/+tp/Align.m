@@ -38,7 +38,7 @@ classdef Align < dj.Relvar & dj.Automatic
             disp 'reading tiff file'
             f = getFilename(common.TpScan(key));
             f = f{1};
-            s = neurosci.scanimage.Reader(f);
+            s = ne7.scanimage.Reader(f);
             fov = fetch1(common.TpSession(key),'fov');
             
             tuple = key;
@@ -62,19 +62,19 @@ classdef Align < dj.Relvar & dj.Automatic
             end
             
             disp 'raster correction'
-            warp = neurosci.micro.RasterCorrection.fit(g, [3 5]);
+            warp = ne7.micro.RasterCorrection.fit(g, [3 5]);
             tuple.raster_correction = warp;
-            g = neurosci.micro.RasterCorrection.apply(g, warp);
+            g = ne7.micro.RasterCorrection.apply(g, warp);
             
             disp 'motion correction...'
             assert(s.hdr.acq.fastScanningX==1 & s.hdr.acq.fastScanningY==0, 'x must be the fast axis')
             
-            offsets = neurosci.micro.MotionCorrection.fit(g);
+            offsets = ne7.micro.MotionCorrection.fit(g);
             tuple.motion_correction = int16(offsets);
             tuple.motion_rms = std(offsets(:));
             
             disp 'averaging frames...'
-            g = neurosci.micro.MotionCorrection.apply(g, offsets);
+            g = ne7.micro.MotionCorrection.apply(g, offsets);
             tuple.green_img = single(mean(g,3));
             clear g
             try
@@ -83,8 +83,8 @@ classdef Align < dj.Relvar & dj.Automatic
                 for i=1:block:s.nFrames
                     ix = i:min(i+block-1,s.nFrames);
                     r = s.read(2,ix);
-                    r = neurosci.micro.RasterCorrection.apply(r, warp(ix,:,:));
-                    r = neurosci.micro.MotionCorrection.apply(r, offsets(ix,:));
+                    r = ne7.micro.RasterCorrection.apply(r, warp(ix,:,:));
+                    r = ne7.micro.MotionCorrection.apply(r, offsets(ix,:));
                     avg = avg + sum(r,3)/s.nFrames;
                 end
                 tuple.red_img = single(avg);
@@ -111,16 +111,16 @@ classdef Align < dj.Relvar & dj.Automatic
             else
                 assert(length(key)==1, 'one movie at a time please')
                 f = getFilename(common.TpScan(key));
-                s = neurosci.scanimage.Reader(f{1});
+                s = ne7.scanimage.Reader(f{1});
                 movie = s.read(idx);
                 [raster, motion] = self.fetch1('raster_correction', 'motion_correction');
                 if ~isempty(raster)
                     disp 'raster correction...'
-                    movie = neurosci.micro.RasterCorrection.apply(movie, raster);
+                    movie = ne7.micro.RasterCorrection.apply(movie, raster);
                 end
                 if ~isempty(motion)
                     disp 'motion correction...'
-                    movie = neurosci.micro.MotionCorrection.apply(movie, motion);
+                    movie = ne7.micro.MotionCorrection.apply(movie, motion);
                 end
                 if ~exist(cacheFile, 'file') && exist(cachePath, 'dir')
                     save(cacheFile, 'movie', '-v7.3');

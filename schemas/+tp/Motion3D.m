@@ -27,7 +27,7 @@ classdef Motion3D < dj.Relvar & dj.Automatic
         
         function makeTuples(self, key)
             f = getFilename(common.TpScan(key));
-            scim = neurosci.scanimage.Reader(f{1});
+            scim = ne7.scanimage.Reader(f{1});
             raster = fetch1(tp.Align(key), 'raster_correction');
             assert(~isempty(raster), 'always do raster correction')
             ministack = fetch1(tp.Ministack(key), 'green_slices');
@@ -47,10 +47,10 @@ classdef Motion3D < dj.Relvar & dj.Automatic
                     fprintf('[%4d/%4d]\n', iFrame, scim.nFrames)
                 end
                 if iFrame==1 || any(raster(iFrame,:)~=raster(iFrame-1,:))
-                    cstack = neurosci.micro.RasterCorrection.apply(ministack, raster(iFrame,:,:));
+                    cstack = ne7.micro.RasterCorrection.apply(ministack, raster(iFrame,:,:));
                 end
                 frame = scim.read(1,iFrame);
-                frame = neurosci.micro.RasterCorrection.apply(frame, raster(iFrame,:,:));
+                frame = ne7.micro.RasterCorrection.apply(frame, raster(iFrame,:,:));
                 % find optimal offset
                 if iFrame == 1
                     [x,y,z,fcorr] = findFrameInStack(frame,cstack);
@@ -80,7 +80,7 @@ function [xi,yi,zi,peakCorr] = findFrameInStack(frame, stack)
 %frame and stack must have the same xy dimensions
 % return x,y,z offsets relative to the center of the stack
 sigmas = [3 15];  % these work for a broad range of magnifications
-[offsets, peakCorr] = neurosci.micro.MotionCorrection.xcorrpeak(stack, frame, sigmas);
+[offsets, peakCorr] = ne7.micro.MotionCorrection.xcorrpeak(stack, frame, sigmas);
 [peakCorr,zi] = max(peakCorr);
 yi = offsets(zi,1);
 xi = offsets(zi,2);

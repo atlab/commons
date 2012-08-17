@@ -39,7 +39,7 @@ classdef VonMap < dj.Relvar & dj.Automatic
             assert(size(B,3) == length(phi), 'OriMap regression coeff dimension mismatch')
             sz = size(R2);
             B = reshape(B,[],length(phi));
-            von = fit(neurosci.rf.VonMises2, B');
+            von = fit(ne7.rf.VonMises2, B');
             F = von.compute(von.phi);  % fitted tuning curves
             C = C^0.5;
             rv = sum((C*(B-F)').^2)./sum((C*B').^2);  % fraction increase in variance due to fit
