@@ -21,7 +21,7 @@ classdef FlipCode
             psyId = nan;
             
             % identify some flips in the photodiode channel
-            [flipIdx, flipNums] = neurosci.dsp.FlipCode.whichFlips(double(signal), fs);
+            [flipIdx, flipNums] = ne7.dsp.FlipCode.whichFlips(double(signal), fs);
             assert( sum(~isnan(flipNums))>=requiredFlips, 'insufficient decoded flips. Uncoded photodiode flips?');
             djTrials = djTrials & ...
                 sprintf('last_flip_count>=%d and last_flip_count<=%d', min(flipNums), max(flipNums));
@@ -64,7 +64,7 @@ classdef FlipCode
             % flipIdx: the indices of the detected flips in x and their encoded
             % flipNums: the sequential numbers of the detected indices
             
-            [flipIdx, flipAmps] = getFlips(x, fs, neurosci.dsp.FlipCode.frameRate);
+            [flipIdx, flipAmps] = getFlips(x, fs, ne7.dsp.FlipCode.frameRate);
             flipNums = flipAmpsToNums(flipAmps);
         end
 
@@ -127,7 +127,7 @@ x = x(n+1:end);
 x([1:n end+(-n+1:0)])=0;  % remove edge artifacts
 
 % select flips
-flipIdx = neurosci.dsp.spaced_max(abs(x),0.22*T);
+flipIdx = ne7.dsp.spaced_max(abs(x),0.22*T);
 thresh = 0.15*quantile( abs(x(flipIdx)),0.99);
 flipIdx = flipIdx(abs(x(flipIdx))>thresh)';
 flipAmps = x(flipIdx);

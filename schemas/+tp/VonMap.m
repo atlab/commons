@@ -11,7 +11,7 @@ peak_amp2 : longblob   # dF/F at opposite direction
 von_base  : longblob   # dF/F base
 %}
 
-classdef VonMap < dj.Relvar & dj.Automatic
+classdef VonMap < dj.Relvar & dj.AutoPopulate
 
 	properties(Constant)
 		table = dj.Table('tp.VonMap')

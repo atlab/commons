@@ -19,7 +19,7 @@ red_img                     : longblob                      # mean corrected ima
 aligment_ts=CURRENT_TIMESTAMP: timestamp                    # automatic
 %}
 
-classdef Align < dj.Relvar & dj.Automatic
+classdef Align < dj.Relvar & dj.AutoPopulate
     
     properties(Constant)
         table = dj.Table('tp.Align')

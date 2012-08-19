@@ -30,21 +30,21 @@ classdef plots
                 set(gca, 'XColor', 'b', 'YColor', 'b')
                 title 'dF/F in range [0 1]'
                 
-                % if vonMasks exist, outline cells
-                masks = fetchn(tp.VonMask(key), 'pixels');
-                if ~isempty(masks)
-                    bw = false(size(g));
-                    for m = masks'
-                        bw(m{:}) = true;
-                    end
-                    hold on
-                    b = bwboundaries(bw,4);
-                    for i=1:length(b)
-                        plot(b{i}(:,2),b{i}(:,1),'r')
-                    end
-                    hold off
-                end
-                
+                %                 % if vonMasks exist, outline cells
+                %                 masks = fetchn(tp.VonMask(key), 'pixels');
+                %                 if ~isempty(masks)
+                %                     bw = false(size(g));
+                %                     for m = masks'
+                %                         bw(m{:}) = true;
+                %                     end
+                %                     hold on
+                %                     b = bwboundaries(bw,4);
+                %                     for i=1:length(b)
+                %                         plot(b{i}(:,2),b{i}(:,1),'r')
+                %                     end
+                %                     hold off
+                %                 end
+                %
                 subplot 223
                 h = mod(ori,pi)/pi;   % orientation is represented as hue
                 s = p<0.01;   % only significantly tuned pixels are shown in color
@@ -144,47 +144,49 @@ classdef plots
         
         
         function Ministack(varargin)
-            for key = fetch(tp.Ministack(varargin{:}) & 'green_slices is not null')'
-                [zstep, gstack, rstack] = fetch1(tp.Ministack(key),'zstep', 'green_slices', 'red_slices');
-                [sy,sx] = fetch1(tp.Align(key),'um_height','um_width');
-                [ny,nx,nSlices] = size(gstack);
-                h = (-floor((nSlices-1)/2):ceil((nSlices-1)/2))*zstep;
-                raster = fetch1(tp.Align(key), 'raster_correction');
-                gstack = conditionStack(gstack, raster);                
-                rstack = conditionStack(rstack, raster);
-                
-                % make movie
-                nFrames = 16;
-                mag = 2;
-                F = zeros(mag*ny,mag*nx,3,nFrames);
-                udata = [-sx sx]/2;
-                vdata = [-sy sy]/2;
-                for i=1:nFrames
-                    frame = zeros(mag*ny,mag*nx,3);
-                    tilt = -pi/8*(i-1)/(nFrames-1);
-                    rotation  = 0; %pi/60*sin((i-1)/nFrames*2*pi);
-                    for iSlice = 1:nSlices
-                        r = projectFrame(rstack(:,:,iSlice), h(iSlice), udata, vdata, udata*1.2, vdata*1.2, tilt, rotation,mag);
-                        g = projectFrame(gstack(:,:,iSlice), h(iSlice), udata, vdata, udata*1.2, vdata*1.2, tilt, rotation,mag);
-                        b = projectFrame(0.2*ones(ny,nx),    h(iSlice), udata, vdata, udata*1.2, vdata*1.2, tilt, rotation,mag);
-                        transparency = 1-g.^0.8/nSlices;
-                        frame = bsxfun(@times, frame, transparency);
-                        frame = frame + cat(3,r,g,b)/nSlices;
-                    end
-                    imshow(frame)
-                    drawnow
-                    
-                    F(:,:,:,i) = frame;
-                    fprintf('frame %2d/%d\n', i, nFrames)
-                end
-                F = F/max(F(:));
-                frames = zeros([mag*ny mag*nx 1 nFrames], 'uint8');               
-                [~,map] = rgb2ind(F(:,:,:,1),255);
-                for i = 1:nFrames
-                    frames(:,:,1,i) = rgb2ind(F(:,:,:,i), map);
-                end
+            for key = fetch(tp.Ministack(varargin{:}) & 'green_slices is not null' & 'red_slices is not null' & tp.Align)'
                 f = sprintf('~/figures/ministacks/mini%05d_%d_%02d.gif', key.animal_id, key.tp_session, key.scan_idx);
-                imwrite(frames, map, f, 'gif', 'DelayTime',0.05,'LoopCount',20,'DisposalMethod','leaveInPlace');
+                if ~exist(f, 'file')
+                    [zstep, gstack, rstack] = fetch1(tp.Ministack(key),'zstep', 'green_slices', 'red_slices');
+                    [sy,sx] = fetch1(tp.Align(key),'um_height','um_width');
+                    [ny,nx,nSlices] = size(gstack);
+                    h = (-floor((nSlices-1)/2):ceil((nSlices-1)/2))*zstep;
+                    raster = fetch1(tp.Align(key), 'raster_correction');
+                    gstack = conditionStack(gstack, raster);
+                    rstack = conditionStack(rstack, raster);
+                    
+                    % make movie
+                    nFrames = 16;
+                    mag = 2;
+                    F = zeros(mag*ny,mag*nx,3,nFrames);
+                    udata = [-sx sx]/2;
+                    vdata = [-sy sy]/2;
+                    for i=1:nFrames
+                        frame = zeros(mag*ny,mag*nx,3);
+                        tilt = -pi/8*(i-1)/(nFrames-1);
+                        rotation  = 0; %pi/60*sin((i-1)/nFrames*2*pi);
+                        for iSlice = 1:nSlices
+                            r = projectFrame(rstack(:,:,iSlice), h(iSlice), udata, vdata, udata*1.2, vdata*1.2, tilt, rotation,mag);
+                            g = projectFrame(gstack(:,:,iSlice), h(iSlice), udata, vdata, udata*1.2, vdata*1.2, tilt, rotation,mag);
+                            b = projectFrame(0.2*ones(ny,nx),    h(iSlice), udata, vdata, udata*1.2, vdata*1.2, tilt, rotation,mag);
+                            transparency = 1-g.^0.8/nSlices;
+                            frame = bsxfun(@times, frame, transparency);
+                            frame = frame + cat(3,r,g,b)/nSlices;
+                        end
+                        imshow(frame)
+                        drawnow
+                        
+                        F(:,:,:,i) = frame;
+                        fprintf('frame %2d/%d\n', i, nFrames)
+                    end
+                    F = F/max(F(:));
+                    frames = zeros([mag*ny mag*nx 1 nFrames], 'uint8');
+                    [~,map] = rgb2ind(F(:,:,:,1),255);
+                    for i = 1:nFrames
+                        frames(:,:,1,i) = rgb2ind(F(:,:,:,i), map);
+                    end
+                    imwrite(frames, map, f, 'gif', 'DelayTime',0.05,'LoopCount',20,'DisposalMethod','leaveInPlace');
+                end
             end
             
             function im = projectFrame(im,h,udata,vdata,xdata,ydata,tilt,rotation,mag)
@@ -206,7 +208,7 @@ classdef plots
             
             
             function stack = conditionStack(stack, raster)
-                stack = trove.RasterCorrection.apply(stack, raster(end,:,:));
+                stack = ne7.micro.RasterCorrection.apply(stack, raster(end,:,:));
                 stack = sqrt(max(0,stack+20));
                 stack = max(0,stack-quantile(stack(:), 0.01));
                 stack = stack/max(stack(:));

@@ -9,7 +9,7 @@ green_slices=null           : longblob                      # averaged, self-ali
 red_slices=null             : longblob                      # same thing for channel 2
 %}
 
-classdef Ministack < dj.Relvar & dj.Automatic
+classdef Ministack < dj.Relvar & dj.AutoPopulate
 
 	properties(Constant)
 		table = dj.Table('tp.Ministack')
@@ -23,7 +23,6 @@ classdef Ministack < dj.Relvar & dj.Automatic
 	end
 
 	methods(Access=protected)
-
 		function makeTuples(self, key)
             
             % make candidate names
@@ -35,11 +34,11 @@ classdef Ministack < dj.Relvar & dj.Automatic
             s = [];
             key.filepath = fullfile(path, sprintf('ministack%03u.tif', key.scan_idx));
             try
-                s = neurosci.scanimage.Reader(key.filepath);
+                s = ne7.scanimage.Reader(key.filepath);
             catch %#ok<CTCH>
                 key.filepath = fullfile(path, sprintf([basename '%03u.tif'], key.scan_idx+1));
                 try 
-                    s = neurosci.scanimage.Reader(key.filepath);
+                    s = ne7.scanimage.Reader(key.filepath);
                     key.filepath = f;                    
                 catch %#ok<CTCH>
                     key.filepath = '';

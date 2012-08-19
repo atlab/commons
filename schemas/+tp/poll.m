@@ -13,6 +13,7 @@ while true
     if cycle == 3
         parpopulate(tp.Ministack, varargin{:})
         parpopulate(tp.Motion3D,  varargin{:})
+        parpopulate(tp.Geometry, varargin{:})
     end
     waitTime = 600-2*toc;
     if waitTime > 0 

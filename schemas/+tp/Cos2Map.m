@@ -8,7 +8,7 @@ cos2_fp    : longblob   # p-value of F-test (after gaussinization)
 pref_ori   : longblob   # (radians) preferred direction 
 %}
 
-classdef Cos2Map < dj.Relvar & dj.Automatic
+classdef Cos2Map < dj.Relvar & dj.AutoPopulate
 
 	properties(Constant)
 		table = dj.Table('tp.Cos2Map')

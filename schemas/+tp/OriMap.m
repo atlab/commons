@@ -9,7 +9,7 @@ r2_map          : longblob   # pixelwise r-squared after gaussinization
 dof_map         : longblob   # degrees of in original signal, width x height
 %}
 
-classdef OriMap < dj.Relvar & dj.Automatic
+classdef OriMap < dj.Relvar & dj.AutoPopulate
     
     properties(Constant)
         table = dj.Table('tp.OriMap')

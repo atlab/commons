@@ -9,7 +9,7 @@ spot_r2                     : longblob                      # r-squared of total
 spot_fp                     : longblob                      # total response p-value (F-test)
 %}
 
-classdef SpotMap < dj.Relvar & dj.Automatic
+classdef SpotMap < dj.Relvar & dj.AutoPopulate
 
 	properties(Constant)
 		table = dj.Table('opt.SpotMap')

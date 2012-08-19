@@ -10,7 +10,7 @@ ydrift : float     # (um) the 95th percentile range of y motion
 zdrift : float     # (um) the 95th percentile range of z motion
 %}
 
-classdef Motion3D < dj.Relvar & dj.Automatic
+classdef Motion3D < dj.Relvar & dj.AutoPopulate
     
     properties(Constant)
         table = dj.Table('tp.Motion3D')

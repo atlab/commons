@@ -6,7 +6,7 @@ opt.Structure (imported) # structural images from optical sessions
 structure_img               : longblob                      # image
 %}
 
-classdef Structure < dj.Relvar & dj.Automatic
+classdef Structure < dj.Relvar & dj.AutoPopulate
 
 	properties(Constant)
 		table = dj.Table('opt.Structure')

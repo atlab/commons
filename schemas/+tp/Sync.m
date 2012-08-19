@@ -9,7 +9,7 @@ frame_times : longblob   # mean frame times on stimulus clock
 sync_ts = CURRENT_TIMESTAMP : timestamp    # automatic
 %}
 
-classdef Sync < dj.Relvar & dj.Automatic
+classdef Sync < dj.Relvar & dj.AutoPopulate
     
     properties(Constant)
         table = dj.Table('tp.Sync')

@@ -10,7 +10,7 @@ frame_times                 : longblob                      # array of frametime
 sync_ts=CURRENT_TIMESTAMP   : timestamp                     # automatic
 %}
 
-classdef Sync < dj.Relvar & dj.Automatic
+classdef Sync < dj.Relvar & dj.AutoPopulate
     
     properties(Constant)
         table = dj.Table('opt.Sync')
