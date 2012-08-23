@@ -13,10 +13,11 @@ dwell_time                  : float                         # (us) microseconds 
 discarded_final_line        : tinyint                       # 1 if the flyback line has been removed
 raster_correction=null      : longblob                      # raster artifact correction
 motion_correction           : longblob                      # motion correction offsets
-motion_rms                  : float                         # (um) RMS of motion
+motion_rms                  : float                         # (um) stdev of motion
 green_img                   : longblob                      # mean corrected image
 red_img                     : longblob                      # mean corrected image
 aligment_ts=CURRENT_TIMESTAMP: timestamp                    # automatic
+green_uncorrected=null      : longblob                      # uint8 image before corrections for verification
 %}
 
 classdef Align < dj.Relvar & dj.AutoPopulate
@@ -41,8 +42,13 @@ classdef Align < dj.Relvar & dj.AutoPopulate
             s = ne7.scanimage.Reader(f);
             fov = fetch1(common.TpSession(key),'fov');
             
-            tuple = key;
             [g, discardedFinalLine] = s.read(1);
+            gmean = mean(g,3);
+            gmean = gmean-min(gmean(:));
+            gmean = uint8(255*gmean./max(gmean(:)));
+            tuple = key;
+            tuple.green_uncorrected = gmean;
+
             tuple.discarded_final_line = discardedFinalLine;
 
             tuple.fps = s.hdr.acq.frameRate;
@@ -71,7 +77,7 @@ classdef Align < dj.Relvar & dj.AutoPopulate
             
             offsets = ne7.micro.MotionCorrection.fit(g);
             tuple.motion_correction = int16(offsets);
-            tuple.motion_rms = std(offsets(:));
+            tuple.motion_rms = mean(std(offsets).*[tuple.um_height tuple.um_width]./[tuple.px_height tuple.px_width]);
             
             disp 'averaging frames...'
             g = ne7.micro.MotionCorrection.apply(g, offsets);
