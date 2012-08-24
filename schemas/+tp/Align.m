@@ -112,6 +112,8 @@ classdef Align < dj.Relvar & dj.AutoPopulate
             cacheFile = fullfile(cachePath, sprintf('movie_%05d_%d_%03d_%u.mat', ...
                 key.animal_id, key.tp_session, key.scan_idx, idx));
             if exist(cacheFile, 'file')
+                disp 'loading a cached file (after a 30-second pause to reduce race conditions)'
+                pause(30)  
                 s = load(cacheFile);
                 movie = s.movie;
             else

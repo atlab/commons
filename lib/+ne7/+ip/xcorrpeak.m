@@ -17,14 +17,14 @@ if nargin>=3
     img = ne7.ip.filterDoG(img, sigmas);
 end
 
-% mask out features near bounadries 
+% mask out features near bounadries
 mask = atan(10*hanning(sz(1)))*atan(10*hanning(sz(2)))' /atan(10)^2;
 template = mask.*template;
 img = bsxfun(@times, img, mask);
 
 % normalize the images and the template
 template = template/sqrt(sum(sum(template.^2)));
-img = bsxfun(@mrdivide, img, sqrt(sum(sum(img.^2))));
+img = bsxfun(@rdivide, img, sqrt(sum(sum(img.^2))));
 
 fTemplate = conj(fftn(template))/norm(template(:));
 
@@ -40,4 +40,3 @@ end
 y = y(:) - ceil((sz(1)+1)/2);
 x = x(:) - ceil((sz(2)+1)/2);
 end
-

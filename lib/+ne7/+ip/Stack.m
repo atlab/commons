@@ -5,7 +5,7 @@
 classdef Stack < handle
     properties
         stack
-        fftStack   % normalized frames, conjugate 3D fft to compute correlation
+        conjFFT   % normalized frames, conjugate 3D fft to compute correlation
     end
     
     methods
@@ -23,46 +23,52 @@ classdef Stack < handle
             % argument apply the same stack, which increases computational efficiency.
             % At the end always call xcorrpeak3d([],[]) to clear the cached stack.
             
-            newstack = isempty(self.fftStack);
-            if newstack
-                self.fftStack = self.stack;
+            % if first time, compute conjFFT
+            firstTime = isempty(self.conjFFT);
+            if firstTime
+                tempStack = self.stack;
             end
             
-            % apply DoG filter
-            sigma1 = 1;   % low-pass size
-            sigma2 = 6;   % high-pass size
-            img = filterDoG(img, n1, n2);
-            if newstack
-                self.fftStack = ne7.ip.filterDoG(self.fftStack, sigma1, sigma2);
+            % apply Difference-of-Gaussians filter
+            sigmas = [1 5];
+            img = ne7.ip.filterDoG(img, sigmas);
+            if firstTime
+                tempStack = ne7.ip.filterDoG(tempStack, sigmas);
             end
             
-            % apply mask to discount regions near the boundary
-            sz = size(img);
-            mask = hamming(sz(1))*hamming(sz(2))';
-            img   = bsxfun(@times, img, mask);
-            if newstack
-                self.fftStack = bsxfun(@times, self.fftStack, mask);
+            % mask out features near bounadries
+            sz = size(self.stack);
+            mask = atan(10*hanning(sz(1)))*atan(10*hanning(sz(2)))' /atan(10)^2;
+            img = bsxfun(@times, img, mask);
+            if firstTime
+                tempStack = bsxfun(@times, tempStack, mask);
             end
             
             % normalize each frame
             img   = bsxfun(@rdivide, img  , sqrt(sum(sum(img.^2))));
-            if newstack
-                self.fftStack = bsxfun(@rdivide, self.fftStack, sqrt(sum(sum(img.^2))));
+            if firstTime
+                tempStack = bsxfun(@rdivide, tempStack, sqrt(sum(sum(tempStack.^2))));
             end
             
             % transfer to frequency domain
-            if newstack
-                self.fftStack = conj(fftn(self.fftStack));
-            end
             img = fft2(img);
+            if firstTime
+                self.conjFFT = conj(fftn(tempStack));
+                clear tempStack
+            end
             
-            % compute optimum offset for each frame in img
+            % compute the shift of the peak correlation
             nFrames = size(img,3);
             for iFrame=1:nFrames
-                c = fftshift(ifftn(bsxfun(@times, img(:,:,iFrame), self.fftStack)));
+                c = fftshift(ifftn(bsxfun(@times, img(:,:,iFrame), self.conjFFT)));
                 [peakcorr(iFrame),idx(iFrame)] = max(c(:)); %#ok<AGROW>
             end
-            [y x z] = ind2sub(size(self.fftStack),idx);
+            [y x z] = ind2sub(size(self.conjFFT),idx);
+            
+            % recenter offsets
+            y = y(:) - ceil((sz(1)+1)/2);
+            x = x(:) - ceil((sz(2)+1)/2);
+            z = z(:) - ceil((sz(3)+1)/2);
         end
     end
     

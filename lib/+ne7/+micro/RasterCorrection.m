@@ -25,12 +25,11 @@ classdef RasterCorrection < handle
             blocks = 1:step:size(movie,3);
             w = nan([length(blocks) polydegree]);
             for i=1:length(blocks)
-                if mod(i,10)==1
+                if isprime(i)
                     fprintf('\n[%3d /%3d] ', i-1, length(blocks))
                 end
                 frame = mean(movie(1:end-1,:,blocks(i):min(end,blocks(i)+block-1)),3);
                 w(i,:,:) = optimize(frame, polydegree);
-                fprintf .    % tick progress
             end
             fprintf \n
             if length(blocks)==1
@@ -75,6 +74,7 @@ classdef RasterCorrection < handle
     end
 end
 
+
 function warp = optimize(img, N, maxIter)
 if nargin < 4
     maxIter=25;
@@ -100,8 +100,6 @@ warp = reshape(warp, N);
 end
 
 
-
-
 function [L, gradL] = imgResidual(p,xref,yref,xx,yy,odds,evens,N)   % compute objective function L and its gradient dL/dp
 px = computeOffsetMap(reshape(p,N), xref, yref);
 temp = interp2( xx, yy, odds, max(xx(1),min(xx(end),xref-px)), yref, '*linear' );
@@ -124,7 +122,6 @@ end
 end
 
 
-
 function px = computeOffsetMap(p, xref, yref)
 px = 0;
 for kx=1:size(p,2)
@@ -133,7 +130,6 @@ for kx=1:size(p,2)
     end
 end
 end
-
 
 
 function y = chebyI(x, n)
