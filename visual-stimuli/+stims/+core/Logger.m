@@ -1,3 +1,7 @@
+% stims.core.Logger -- log stimulus data into specified DataJoint tables 
+
+% -- Dimitri Yatsenko, 2012
+
 classdef Logger < handle
     
     properties(SetAccess=private)

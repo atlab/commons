@@ -54,14 +54,14 @@ classdef Motion3D < dj.Relvar & dj.AutoPopulate
                 [x(iFrame), y(iFrame), z(iFrame), peakcorr(iFrame)] = ministack.xcorrpeak3d(frame); %#ok<AGROW>
             end
             
-            % convert to microns
+            % convert xyz trajectory microns
             xyz =[x(:)*px y(:)*py z(:)*pz];
             
-            % compute the range of drift
+            % compute the range of drift along each dimension (95% interval)
             xyzDrift = diff(quantile(xyz,[0.025 0.975]));
             
             % insert results into database
-            key.xyz_trajectory = xyz;
+            key.xyz_trajectory = single(xyz);
             key.frame_corr = peakcorr;
             key.xdrift = xyzDrift(1);
             key.ydrift = xyzDrift(2);

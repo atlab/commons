@@ -64,11 +64,12 @@ classdef Looming < stims.core.Visual
             center = self.rect(3:4)/2;
             monitorHeight = self.constants.monitor_size/sqrt(self.constants.monitor_aspect.^2+1)*2.54; % cm
             pixDistance  = self.rect(4)/monitorHeight*self.constants.monitor_distance;  % distance to monitor in pixels
+            pixFinalRadius = pixDistance*tan(cond.final_radius*pi/180);
             for i=1:nFrames
                 if self.escape, break, end              
                 Screen('FillRect', self.win, round(cond.bg_color*255), self.rect)
                 remainingTime = cond.loom_duration-(i-1)/self.screen.fps;
-                radius = pixDistance/(1/tan(cond.final_radius*pi/180) + cond.looming_rate*remainingTime);
+                radius = pixFinalRadius/(1 + cond.looming_rate*remainingTime*pixFinalRadius/pixDistance);
                 rect = [center center] + [-radius -radius radius radius]; 
                 Screen('FillOval', self.win, round(cond.color*255), rect);
                 self.flip(false, false, i==1)

@@ -3,6 +3,9 @@ classdef Visual < handle
     % A stims.core.Visual object manages the graphics window, iterates through
     % trial conditions and calls the showTrial method for each trial.
     % The object optionally logs the data into datajoint tables.
+    
+    % -- Dimitri Yatsenko, 2012
+    
     properties(Constant)
         DEBUG = false
         screen = stims.core.Screen   % all stimuli share one static screen object
@@ -35,16 +38,17 @@ classdef Visual < handle
         showTrial(self, args)  % implement a trial block in the subclass
     end
     
-    
     methods
         
         function win = get.win(self)
             win = self.screen.win;
         end
         
+        
         function rect = get.rect(self)
             rect = self.screen.rect;
         end
+        
         
         function init(self, key, varargin)
             if isempty(self.conditions)
@@ -59,6 +63,7 @@ classdef Visual < handle
             end
         end
         
+        
         function self = setParams(self, nBlocks, varargin)
             % update condition parameters
             self.nBlocks = nBlocks;
@@ -66,7 +71,6 @@ classdef Visual < handle
                 self.params.(varargin{i}) = varargin{i+1};
             end
         end
-       
         
         
         function run(self)
@@ -114,7 +118,6 @@ classdef Visual < handle
         end
         
         
-        
         function flip(self, dontLog, dontClear, dontCheck)
             % defaults:    self.flip(false, false, false)
             dontLog   = nargin>=2 && dontLog;
@@ -123,7 +126,7 @@ classdef Visual < handle
             
             self.flipCount = self.flipCount + ~dontLog;
             [t, droppedFrames] = self.screen.flip(self.flipCount, self.frameStep, double(dontClear));
-            if ~dontCheck 
+            if ~dontCheck
                 % print a '$" for every dropped frame or $(n) for n dropped frames
                 if droppedFrames>5
                     fprintf('$(%d)', droppedFrames)
@@ -139,9 +142,11 @@ classdef Visual < handle
     
     
     methods(Static)
+    
         function r = escape
             r = stims.core.Screen.escape;
         end
+        
     end
 end
 
@@ -153,7 +158,6 @@ function conditions = makeFactorialConditions(params)
 % make a structure array of conditions that is the cartesian
 % product of the field values in params.
 % params must be a scalar structure whose fields are cell arrays.
-
 
 fields = fieldnames(params);
 

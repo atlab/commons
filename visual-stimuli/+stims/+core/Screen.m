@@ -1,6 +1,10 @@
+% stims.core.Screen manages the visual stimulus display, incuding the coded 
+% photodiode signal in the corner of the screen for synchronization.
+
+% -- Dimitri Yatsenko, 2012
+
+
 classdef Screen < handle
-    % stims.core.Screen manages the visual stimulus display, incuded the
-    % coded photodiode signal in the top left corner.
      
     properties(Constant)
         flipSize  = [0.05 0.06];   %  the relative size of the photodiode texture
@@ -100,6 +104,7 @@ classdef Screen < handle
             ShowCursor;
             self.savedSettings = [];
             sca
+            self.isOpened = false;
         end
         
         
