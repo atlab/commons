@@ -137,7 +137,7 @@ classdef plots
                 plot(time',xyz)
                 xlabel time(s)
                 ylabel offset(\mu m)
-                legend('x','y','z')
+                legend x y z 
                 drawnow
             end
         end

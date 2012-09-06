@@ -10,8 +10,8 @@ classdef Grating < stims.core.Visual
             'monitor_distance', nan, ...  (cm)
             'monitor_size', 19, ...       (inches) diagonal
             'monitor_aspect', 1.25, ...
-            'resolution_x', 1280, ...     (pixels)
-            'resolution_y', 1024 ...      (pixels)
+            'resolution_x', 1024, ...     (pixels)
+            'resolution_y',  640 ...      (pixels)
             )
         
         params = struct(...
@@ -73,11 +73,11 @@ classdef Grating < stims.core.Visual
             
             % initialized grating
             if isempty(self.grating)
-                if ~strcmp(getenv('USER'), 'dimitri')
-                    % make sure that the monitor is set to the correct resolution
-                    assert(all(self.rect(3:4)==[self.constants.resolution_x self.constants.resolution_y]), ...
-                        'incorrect monitor resolution')
-                end
+%                 if ~strcmp(getenv('USER'), 'dimitri')
+%                     % make sure that the monitor is set to the correct resolution
+%                     assert(all(self.rect(3:4)==[self.constants.resolution_x self.constants.resolution_y]), ...
+%                         'incorrect monitor resolution')
+%                 end
                 radius = inf;
                 if cond.aperture_radius
                     radius = cond.aperture_radius * norm(self.rect(3:4))/2;

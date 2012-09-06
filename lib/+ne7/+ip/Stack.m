@@ -60,7 +60,8 @@ classdef Stack < handle
             % compute the shift of the peak correlation
             nFrames = size(img,3);
             for iFrame=1:nFrames
-                c = fftshift(ifftn(bsxfun(@times, img(:,:,iFrame), self.conjFFT)));
+                c = ifftn(bsxfun(@times, img(:,:,iFrame), self.conjFFT));
+                c = fftshift(fftshift(c,1),2);
                 [peakcorr(iFrame),idx(iFrame)] = max(c(:)); %#ok<AGROW>
             end
             [y x z] = ind2sub(size(self.conjFFT),idx);
