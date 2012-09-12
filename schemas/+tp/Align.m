@@ -12,7 +12,7 @@ fps                         : float                         # (Hz) frames per se
 dwell_time                  : float                         # (us) microseconds per pixel per frame
 discarded_final_line        : tinyint                       # 1 if the flyback line has been removed
 raster_correction=null      : longblob                      # raster artifact correction
-motion_correction           : longblob                      # motion correction offsets
+motion_correction           : longblob                      # (pixels) y,x motion correction offsets
 motion_rms                  : float                         # (um) stdev of motion
 green_img                   : longblob                      # mean corrected image
 red_img                     : longblob                      # mean corrected image
@@ -29,7 +29,7 @@ classdef Align < dj.Relvar & dj.AutoPopulate
     
     methods
         function self = Align(varargin)
-            self.restrict(varargin)
+            self.restrict(varargin{:})
         end
     end
     
@@ -48,9 +48,9 @@ classdef Align < dj.Relvar & dj.AutoPopulate
             gmean = uint8(255*gmean./max(gmean(:)));
             tuple = key;
             tuple.green_uncorrected = gmean;
-
+            
             tuple.discarded_final_line = discardedFinalLine;
-
+            
             tuple.fps = s.hdr.acq.frameRate;
             tuple.dwell_time = s.hdr.acq.pixelTime*1e6;
             
@@ -76,6 +76,7 @@ classdef Align < dj.Relvar & dj.AutoPopulate
             assert(s.hdr.acq.fastScanningX==1 & s.hdr.acq.fastScanningY==0, 'x must be the fast axis')
             
             offsets = ne7.micro.MotionCorrection.fit(g);
+            offsets = bsxfun(@minus, offsets, median(offsets));
             tuple.motion_correction = int16(offsets);
             tuple.motion_rms = mean(std(offsets).*[tuple.um_height tuple.um_width]./[tuple.px_height tuple.px_width]);
             
@@ -102,7 +103,7 @@ classdef Align < dj.Relvar & dj.AutoPopulate
             
             self.insert(tuple)
         end
-    end        
+    end
     
     methods
         
@@ -113,7 +114,7 @@ classdef Align < dj.Relvar & dj.AutoPopulate
                 key.animal_id, key.tp_session, key.scan_idx, idx));
             if exist(cacheFile, 'file')
                 disp 'loading a cached file (after a 30-second pause to reduce race conditions)'
-                pause(30)  
+                pause(30)
                 s = load(cacheFile);
                 movie = s.movie;
             else
@@ -184,9 +185,9 @@ classdef Align < dj.Relvar & dj.AutoPopulate
                 fps = fetch1(tp.Align(key),'fps');
                 targetFps = 3; % Hz
                 disp 'compressing green channel'
-                g = compressVideo(m.getMovie(1), fps, targetFps);     
+                g = compressVideo(m.getMovie(1), fps, targetFps);
                 disp 'compressing red channel'
-                r = compressVideo(m.getMovie(2), fps, targetFps);     
+                r = compressVideo(m.getMovie(2), fps, targetFps);
                 disp 'saving AVI...'
                 g = cat(4,r,g,zeros(size(g),'uint8'));
                 g = permute(g, [1 2 4 3]);
@@ -216,8 +217,8 @@ function v = compressVideo(m, frameRate, targetFrameRate)
 % reduce the frame rate to targetFrameRate and conver to uint8
 if numel(m)==1
     v = uint8(0);
-else       
-    offset = 100;    
+else
+    offset = 100;
     m = sqrt(abs(m + offset));  % anscombe transform
     mn = mean(m,3);
     q = quantile(mn(:),0.02);
@@ -229,7 +230,7 @@ else
     v = zeros(size(m,1), size(m,2), nFrames,'uint8');
     
     i = 1;
-    for iFrame = 1:nFrames        
+    for iFrame = 1:nFrames
         if iFrame == nFrames
             j = size(m,3);
         else

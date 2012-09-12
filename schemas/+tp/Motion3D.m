@@ -45,7 +45,7 @@ classdef Motion3D < dj.Relvar & dj.AutoPopulate
             
             for iFrame = 1:scim.nFrames;
                 % progress indication
-                if isprime(iFrame), fprintf('[%4d/%4d]\n', iFrame, scim.nFrames), end
+                if isprime(iFrame) && ~mod(iFrame-1,5), fprintf('[%4d/%4d]\n', iFrame, scim.nFrames), end
                 
                 % read frame and apply raster correction
                 frame = ne7.micro.RasterCorrection.apply(scim.read(1,iFrame), raster(iFrame,:,:));

@@ -18,12 +18,9 @@ classdef MotionCorrection
         
         function movie = apply(movie, offsets)
             % offset image img by yxOffset integer pixels, preserving image size.
-            % Boundary pixels are duplicated.
-            
+            % Boundary pixels are duplicated.            
             for i = 1:size(offsets,1)
-                movie(:,:,i) = movie(...
-                    min(end,max(1,(1:end)+double(offsets(i,1)))),...
-                    min(end,max(1,(1:end)+double(offsets(i,2)))),i);
+                movie(:,:,i) = ne7.ip.shift(movie(:,:,i), offsets(i,:));
             end
         end
                

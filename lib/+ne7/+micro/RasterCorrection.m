@@ -102,7 +102,7 @@ end
 
 function [L, gradL] = imgResidual(p,xref,yref,xx,yy,odds,evens,N)   % compute objective function L and its gradient dL/dp
 px = computeOffsetMap(reshape(p,N), xref, yref);
-temp = interp2( xx, yy, odds, max(xx(1),min(xx(end),xref-px)), yref, '*linear' );
+temp = interp2(xx, yy, odds, max(xx(1),min(xx(end),xref-px)), yref, '*linear');
 d = evens-temp;
 L = sum(sum(d.^2))/2;
 
@@ -114,7 +114,7 @@ if nargout > 1
     for kx=1:N(2)
         for ky=1:N(1)
             k = k+1;
-            gradL(k) = sum(sum(g.*chebyI(xref,kx-1).*chebyI(yref,ky-1)));
+            gradL(k) = sum(sum(g.*ne7.num.chebyI(xref,kx-1).*ne7.num.chebyI(yref,ky-1)));
         end
     end
 end
@@ -126,23 +126,7 @@ function px = computeOffsetMap(p, xref, yref)
 px = 0;
 for kx=1:size(p,2)
     for ky=1:size(p,1)
-        px = px+p(ky,kx)*chebyI(xref,kx-1).*chebyI(yref,ky-1);
+        px = px+p(ky,kx)*ne7.num.chebyI(xref,kx-1).*ne7.num.chebyI(yref,ky-1);
     end
-end
-end
-
-
-function y = chebyI(x, n)
-% fast chebyshev polynomials of the first kind
-switch n
-    case 0, y = ones(size(x));
-    case 1, y = x;
-    case 2, y = 2*x.*x-1;
-    case 3, y = (4*x.*x-3).*x;
-    case 4, xx=x.*x; y = 8*(xx-1).*xx+1;
-    case 5, xx=x.*x; y = ((16*xx-20).*xx+5).*x;
-    case 6, xx=x.*x; y = ((32*xx-48).*xx+18).*xx-1;
-    otherwise
-        error('The %dth-degree ChebyI polynomial is not defined', n)
 end
 end
