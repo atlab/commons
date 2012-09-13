@@ -8,7 +8,8 @@ classdef YWarp < handle
     % Usage:
     %     ywarp = YWarp(refImg);
     %     yWarp = fit(img, degree);
-    %     img = yWarp.apply(image);
+    %     warp = ywarp.coefs;
+    %     img = YWarp.apply(img, wap);
     
     properties(Constant, Access=private)
         opt = optimset(...
@@ -16,8 +17,7 @@ classdef YWarp < handle
             'TolFun',1e-4, ...
             'MaxIter',12, ...
             'LargeScale','off',...
-            'Display','off', ...
-            'UseParallel','always'...
+            'Display','off' ...
             )
     end
     
@@ -70,20 +70,22 @@ classdef YWarp < handle
             f = @(p) self.residual(img, p);
             self.coefs = fminunc(f, p, self.opt);
         end
-        
-        
-        function img = apply(self, img)
+    end
+    
+    
+    methods(Static)
+        function img = apply(img, warp)
             % interpolate image
-            p = self.coefs;
-            xx = self.ix;
-            yy = self.iy;
-            np = length(p)/2;
+            sz = size(img);
+            yv = 2*(0:sz(1)-1)'/(sz(1)-1)-1;
+            [yy,xx] = ndgrid(1:size(img,1), 1:size(img,2));
+            np = length(warp)/2;
             for i=1:np;
-                yy = bsxfun(@plus, yy, p(i)*ne7.num.chebyI(self.yvec,i-1));
-                xx = bsxfun(@plus, xx, p(np+i)*ne7.num.chebyI(self.yvec,i-1));
+                yy = bsxfun(@plus, yy, warp(i)*ne7.num.chebyI(yv,i-1));
+                xx = bsxfun(@plus, xx, warp(np+i)*ne7.num.chebyI(yv,i-1));
             end
-            yy = max(1, min(self.shape(1), yy));
-            xx = max(1, min(self.shape(2), xx));
+            yy = max(1, min(sz(1), yy));
+            xx = max(1, min(sz(2), xx));
             img = griddedInterpolant(img);
             img = img(yy,xx);
         end

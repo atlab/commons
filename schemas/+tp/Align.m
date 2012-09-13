@@ -15,7 +15,7 @@ raster_correction=null      : longblob                      # raster artifact co
 motion_correction           : longblob                      # (pixels) y,x motion correction offsets
 motion_rms                  : float                         # (um) stdev of motion
 green_img                   : longblob                      # mean corrected image
-red_img                     : longblob                      # mean corrected image
+red_img=null                : longblob                      # mean corrected image
 aligment_ts=CURRENT_TIMESTAMP: timestamp                    # automatic
 green_uncorrected=null      : longblob                      # uint8 image before corrections for verification
 %}
@@ -39,10 +39,10 @@ classdef Align < dj.Relvar & dj.AutoPopulate
             disp 'reading tiff file'
             f = getFilename(common.TpScan(key));
             f = f{1};
-            s = ne7.scanimage.Reader(f);
+            scim = ne7.scanimage.Reader(f);
             fov = fetch1(common.TpSession(key),'fov');
             
-            [g, discardedFinalLine] = s.read(1);
+            [g, discardedFinalLine] = scim.read(1);
             gmean = mean(g,3);
             gmean = gmean-min(gmean(:));
             gmean = uint8(255*gmean./max(gmean(:)));
@@ -51,16 +51,16 @@ classdef Align < dj.Relvar & dj.AutoPopulate
             
             tuple.discarded_final_line = discardedFinalLine;
             
-            tuple.fps = s.hdr.acq.frameRate;
-            tuple.dwell_time = s.hdr.acq.pixelTime*1e6;
+            tuple.fps = scim.hdr.acq.frameRate;
+            tuple.dwell_time = scim.hdr.acq.pixelTime*1e6;
             
-            tuple.nframes = s.hdr.acq.numberOfFrames;
+            tuple.nframes = scim.hdr.acq.numberOfFrames;
             tuple.px_width = size(g,2);
             tuple.px_height = size(g,1);
-            tuple.um_width  = abs(fov/(s.hdr.acq.zoomFactor * s.hdr.acq.baseZoomFactor) ...
-                * s.hdr.acq.scanAngleMultiplierFast);
-            tuple.um_height = abs(fov/(s.hdr.acq.zoomFactor * s.hdr.acq.baseZoomFactor) ...
-                * s.hdr.acq.scanAngleMultiplierSlow);
+            tuple.um_width  = abs(fov/(scim.hdr.acq.zoomFactor * scim.hdr.acq.baseZoomFactor) ...
+                * scim.hdr.acq.scanAngleMultiplierFast);
+            tuple.um_height = abs(fov/(scim.hdr.acq.zoomFactor * scim.hdr.acq.baseZoomFactor) ...
+                * scim.hdr.acq.scanAngleMultiplierSlow);
             
             pitchRatio = (tuple.um_width/tuple.px_width)/(tuple.um_height/tuple.px_height);
             if pitchRatio > 1.02 || pitchRatio < 0.98
@@ -73,7 +73,7 @@ classdef Align < dj.Relvar & dj.AutoPopulate
             g = ne7.micro.RasterCorrection.apply(g, warp);
             
             disp 'motion correction...'
-            assert(s.hdr.acq.fastScanningX==1 & s.hdr.acq.fastScanningY==0, 'x must be the fast axis')
+            assert(scim.hdr.acq.fastScanningX==1 & scim.hdr.acq.fastScanningY==0, 'x must be the fast axis')
             
             offsets = ne7.micro.MotionCorrection.fit(g);
             offsets = bsxfun(@minus, offsets, median(offsets));
@@ -84,23 +84,20 @@ classdef Align < dj.Relvar & dj.AutoPopulate
             g = ne7.micro.MotionCorrection.apply(g, offsets);
             tuple.green_img = single(mean(g,3));
             clear g
-            try
+            if scim.hasChannel(2)
+                tuple.red_img = 0;
                 block = 256;
                 avg = 0;
-                for i=1:block:s.nFrames
-                    ix = i:min(i+block-1,s.nFrames);
-                    r = s.read(2,ix);
+                for i=1:block:scim.nFrames
+                    ix = i:min(i+block-1,scim.nFrames);
+                    r = scim.read(2,ix);
                     r = ne7.micro.RasterCorrection.apply(r, warp(ix,:,:));
                     r = ne7.micro.MotionCorrection.apply(r, offsets(ix,:));
-                    avg = avg + sum(r,3)/s.nFrames;
+                    avg = avg + sum(r,3);
                 end
-                tuple.red_img = single(avg);
-            catch   %#ok<CTCH>
-                tuple.red_img = 0;
-            end
-            
-            disp done.
-            
+                tuple.red_img = single(avg/scim.nFrames);
+            end            
+            disp 'finished coarse alignment'
             self.insert(tuple)
         end
     end
@@ -115,13 +112,13 @@ classdef Align < dj.Relvar & dj.AutoPopulate
             if exist(cacheFile, 'file')
                 disp 'loading a cached file (after a 30-second pause to reduce race conditions)'
                 pause(30)
-                s = load(cacheFile);
-                movie = s.movie;
+                scim = load(cacheFile);
+                movie = scim.movie;
             else
                 assert(length(key)==1, 'one movie at a time please')
                 f = getFilename(common.TpScan(key));
-                s = ne7.scanimage.Reader(f{1});
-                movie = s.read(idx);
+                scim = ne7.scanimage.Reader(f{1});
+                movie = scim.read(idx);
                 [raster, motion] = self.fetch1('raster_correction', 'motion_correction');
                 if ~isempty(raster)
                     disp 'raster correction...'
@@ -201,7 +198,7 @@ classdef Align < dj.Relvar & dj.AutoPopulate
                 v.close
                 
                 disp 'converting avi'
-                system(sprintf('ffmpeg -i %s -y -vcodec -sameq %s', ...
+                system(sprintf('ffmpeg -i %scim -y -vcodec -sameq %scim', ...
                     fullfile(savepath, fname), fullfile(savepath, ['a' fname])));
                 delete(fullfile(savepath,fname))
                 

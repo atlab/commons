@@ -27,7 +27,6 @@ classdef Reader
             self.nFrames = length(self.info)/self.nChans;
         end
         
-        
         function hdr = get.hdr(self)
             hdr = self.getState(1);
         end
@@ -35,8 +34,11 @@ classdef Reader
         function state = getState(self, i) %#ok<STOUT>
             evalc(self.info(i).ImageDescription);  % evaluate state
         end
-            
         
+        function yes = hasChannel(self, iChan)
+            yes = ismember(iChan, 1:4) ...
+                && self.hdr.acq.(sprintf('savingChannel%u', iChan))==1;
+        end
         
         function [img, discardedFinalLine] = read(self, iChan, frameIdx, removeFlyback)
             if nargin<3 || isempty(frameIdx)
@@ -44,10 +46,11 @@ classdef Reader
             end
             removeFlyback = nargin<4 || removeFlyback;
             assert(ismember(iChan,1:4), 'iChan must be between 1 and 4')
-            assert(eval(sprintf('self.hdr.acq.savingChannel%u',iChan))==1, ...
-                'Channel %d was not recorded', iChan)
+            assert(self.hasChannel(iChan), 'Channel %d was not recorded', iChan)
+            
+            % change iChan to the channel number in the gif file.
             for i=1:iChan
-                iChan = iChan - 1 + eval(sprintf('self.hdr.acq.savingChannel%u',i));
+                iChan = iChan - 1 + self.hdr.acq.(sprintf('savingChannel%u',i));
             end
             
             img = single(zeros(self.info(1).Height, self.info(1).Width, length(frameIdx)));
@@ -69,7 +72,10 @@ classdef Reader
         
         
         function signal = readPhotodiode(self)
-            signal = self.read(3, [], false);  % assumed on 3rd channel
+            iChan = 3;   % assume 3rd channel
+            assert(self.hasChannel(iChan), ...
+                'Channel 3 (photodiode) was not recorded')
+            signal = self.read(iChan, [], false);
             signal = squeeze(mean(signal,2));
             signal = reshape(signal, 1, []);
         end

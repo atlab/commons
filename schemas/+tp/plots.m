@@ -2,6 +2,36 @@ classdef plots
     
     methods(Static)
         
+        function FineAlign(varargin)
+            for key = fetch(tp.FineAlign & varargin)'
+                
+                [raster, motion, warp] = fetch1(tp.Align * tp.FineAlign & key, ...
+                    'raster_correction', 'motion_correction', 'warp_polynom');
+                    
+                clf
+                f = getFilename(common.TpScan & key);
+                scim = ne7.scanimage.Reader(f{1});
+                m = -inf;
+                for iFrame=1:scim.nFrames
+                    g = scim.read(1,iFrame);
+                    if iFrame < 5
+                        m = max(m, quantile(g(:),0.999));
+                    end                        
+                    g = ne7.micro.RasterCorrection.apply(g, raster(iFrame,:,:));
+                    g1 = ne7.micro.MotionCorrection.apply(g, motion(iFrame,:));
+                    g2 = ne7.ip.YWarp.apply(g, warp(iFrame,:));
+                    
+                    subplot 121, imagesc(g1, [0 m]), axis image
+                    subplot 122, imagesc(g2, [0 m]), axis image
+                    colormap gray
+                    drawnow
+                end                    
+                
+                disp key
+            end
+        end
+        
+        
         function Cos2Map(varargin)
             for key = fetch(tp.Cos2Map(varargin{:}))'
                 clf

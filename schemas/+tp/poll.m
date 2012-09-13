@@ -12,14 +12,15 @@ while true
             parpopulate(tp.Sync,    varargin{:})
             parpopulate(tp.OriMap,  varargin{:})
             parpopulate(tp.VonMap,  varargin{:})
-            parpopulate(tp.Cos2Map, varargin{:})
-            parpopulate(tp.OriFreqMap, varargin{:})
-            
+            parpopulate(tp.Cos2Map, varargin{:})            
         case 3
             parpopulate(tp.Ministack, varargin{:})
             parpopulate(tp.Motion3D,  varargin{:})
             parpopulate(tp.VonMap,  varargin{:})
             parpopulate(tp.Cos2Map, varargin{:})
+        case 4
+            parpopulate(tp.FineAlign, varargin{:})
+            
     end
     waitTime = 600-2*toc;
     if waitTime > 0
