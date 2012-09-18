@@ -4,7 +4,7 @@ common.OpticalSession (manual) # intrinsic imaging session
 opt_sess  :   smallint      # optical session number for this animal
 -----
 opt_path  :   varchar(255)  # root path to raw data
-opt_note  :   varchar(4095) # whatever the fuck you want
+opt_note  :   varchar(4095) # whatever you want
 %}
 
 classdef OpticalSession < dj.Relvar

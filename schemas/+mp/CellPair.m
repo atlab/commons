@@ -1,10 +1,11 @@
 %{
-mp.CellPair (manual) # my newest table
--> mp.Session
-cell_pair   : smallint   # cell pair number
--> mp.PatchedCell
+mp.CellPair (manual)        # pairs of cells
+cell_pair       : int       # cell pair id
+-> mp.Cell 
 -----
-order_in_pair :  tinyint  # 1 or 2
+presynaptic     : tinyint   # 1=presynpatic, 0=postsynaptic
+connected       : tinyint   # 1=connected, 0=not connected, -1=tested but still unknown 
+cellpair_ts = CURRENT_TIMESTAMP : timestamp   # don't edit
 %}
 
 classdef CellPair < dj.Relvar

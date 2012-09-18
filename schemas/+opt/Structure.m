@@ -1,9 +1,9 @@
 %{
 opt.Structure (imported) # structural images from optical sessions
-
 -> common.OpticalMovie
----
-structure_img               : longblob                      # image
+-----
+structure_img  :  longblob   # image
+structure_mask :  longblob   # mask of craniotomy
 %}
 
 classdef Structure < dj.Relvar & dj.AutoPopulate

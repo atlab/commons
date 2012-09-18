@@ -35,7 +35,7 @@ classdef Reader
         function state = getState(self, i) %#ok<STOUT>
             evalc(self.info(i).ImageDescription);  % evaluate state
         end
-            
+        
         
         
         function [img, discardedFinalLine] = read(self, iChan, frameIdx, removeFlyback)
@@ -50,12 +50,38 @@ classdef Reader
                 iChan = iChan - 1 + eval(sprintf('self.hdr.acq.savingChannel%u',i));
             end
             
-            img = single(zeros(self.info(1).Height, self.info(1).Width, length(frameIdx)));
-            for iFrame=1:length(frameIdx(:))
-                img(:,:,iFrame) = ...
-                    imread(self.info(1).Filename, ...
-                    (frameIdx(iFrame)-1)*self.nChans + iChan, 'Info', self.info);
+            % --------------Added JR 9/6/12
+            % Based on: http://www.matlabtips.com/how-to-load-tiff-stacks-fast-really-fast/
+            % Requires tifflib.mexa64 in the class directory
+            img = zeros(self.info(1).Height, self.info(1).Width, length(frameIdx),'single');
+            mImage=self.info(1).Width;
+            nImage=self.info(1).Height;
+            
+            
+            FileID = tifflib('open',self.info(1).Filename,'r');
+            rps = tifflib('getField',FileID,Tiff.TagID.RowsPerStrip);
+
+            chanFrames = [iChan : self.nChans : (self.nFrames*self.nChans)];
+            for i=1:length(frameIdx(:))
+                tifflib('setDirectory',FileID,chanFrames(frameIdx(i)));
+                % Go through each strip of data.
+                rps = min(rps,mImage);
+                for r = 1:rps:mImage
+                    row_inds = r:min(mImage,r+rps-1);
+                    stripNum = tifflib('computeStrip',FileID,r);
+                    img(row_inds,:,i) = tifflib('readEncodedStrip',FileID,stripNum);
+                end
             end
+            tifflib('close',FileID);
+            % -----------------------
+            %
+            %             img = single(zeros(self.info(1).Height, self.info(1).Width, length(frameIdx)));
+            %             for iFrame=1:length(frameIdx(:))
+            %                 img(:,:,iFrame) = ...
+            %                     imread(self.info(1).Filename, ...
+            %                     (frameIdx(iFrame)-1)*self.nChans + iChan, 'Info', self.info);
+            %             end
+            
             discardedFinalLine = false;
             if removeFlyback && ~self.hdr.acq.slowDimDiscardFlybackLine
                 if self.hdr.acq.slowDimFlybackFinalLine
