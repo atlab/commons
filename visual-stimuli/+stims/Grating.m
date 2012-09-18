@@ -8,10 +8,10 @@ classdef Grating < stims.core.Visual
         constants = struct(...
             'stimulus', 'grating', ...
             'monitor_distance', nan, ...  (cm)
-            'monitor_size', 19, ...       (inches) diagonal
-            'monitor_aspect', 1.25, ...
+            'monitor_size', 7, ...       (inches) diagonal
+            'monitor_aspect', 1.7, ...   (physical aspect ratio W/H)
             'resolution_x', 1024, ...     (pixels)
-            'resolution_y',  640 ...      (pixels)
+            'resolution_y',  600 ...      (pixels)
             )
         
         params = struct(...

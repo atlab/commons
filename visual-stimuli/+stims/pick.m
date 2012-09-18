@@ -3,7 +3,7 @@ function pick    % stims.pick allows picking one of several preconfigured visual
 parentTable = common.Animal;
 
 menu = {% menu-item    callback
-    'grating: 1s ON/1s OFF (384 s)'               setParams(stims.Grating, 2, 'direction', 0:15:359, 'pre_blank', 1.0, 'trial_duration', 1.0, 'aperture_radius', 0.63, 'init_phase', 0:0.25:0.75)
+    'grating: 1s ON/1s OFF (384 s)'               setParams(stims.Grating, 2, 'direction', 0:15:359, 'pre_blank', 1.0, 'trial_duration', 100.0, 'aperture_radius', 0.4, 'init_phase', 0:0.25:0.75)
     'grating: 1s ON/0s OFF (288 s)'               setParams(stims.Grating, 4, 'direction', 0:15:359, 'pre_blank', 0.0, 'trial_duration', 1.0, 'aperture_radius', 0.63, 'init_phase', 0:0.25:0.75)
     'grating: [0.5 1.0 2.0]s ON/0.5s OFF (960 s)' setParams(stims.Grating, 2, 'direction', 0:15:359, 'pre_blank', 0.5, 'aperture_radius', 0.63, 'trial_duration', [0.5 1.0 2.0], 'init_phase', [0 .5])
     'grating: in four spots (960 s)'              setParams(stims.Grating, 12, 'pre_blank', 6, 'trial_duration', 4.0, 'direction', [90 180], 'aperture_radius', 0.2, 'aperture_x', [-0.4 0.4], 'aperture_y',[-0.3 0.3], 'temp_freq',4,'spatial_freq',.03)

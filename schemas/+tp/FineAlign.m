@@ -52,19 +52,19 @@ classdef FineAlign < dj.Relvar & dj.AutoPopulate
                 yWarp.fit(frame, key.warp_degree, motion(iFrame,:));
                 key.warp_polynom(iFrame, :) = yWarp.coefs;                
                 frame = ne7.ip.YWarp.apply(frame, key.warp_polynom(iFrame,:));
-                ggframe = ggframe + (frame-ggframe)/scim.nFrames;
+                ggframe = ggframe + frame;
                 
                 if hasRedChannel && ~mod(iFrame-10,20)
                     rcount = rcount + 1;
                     frame = double(scim.read(2, iFrame));
                     frame = ne7.micro.RasterCorrection.apply(frame, raster(iFrame,:,:));
                     frame = ne7.ip.YWarp.apply(frame, key.warp_polynom(iFrame,:));
-                    rrframe = rrframe + (frame-rrframe)/rcount;
+                    rrframe = rrframe + frame;
                 end
             end
             
-            key.fine_green_img = single(ggframe);
-            key.fine_red_img   = single(rrframe);
+            key.fine_green_img = single(ggframe/scim.nFrames);
+            key.fine_red_img   = single(rrframe/rcount);
             
             self.insert(key)
         end
