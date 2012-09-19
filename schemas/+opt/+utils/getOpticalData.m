@@ -1,4 +1,4 @@
-function [Data Fs pdData pdFs] = getOpticalData(fn)
+function [Data Fs pdData pdFs] = getOpticalData(varargin)
 
 % function [Data Fs pdData pdFs] = getOpticalData(fn)
 %
@@ -11,6 +11,20 @@ function [Data Fs pdData pdFs] = getOpticalData(fn)
 %
 % MF 2012-06
 
+fn = varargin{1};
+getPd=1;
+getMov=1;
+if nargin > 1
+    switch varargin{2}
+        case 'pd'
+            getMov=1;
+        case 'mov'
+            getPd=0;
+    end
+end
+   
+Data=[];
+if getMov
 data = single(opt.utils.loadHWS(fn,'imaging','movie')); % get the imaging data
 try
     imsizeX = opt.utils.loadHWS(fn,'imaging','x'); 
@@ -22,12 +36,14 @@ catch  %#ok<CTCH>
 end
 
 Data = permute(reshape(data,imsizeX,[],imsizeY),[2 3 1]); % reshape into [time x y]
+end
 
 if nargout>1
     Fs = opt.utils.loadHWS(fn,'imaging','hz'); % get framerate
 end
 
-if nargout>2
+pdData=[];
+if nargout>2 && getPd
     pdData = opt.utils.loadHWS(fn,'ephys','photodiode'); % get photodiode data
 end
 

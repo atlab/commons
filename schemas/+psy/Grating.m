@@ -3,9 +3,9 @@ psy.Grating (manual) # Populated by the stim program
 
 -> psy.Condition
 ---
--> psy.Direction
--> psy.SpatialFreq
--> psy.TempFreq
+direction                   : decimal(4,1)                  # 0-360 degrees
+spatial_freq                : decimal(4,2)                  # cycles/degree
+temp_freq                   : decimal(4,2)                  # Hz
 pre_blank=0                 : float                         # (s) blank period preceding trials
 luminance                   : float                         # cd/m^2 mean
 contrast                    : float                         # Michelson contrast 0-1

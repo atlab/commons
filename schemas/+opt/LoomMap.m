@@ -1,5 +1,5 @@
 %{
-opt.SpotMap (imported) # retinotopic mapping using grating spots
+opt.LoomMap (imported) # retinotopic mapping using grating spots
 -> opt.Sync
 tau       :  tinyint  # tau 
 -----
@@ -9,15 +9,15 @@ spot_fp   : longblob  # total response p-value (F-test)
 spot_psth : longblob  # average stimulus-locked response
 %}
 
-classdef SpotMap < dj.Relvar & dj.AutoPopulate
+classdef LoomMap < dj.Relvar & dj.AutoPopulate
 
 	properties(Constant)
-		table = dj.Table('opt.SpotMap')
-		popRel = opt.Sync & psy.Grating
+		table = dj.Table('opt.LoomMap')
+		popRel = opt.Sync & psy.Looming
 	end
 
 	methods
-		function self = SpotMap(varargin)
+		function self = LoomMap(varargin)
 			self.restrict(varargin)
 		end
 	end
@@ -65,9 +65,9 @@ classdef SpotMap < dj.Relvar & dj.AutoPopulate
             X=X./interp1q(floor(1:framerate*60:sz(1))',X(floor(1:framerate*60:sz(1)),:),[1:sz(1)]')-1;
             X(isnan(X))=0;
 
-            trialRel = opt.Sync(key)*psy.Trial*psy.Grating & 'trial_idx between first_trial and last_trial';
-            trials = fetch(trialRel, 'aperture_x*1000+aperture_y->position', 'flip_times');
-            [~,~,condIdx] = unique([trials.position]);
+            trialRel = opt.Sync(key)*psy.Trial*psy.Looming & 'trial_idx between first_trial and last_trial';
+            trials = fetch(trialRel, 'looming_rate', 'flip_times');
+            [~,~,condIdx] = unique([trials.looming_rate]);
             times = fetch1(opt.Sync(key), 'frame_times');
             
             % exclude the times 20 s before and after stimulus
