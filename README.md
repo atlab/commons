@@ -27,6 +27,11 @@ Two-photon imaging using scanimage
 Optical imaging of intrinsic signals
 ![alt text](https://raw.github.com/dimitri-yatsenko/commons/master/schemas/+opt/erd.png "ERD")
 
++mp
+----
+Multipatch experiments
+![alt text](https://raw.github.com/dimitri-yatsenko/commons/master/schemas/+mp/erd.png "ERD")
+
 Libraries
 ======
 +ne7 
