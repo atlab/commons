@@ -10,27 +10,27 @@ Schemas
 +common
 -----
 Basic information about experiments
-![alt text](https://raw.github.com/dimitri-yatsenko/commons/master/schemas/+common/erd.png "ERD")
+![alt text](https://raw.github.com/atlab/commons/master/schemas/+common/erd.png "ERD")
 
 +psy
 ------
 Visual stimuli 
-![alt text](https://raw.github.com/dimitri-yatsenko/commons/master/schemas/+psy/erd.png "ERD")
+![alt text](https://raw.github.com/atlab/commons/master/schemas/+psy/erd.png "ERD")
 
 +tp
 -----
 Two-photon imaging using scanimage
-![alt text](https://raw.github.com/dimitri-yatsenko/commons/master/schemas/+tp/erd.png "ERD")
+![alt text](https://raw.github.com/atlab/commons/master/schemas/+tp/erd.png "ERD")
 
 +opt
 ----
 Optical imaging of intrinsic signals
-![alt text](https://raw.github.com/dimitri-yatsenko/commons/master/schemas/+opt/erd.png "ERD")
+![alt text](https://raw.github.com/atlab/commons/master/schemas/+opt/erd.png "ERD")
 
 +mp
 ----
 Multipatch experiments
-![alt text](https://raw.github.com/dimitri-yatsenko/commons/master/schemas/+mp/erd.png "ERD")
+![alt text](https://raw.github.com/atlab/commons/master/schemas/+mp/erd.png "ERD")
 
 Libraries
 ======
