@@ -18,7 +18,7 @@ classdef FineAlign < dj.Relvar & dj.AutoPopulate
     
     methods(Access=protected)
         
-        function makeTuples(self, key)            
+        function makeTuples(self, key)
             [raster, motion, gframe, px, py] = fetch1(tp.Align & key, ...
                 'raster_correction', 'motion_correction',...
                 'green_img', ...
@@ -37,7 +37,7 @@ classdef FineAlign < dj.Relvar & dj.AutoPopulate
             yWarp = ne7.ip.YWarp(gframe);
             motion = double(motion);
             motion = bsxfun(@minus, motion, median(motion));
-            try 
+            try
                 scim.read(2,1);
                 hasRedChannel = true;
             catch %#ok<CTCH>
@@ -46,11 +46,11 @@ classdef FineAlign < dj.Relvar & dj.AutoPopulate
             for iFrame = 1:scim.nFrames
                 if ~mod(sqrt(iFrame),1), fprintf('[%3d/%d]\n', iFrame, scim.nFrames); end
                 frame = double(scim.read(1, iFrame));
-                frame = ne7.micro.RasterCorrection.apply(frame, raster(iFrame,:,:));                
+                frame = ne7.micro.RasterCorrection.apply(frame, raster(iFrame,:,:));
                 
                 % subpixel fit
                 yWarp.fit(frame, key.warp_degree, motion(iFrame,:));
-                key.warp_polynom(iFrame, :) = yWarp.coefs;                
+                key.warp_polynom(iFrame, :) = yWarp.coefs;
                 frame = ne7.ip.YWarp.apply(frame, key.warp_polynom(iFrame,:));
                 ggframe = ggframe + frame;
                 
@@ -68,5 +68,46 @@ classdef FineAlign < dj.Relvar & dj.AutoPopulate
             
             self.insert(key)
         end
+        
+        
+                
+        function writeVideo(self, savepath)
+            if nargin<2
+                savepath = '.';
+            end
+            for key = fetch(self)'
+                disp 'making movie for'
+                disp(key)
+                clf
+                f = getFilename(common.TpScan(key));
+                scim = ne7.scanimage.Reader(f{1});
+
+                fps = fetch1(tp.Align(key),'fps');
+                targetFps = 3; % Hz
+                disp 'compressing green channel'
+                g = compressVideo(m.getMovie(1), fps, targetFps);
+                disp 'compressing red channel'
+                r = compressVideo(m.getMovie(2), fps, targetFps);
+                disp 'saving AVI...'
+                g = cat(4,r,g,zeros(size(g),'uint8'));
+                g = permute(g, [1 2 4 3]);
+                
+                fname = sprintf('%05d_%03d.avi', key.animal_id, key.scan_idx);
+                v = VideoWriter(fullfile(savepath,fname));
+                v.FrameRate = 30;
+                v.Quality = 100;
+                v.open
+                v.writeVideo(g)
+                v.close
+                
+                disp 'converting avi'
+                system(sprintf('ffmpeg -i %scim -y -vcodec -sameq %scim', ...
+                    fullfile(savepath, fname), fullfile(savepath, ['a' fname])));
+                delete(fullfile(savepath,fname))
+                
+                disp done
+            end
+        end
+        
     end
 end

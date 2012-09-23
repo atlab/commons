@@ -228,6 +228,6 @@ classdef plots
                 stack = max(0,stack-quantile(stack(:), 0.01));
                 stack = stack/max(stack(:));
             end
-        end
+        end                
     end
 end

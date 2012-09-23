@@ -105,51 +105,38 @@ classdef Align < dj.Relvar & dj.AutoPopulate
     methods
         
         function movie = getMovie(self, idx)
-            key = fetch(self);
-            cachePath = '/Volumes/stage/cache/corrected_movies';
-            cacheFile = fullfile(cachePath, sprintf('movie_%05d_%d_%03d_%u.mat', ...
-                key.animal_id, key.tp_session, key.scan_idx, idx));
-            if exist(cacheFile, 'file')
-                disp 'loading a cached file (after a 30-second pause to reduce race conditions)'
-                pause(30)
-                scim = load(cacheFile);
-                movie = scim.movie;
-            else
-                assert(length(key)==1, 'one movie at a time please')
-                f = getFilename(common.TpScan(key));
-                scim = ne7.scanimage.Reader(f{1});
-                movie = scim.read(idx);
-                [raster, motion] = self.fetch1('raster_correction', 'motion_correction');
-                if ~isempty(raster)
-                    disp 'raster correction...'
-                    movie = ne7.micro.RasterCorrection.apply(movie, raster);
-                end
-                if ~isempty(motion)
-                    disp 'motion correction...'
-                    movie = ne7.micro.MotionCorrection.apply(movie, motion);
-                end
-                if ~exist(cacheFile, 'file') && exist(cachePath, 'dir')
-                    save(cacheFile, 'movie', '-v7.3');
-                end
+            key = fetch(self); 
+            assert(length(key)==1, 'one movie at a time please')
+            f = getFilename(common.TpScan(key));
+            scim = ne7.scanimage.Reader(f{1});
+            movie = scim.read(idx);
+            [raster, motion] = self.fetch1('raster_correction', 'motion_correction');
+            if ~isempty(raster)
+                disp 'raster correction...'
+                movie = ne7.micro.RasterCorrection.apply(movie, raster);
             end
+            if ~isempty(motion)
+                disp 'motion correction...'
+                movie = ne7.micro.MotionCorrection.apply(movie, motion);
+            end
+            if ~exist(cacheFile, 'file') && exist(cachePath, 'dir')
+                save(cacheFile, 'movie', '-v7.3');
+            end            
         end
+        
         
         function plot(self)
             keys = fetch(self);
             for key = keys'
                 if length(keys)>1
                     figure
-                end
+                end                
                 [g,r] = fetch1(tp.Align(key), 'green_img', 'red_img');
-                g = g-min(g(:));
-                g = g/max(g(:));
-                r = r-min(r(:));
-                r = r/max(r(:));
-                im = cat(3,r,g,zeros(size(g)));
-                imshow(im)
+                imshowpair(g,r)
             end
         end
-        
+                
+       
         function savePreview(self)
             for key = fetch(self)'
                 [g,r] = fetch1(tp.Align(key), 'green_img', 'red_img');
@@ -169,76 +156,5 @@ classdef Align < dj.Relvar & dj.AutoPopulate
                 imwrite(im,f,'png')
             end
         end
-        
-        function writeVideo(self, savepath)
-            if nargin<2
-                savepath = '.';
-            end
-            for key = fetch(self)'
-                disp 'making movie for'
-                disp(key)
-                clf
-                m = tp.Align(key);
-                fps = fetch1(tp.Align(key),'fps');
-                targetFps = 3; % Hz
-                disp 'compressing green channel'
-                g = compressVideo(m.getMovie(1), fps, targetFps);
-                disp 'compressing red channel'
-                r = compressVideo(m.getMovie(2), fps, targetFps);
-                disp 'saving AVI...'
-                g = cat(4,r,g,zeros(size(g),'uint8'));
-                g = permute(g, [1 2 4 3]);
-                
-                fname = sprintf('%05d_%03d.avi', key.animal_id, key.scan_idx);
-                v = VideoWriter(fullfile(savepath,fname));
-                v.FrameRate = 30;
-                v.Quality = 100;
-                v.open
-                v.writeVideo(g)
-                v.close
-                
-                disp 'converting avi'
-                system(sprintf('ffmpeg -i %scim -y -vcodec -sameq %scim', ...
-                    fullfile(savepath, fname), fullfile(savepath, ['a' fname])));
-                delete(fullfile(savepath,fname))
-                
-                disp done
-            end
-        end
     end
-end
-
-
-
-function v = compressVideo(m, frameRate, targetFrameRate)
-% reduce the frame rate to targetFrameRate and conver to uint8
-if numel(m)==1
-    v = uint8(0);
-else
-    offset = 100;
-    m = sqrt(abs(m + offset));  % anscombe transform
-    mn = mean(m,3);
-    q = quantile(mn(:),0.02);
-    mn = mn - q;
-    m = m - q;
-    m = 255* m / max(mn(:));
-    
-    nFrames = ceil(size(m,3)*targetFrameRate/frameRate)-1;
-    v = zeros(size(m,1), size(m,2), nFrames,'uint8');
-    
-    i = 1;
-    for iFrame = 1:nFrames
-        if iFrame == nFrames
-            j = size(m,3);
-        else
-            j = round(iFrame*frameRate/targetFrameRate);
-        end
-        v(:,:,iFrame) = uint8(max(m(:,:,i:j),[],3));
-        i = j+1;
-        
-        if mod(i,250)==1
-            fprintf('%03d /%03d\n', iFrame, nFrames)
-        end
-    end
-end
 end
