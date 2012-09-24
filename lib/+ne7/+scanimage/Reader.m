@@ -16,8 +16,10 @@ classdef Reader < handle
     methods
         function self = Reader(filepath)
             self.filepath = filepath;
+            warning('off','MATLAB:imagesci:Tiff:libraryWarning')
             self.tiff = Tiff(self.filepath);
             evalc(self.tiff.getTag('ImageDescription'));   % evaluate state
+            warning('on','MATLAB:imagesci:Tiff:libraryWarning')
             self.hdr = state;
             self.nChans  = self.hdr.acq.numberOfChannelsSave;
             self.nFrames = self.hdr.acq.numberOfFrames;
@@ -50,7 +52,9 @@ classdef Reader < handle
             for iFrame=1:length(frameIdx(:))
                 dirNum = (frameIdx(iFrame)-1)*self.nChans + iChan;
                 try
+                    warning('off','MATLAB:imagesci:Tiff:libraryWarning')
                     self.tiff.setDirectory(dirNum)
+                    warning('on','MATLAB:imagesci:Tiff:libraryWarning')
                 catch   %#ok<CTCH> % interrupted scan
                     self.nFrames = iFrame-1;
                     img = img(:,:,1:self.nFrames);

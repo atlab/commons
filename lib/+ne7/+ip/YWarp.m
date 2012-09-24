@@ -1,9 +1,21 @@
 classdef YWarp < handle
-    % this class applies subpixel correction to images that are already
-    % approximately aligned.
-    % The warping function is a polynomial of the y-coordinate, which is
-    % optimal for motion correction in movies acquired by raster scanning
-    % with Y as the slow scan dimension.
+    % this class applies subpixel nonrigid motion correction to images sequences
+    % that are already approximately aligned (within the convex
+    % neighborhood of the cross-correlation).
+    %
+    % Three polynomials are fitted for each frame: 
+    %    1)   dy = f(y)
+    %    2)   dx = f(y)
+    %    3)   dx = f(x)
+    %
+    % The first two polynomials correct for y and x drift and fast
+    % movements such as cardiac and respiratory.  They only depend on y
+    % (the slow-scanning axis).
+    %
+    % The third polynomial corrects for the slow changes in the x-raster
+    % trajectory that happen due to the heating of mirror galvos at fast
+    % scanning rates.  These mostly depend only on the x (repeatable
+    % acroass lines)
     %
     % Usage:
     %     ywarp = YWarp(refImg);
@@ -15,7 +27,7 @@ classdef YWarp < handle
         opt = optimset(...
             'TolX',1e-3, ...
             'TolFun',1e-4, ...
-            'MaxIter',12, ...
+            'MaxIter',15, ...
             'LargeScale','off',...
             'Display','off' ...
             )
@@ -32,6 +44,9 @@ classdef YWarp < handle
         iy
         mask
         yvec
+        xvec
+        degrees  % 3x1 vector for y(yi), x(yi), x(xi)
+        
     end
     
     methods
@@ -42,6 +57,7 @@ classdef YWarp < handle
             % mask out boundary
             self.shape = size(refImg);
             self.yvec = 2*(0:self.shape(1)-1)'/(self.shape(1)-1)-1;
+            self.xvec = 2*(0:self.shape(2)-1)/(self.shape(2)-1)-1;
             [self.iy, self.ix] = ndgrid(1:self.shape(1), 1:self.shape(2));
             self.mask = min(...
                 min(self.iy-1, self.shape(1)-self.iy), ...
@@ -56,17 +72,18 @@ classdef YWarp < handle
         end
         
         
-        function self = fit(self, img, degree, motion)
-            if nargin<4
-                motion = [0 0];
-            end
+        function self = fit(self, img, degrees, p)
+            self.degrees = degrees;
             
             % normalize image
             img = self.mask.*(img - mean(img(:)));
             img = img/norm(img(:));
             
+            % zero out fast-changing parameters
+            p(1+(1:degrees(1)))=0;
+            p(degrees(1)+1+(1:degrees(2)))=0;  
+            
             % fit image
-            p = [motion(1) zeros(1,degree) motion(2) zeros(1,degree)];
             f = @(p) self.residual(img, p);
             self.coefs = fminunc(f, p, self.opt);
         end
@@ -74,15 +91,20 @@ classdef YWarp < handle
     
     
     methods(Static)
-        function img = apply(img, warp)
+        function img = apply(img, warp,degrees)
             % interpolate image
             sz = size(img);
             yv = 2*(0:sz(1)-1)'/(sz(1)-1)-1;
+            xv = 2*(0:sz(2)-1)/(sz(2)-1)-1;
             [yy,xx] = ndgrid(1:size(img,1), 1:size(img,2));
-            np = length(warp)/2;
-            for i=1:np;
-                yy = bsxfun(@plus, yy, warp(i)*ne7.num.chebyI(yv,i-1));
-                xx = bsxfun(@plus, xx, warp(np+i)*ne7.num.chebyI(yv,i-1));
+            for i=0:degrees(1)
+                yy = bsxfun(@plus, yy, warp(i+1)*ne7.num.chebyI(yv,i));
+            end
+            for i=0:degrees(2)
+                xx = bsxfun(@plus, xx, warp(i+2+degrees(1))*ne7.num.chebyI(yv,i));
+            end
+            for i=1:degrees(3)   % zeroth degree omitted
+                xx = bsxfun(@plus, xx, warp(i+2+sum(degrees(1:2)))*ne7.num.chebyI(xv,i));
             end
             yy = max(1, min(sz(1), yy));
             xx = max(1, min(sz(2), xx));
@@ -98,10 +120,14 @@ classdef YWarp < handle
             % interpolate reference image
             xx = self.ix;
             yy = self.iy;
-            np = length(p)/2;
-            for i=1:np;
-                yy = bsxfun(@minus, yy, p(i)*ne7.num.chebyI(self.yvec,i-1));
-                xx = bsxfun(@minus, xx, p(np+i)*ne7.num.chebyI(self.yvec,i-1));
+            for i=0:self.degrees(1)
+                yy = bsxfun(@minus, yy, p(i+1)*ne7.num.chebyI(self.yvec,i));
+            end
+            for i=0:self.degrees(2)
+                xx = bsxfun(@minus, xx, p(i+2+self.degrees(1))*ne7.num.chebyI(self.yvec,i));
+            end
+            for i=1:self.degrees(3)   % zeroth degree omitted
+                xx = bsxfun(@minus, xx, p(i+2+sum(self.degrees(1:2)))*ne7.num.chebyI(self.xvec,i));
             end
             yy = max(1, min(self.shape(1), yy));
             xx = max(1, min(self.shape(2), xx));

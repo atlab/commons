@@ -7,6 +7,7 @@ classdef Movie < ne7.scanimage.Reader
         fps       % frames per second
         raster    % raster correction
         motion    % motion correction
+        degrees   % polynomial degrees
         dx        % in microns
         dy        % in microns
     end
@@ -27,10 +28,11 @@ classdef Movie < ne7.scanimage.Reader
             assert(max(self.dx,self.dy)/min(self.dx,self.dy)<1.1, ...
                 'tp.FineAlign cannot process non-isometric pixels')
             self.nFrames = size(self.raster,1);
+            self.degrees = [0 0 -1];
             if exists(tp.FineAlign & self.key)
-                self.motion = fetch1(tp.FineAlign & self.key, 'warp_polynom');
+                [self.motion, degree] = fetch1(tp.FineAlign & self.key, 'warp_polynom', 'warp_degree');
+                self.degrees = [degree degree size(self.motion,2)-2*(degree+1)];
             end
-            % recenter motion
             self.motion = bsxfun(@minus, double(self.motion), median(double(self.motion)));            
         end
         
@@ -38,9 +40,9 @@ classdef Movie < ne7.scanimage.Reader
         function frames = getFrames(self, channel, frameIdx)
             % read specified frames and apply corrections
             frames = self.read(channel, frameIdx);
-            frames = ne7.micro.RasterCorrection.apply(frames, self.raster(frameIdx,:,:));
+            frames = ne7.micro.RasterCorrection.apply(frames, self.raster(frameIdx,:,:));                        
             for i=1:length(frameIdx)
-                frames(:,:,i) = ne7.ip.YWarp.apply(frames(:,:,i), self.motion(frameIdx(i),:));
+                frames(:,:,i) = ne7.ip.YWarp.apply(frames(:,:,i), self.motion(frameIdx(i),:), self.degrees);
             end
         end
         
@@ -79,7 +81,7 @@ classdef Movie < ne7.scanimage.Reader
             
             disp 'converting avi'
             system(sprintf('ffmpeg -i %s -y -sameq %s', ...
-                fullfile(savepath, fname), fullfile(savepath, ['b' fname])));
+                fullfile(savepath, fname), fullfile(savepath, ['c' fname])));
             delete(fullfile(savepath,fname))
             
             disp done
