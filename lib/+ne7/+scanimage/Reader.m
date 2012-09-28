@@ -2,8 +2,8 @@ classdef Reader < handle
     % scanimage.Reader - ScanImage file interface
     
     properties(SetAccess = protected)
-        filepath
-        tiff     % Tiff object
+        filepaths
+        info     % output of iminfo
         hdr      % header info
         nChans   % number of channels
         nFrames  % total number of frames (may be less if interrupted)
@@ -15,14 +15,33 @@ classdef Reader < handle
     
     methods
         function self = Reader(filepath)
-            self.filepath = filepath;
-            warning('off','MATLAB:imagesci:Tiff:libraryWarning')
-            self.tiff = Tiff(self.filepath);
-            evalc(self.tiff.getTag('ImageDescription'));   % evaluate state
-            warning('on','MATLAB:imagesci:Tiff:libraryWarning')
+            % The filepath must specify the full local path to the tiff file or
+            % multiple files. Multiple files are generated using sprintf
+            % numerical placeholders. For example, '/path/scan001_%03u.tif'
+            % will translate into /path/scan001_001.tif,
+            % /path/scan001_002.tif, etc
+            
+            % generate the file list
+            self.filepaths = {};
+            for i=1:40
+                f = sprintf(filepath, i);
+                if ismember(f,self.filepaths)
+                    break
+                end
+                if ~exist(f, 'file')
+                    break
+                end
+                self.filepaths{end+1}=f;
+            end
+            
+            disp 'reading TIFF header...'
+            for i=1:length(self.filepaths)
+                self.info{i} = imfinfo(self.filepaths{i});
+            end
+            evalc(self.info{1}(1).ImageDescription);
             self.hdr = state;
             self.nChans  = self.hdr.acq.numberOfChannelsSave;
-            self.nFrames = self.hdr.acq.numberOfFrames;
+            self.nFrames = length(self.info)/self.nChans;
             self.nSlices = self.hdr.acq.numberOfZSlices;
             self.height = self.hdr.acq.linesPerFrame;
             self.width  = self.hdr.acq.pixelsPerLine;
@@ -50,17 +69,10 @@ classdef Reader < handle
             
             img = zeros(self.height, self.width, length(frameIdx), 'single');
             for iFrame=1:length(frameIdx(:))
-                dirNum = (frameIdx(iFrame)-1)*self.nChans + iChan;
-                try
-                    warning('off','MATLAB:imagesci:Tiff:libraryWarning')
-                    self.tiff.setDirectory(dirNum)
-                    warning('on','MATLAB:imagesci:Tiff:libraryWarning')
-                catch   %#ok<CTCH> % interrupted scan
-                    self.nFrames = iFrame-1;
-                    img = img(:,:,1:self.nFrames);
-                    break
-                end
-                img(:,:,iFrame) = self.tiff.read;
+                frameNum = (frameIdx(iFrame)-1)*self.nChans + iChan;
+                [fileNum, frameNum] = self.getFileNum(frameNum);
+                img(:,:,iFrame) = imread(self.filepaths{fileNum}, ...
+                    'Index', frameNum, 'Info', self.info{fileNum});
             end
             
             % determine if the last line is the flyback line and discard it if so
@@ -83,6 +95,19 @@ classdef Reader < handle
             signal = self.read(iChan, [], false);
             signal = squeeze(mean(signal,2));
             signal = reshape(signal, 1, []);
+        end
+    end
+    
+    
+    methods(Access = private)
+        function [fileNum, frameNum] = getFileNum(self, frameNum)
+            for i=1:length(self.filepaths)
+                if frameNum < length(self.info{i})
+                    fileNum = i;
+                    break
+                end
+                frameNum = frameNum - length(self.info{i});
+            end
         end
     end
 end

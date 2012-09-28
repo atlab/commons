@@ -7,7 +7,7 @@ classdef plots
                 
                 [raster, motion, warp] = fetch1(tp.Align * tp.FineAlign & key, ...
                     'raster_correction', 'motion_correction', 'warp_polynom');
-                    
+                
                 clf
                 f = getFilename(common.TpScan & key);
                 scim = ne7.scanimage.Reader(f{1});
@@ -16,7 +16,7 @@ classdef plots
                     g = scim.read(1,iFrame);
                     if iFrame < 5
                         m = max(m, quantile(g(:),0.999));
-                    end                        
+                    end
                     g = ne7.micro.RasterCorrection.apply(g, raster(iFrame,:,:));
                     g1 = ne7.micro.MotionCorrection.apply(g, motion(iFrame,:));
                     g2 = ne7.ip.YWarp.apply(g, warp(iFrame,:));
@@ -25,7 +25,7 @@ classdef plots
                     subplot 122, imagesc(g2, [0 m]), axis image
                     colormap gray
                     drawnow
-                end                    
+                end
                 
                 disp key
             end
@@ -85,7 +85,7 @@ classdef plots
                 grid on
                 set(gca, 'XColor', 'b', 'YColor', 'b')
                 title 'fluorescence'
-
+                
                 
                 subplot 222
                 [p, ori, r2, amp1, amp2] = fetch1(tp.VonMap(key), ...
@@ -178,7 +178,7 @@ classdef plots
                     vdata = [-sy sy]/2;
                     for i=1:nFrames
                         frame = zeros(mag*ny,mag*nx,3);
-                        tilt = -pi/8*(i-1)/(nFrames-1);
+                        tilt = pi/8*(i-nFrames)/(nFrames-1);
                         rotation  = 0; %pi/60*sin((i-1)/nFrames*2*pi);
                         for iSlice = 1:nSlices
                             r = projectFrame(rstack(:,:,iSlice), h(iSlice), udata, vdata, udata*1.2, vdata*1.2, tilt, rotation,mag);
@@ -204,6 +204,7 @@ classdef plots
                 end
             end
             
+            
             function im = projectFrame(im,h,udata,vdata,xdata,ydata,tilt,rotation,mag)
                 u = udata([1 1 2 2])';
                 v = vdata([1 2 2 1])';
@@ -228,6 +229,6 @@ classdef plots
                 stack = max(0,stack-quantile(stack(:), 0.01));
                 stack = stack/max(stack(:));
             end
-        end                
+        end
     end
 end

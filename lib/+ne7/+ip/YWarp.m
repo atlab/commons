@@ -3,7 +3,7 @@ classdef YWarp < handle
     % that are already approximately aligned (within the convex
     % neighborhood of the cross-correlation).
     %
-    % Three polynomials are fitted for each frame: 
+    % Three polynomials are fitted for each frame:
     %    1)   dy = f(y)
     %    2)   dx = f(y)
     %    3)   dx = f(x)
@@ -46,7 +46,6 @@ classdef YWarp < handle
         yvec
         xvec
         degrees  % 3x1 vector for y(yi), x(yi), x(xi)
-        
     end
     
     methods
@@ -81,7 +80,7 @@ classdef YWarp < handle
             
             % zero out fast-changing parameters
             p(1+(1:degrees(1)))=0;
-            p(degrees(1)+1+(1:degrees(2)))=0;  
+            p(degrees(1)+1+(1:degrees(2)))=0;
             
             % fit image
             f = @(p) self.residual(img, p);
