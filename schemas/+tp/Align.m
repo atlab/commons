@@ -36,12 +36,12 @@ classdef Align < dj.Relvar & dj.AutoPopulate
     methods(Access=protected)
         function makeTuples(self, key)
             % read the green movie
-            disp 'reading tiff file'
             f = getFilename(common.TpScan(key));
             f = f{1};
             scim = ne7.scanimage.Reader(f);
             fov = fetch1(common.TpSession(key),'fov');
             
+            disp 'reading tiff file'
             [g, discardedFinalLine] = scim.read(1);
             gmean = mean(g,3);
             gmean = gmean-min(gmean(:));
@@ -63,7 +63,7 @@ classdef Align < dj.Relvar & dj.AutoPopulate
                 * scim.hdr.acq.scanAngleMultiplierSlow);
             
             pitchRatio = (tuple.um_width/tuple.px_width)/(tuple.um_height/tuple.px_height);
-            if pitchRatio > 1.02 || pitchRatio < 0.98
+            if abs(1-pitchRatio) > 0.02
                 warning 'non-isometric pixels'
             end
             

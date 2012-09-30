@@ -23,15 +23,20 @@ classdef Reader < handle
             
             % generate the file list
             self.filepaths = {};
-            for i=1:40
-                f = sprintf(filepath, i);
-                if ismember(f,self.filepaths)
-                    break
+            
+            if exist([filepath '.tif'],'file')
+                self.filepaths{1} = [filepath '.tif'];
+            else
+                for i=1:40
+                    f = sprintf('%s_%03u.tif', filepath, i);
+                    if ismember(f,self.filepaths)
+                        break
+                    end
+                    if ~exist(f, 'file')
+                        break
+                    end
+                    self.filepaths{end+1}=f;
                 end
-                if ~exist(f, 'file')
-                    break
-                end
-                self.filepaths{end+1}=f;
             end
             
             disp 'reading TIFF header...'
@@ -41,7 +46,7 @@ classdef Reader < handle
             evalc(self.info{1}(1).ImageDescription);
             self.hdr = state;
             self.nChans  = self.hdr.acq.numberOfChannelsSave;
-            self.nFrames = length(self.info)/self.nChans;
+            self.nFrames = sum(cellfun(@length, self.info))/self.nChans;
             self.nSlices = self.hdr.acq.numberOfZSlices;
             self.height = self.hdr.acq.linesPerFrame;
             self.width  = self.hdr.acq.pixelsPerLine;

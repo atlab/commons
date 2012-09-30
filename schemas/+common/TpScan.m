@@ -28,9 +28,10 @@ classdef TpScan < dj.Relvar
             for i = 1:n
                 key = keys(i);
                 assert(length(key)==1, 'one scan at a time please')
-                [path, basename] = fetch1(common.TpSession(key), 'data_path', 'basename');
-                f = getLocalPath(fullfile(path, basename));
-                filenames{i} = sprintf(f, key.scan_idx);
+                [path, basename] = fetch1(common.TpSession(key), ...
+                    'data_path', 'basename');
+                filenames{i} = sprintf('%s%03u', ...
+                    getLocalPath(fullfile(path, basename)), key.scan_idx);
             end
         end
 	end
