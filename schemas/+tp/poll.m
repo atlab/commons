@@ -20,6 +20,8 @@ while true
             parpopulate(tp.Cos2Map, varargin{:})
         case 4
             parpopulate(tp.FineAlign, varargin{:})
+        case 5
+            parpopulate(tp.FreqMap, varargin{:})
             
     end
     waitTime = 600-2*toc;

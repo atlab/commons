@@ -107,7 +107,7 @@ classdef Reader < handle
     methods(Access = private)
         function [fileNum, frameNum] = getFileNum(self, frameNum)
             for i=1:length(self.filepaths)
-                if frameNum < length(self.info{i})
+                if frameNum <= length(self.info{i})
                     fileNum = i;
                     break
                 end
