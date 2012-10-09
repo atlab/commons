@@ -8,10 +8,10 @@ classdef Grating < stims.core.Visual
         constants = struct(...
             'stimulus', 'grating', ...
             'monitor_distance', nan, ...  (cm)
-            'monitor_size', 19, ...       (inches) diagonal
-            'monitor_aspect', 1.25, ...
-            'resolution_x', 1280, ...     (pixels)
-            'resolution_y', 1024 ...      (pixels)
+            'monitor_size', 7, ...       (inches) diagonal
+            'monitor_aspect', 1.7, ...   (physical aspect ratio W/H)
+            'resolution_x', 1024, ...     (pixels)
+            'resolution_y',  600 ...      (pixels)
             )
         
         params = struct(...
@@ -22,12 +22,13 @@ classdef Grating < stims.core.Visual
             'aperture_x', 0, ... % 0=center, in units of half-diagonal
             'aperture_y', 0, ... % 0=center, in units of half-diagonal
             'grating', 'sqr', ...     enum('sqr','sin'), sinusoidal or square, etc.
-            'drift_fraction', 1, ...   the fraction of the trial duration taken by drifting grating
             'spatial_freq', 0.04, ...  cycles/degree
             'init_phase', 0, ...   between 0 and 1
             'trial_duration', 0.5, ... (s)
             'temp_freq', 2, ... (Hz)'
-            'direction', 0:22.5:359 ... (degrees) 0=north, 90=east
+            'direction', 0:22.5:359, ... (degrees) 0=north, 90=east
+            'phase2_fraction', 0,  ... between 0 and 1
+            'phase2_temp_freq', 2 ...
             )
     end
     
@@ -65,17 +66,18 @@ classdef Grating < stims.core.Visual
                 'spatial_freq'
                 'temp_freq'
                 'direction'
-                'drift_fraction'
                 'trial_duration'
+                'phase2_fraction'
+                'phase2_temp_freq'
                 }, fieldnames(cond))))
             
             % initialized grating
             if isempty(self.grating)
-                if ~strcmp(getenv('USER'), 'dimitri')
-                    % make sure that the monitor is set to the correct resolution
-                    assert(all(self.rect(3:4)==[self.constants.resolution_x self.constants.resolution_y]), ...
-                        'incorrect monitor resolution')
-                end
+%                 if ~strcmp(getenv('USER'), 'dimitri')
+%                     % make sure that the monitor is set to the correct resolution
+%                     assert(all(self.rect(3:4)==[self.constants.resolution_x self.constants.resolution_y]), ...
+%                         'incorrect monitor resolution')
+%                 end
                 radius = inf;
                 if cond.aperture_radius
                     radius = cond.aperture_radius * norm(self.rect(3:4))/2;
@@ -94,27 +96,34 @@ classdef Grating < stims.core.Visual
             % update direction to correspond to 0=north, 90=east, 180=south, 270=west
             direction = cond.direction + 90;
             
-            % display static grating
-            if cond.drift_fraction<1.0
-                Screen('DrawTexture', self.win, self.grating, [], [],...
-                    direction, [], [], [], [], kPsychUseTextureMatrixForRotation, [phase*360, freq, 0.495, 0]);
-                self.flip(false, false, true)
-                WaitSecs((1-cond.drift_fraction)*cond.trial_duration);
-            end
-            
+          
             % display drifting grating
-            driftFrames = floor(cond.drift_fraction * cond.trial_duration * self.screen.fps);
-            phaseIncrement = cond.temp_freq/self.screen.fps;
+            driftFrames1 = floor(cond.trial_duration * (1-cond.phase2_fraction) * self.screen.fps);
+            driftFrames2 = floor(cond.trial_duration * cond.phase2_fraction * self.screen.fps);
+            phaseIncrement1 = cond.temp_freq/self.screen.fps;
+            phaseIncrement2 = cond.phase2_temp_freq/self.screen.fps;
             offset = [cond.aperture_x cond.aperture_y]*norm(self.rect(3:4))/2;
             destRect = self.rect + [offset offset];
-            for frame = 1:driftFrames
+            % display phase1 grating
+            for frame = 1:driftFrames1
                 if self.escape, break, end
                 Screen('DrawTexture', self.win, self.grating, [], destRect, direction, [], [], [], [], ...
                     kPsychUseTextureMatrixForRotation, [phase*360, freq, 0.495, 0]);
                 if ~isempty(self.mask)
                     Screen('DrawTexture', self.win, self.mask);
                 end
-                phase = phase + phaseIncrement;
+                phase = phase + phaseIncrement1;
+                self.flip(false, false, frame==1)
+            end
+            % display phase2 grating
+            for frame = 1:driftFrames2
+                if self.escape, break, end
+                Screen('DrawTexture', self.win, self.grating, [], destRect, direction, [], [], [], [], ...
+                    kPsychUseTextureMatrixForRotation, [phase*360, freq, 0.495, 0]);
+                if ~isempty(self.mask)
+                    Screen('DrawTexture', self.win, self.mask);
+                end
+                phase = phase + phaseIncrement2;
                 self.flip(false, false, frame==1)
             end
         end

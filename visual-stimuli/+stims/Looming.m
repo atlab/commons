@@ -17,10 +17,10 @@ classdef Looming < stims.core.Visual
         constants = struct(...
             'stimulus', 'looming disk', ...
             'monitor_distance', nan, ...  (cm)
-            'monitor_size', 19, ...       (inches) diagonal
-            'monitor_aspect', 1.25, ...
-            'resolution_x', 1280, ...     (pixels)
-            'resolution_y', 1024 ...      (pixels)
+            'monitor_size', 7, ...       (inches) diagonal
+            'monitor_aspect', 1.7, ...   (physical aspect ratio W/H)
+            'resolution_x', 1024, ...     (pixels)
+            'resolution_y',  600 ...      (pixels)
             )
         
         params = struct(...

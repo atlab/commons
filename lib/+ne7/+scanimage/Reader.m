@@ -1,41 +1,62 @@
-classdef Reader
-    % Reader - ScanImage file interface
-    % Dimitri Yatsenko: 2012-02-05
+classdef Reader < handle
+    % scanimage.Reader - ScanImage file interface
     
-    properties(SetAccess = private)
-        filepath
-        info     % tif file info. One per frame
+    properties(SetAccess = protected)
+        filepaths
+        info     % output of iminfo
+        hdr      % header info
         nChans   % number of channels
-        nFrames  % total number of frames
-    end
-    
-    properties(Dependent)
-        hdr
+        nFrames  % total number of frames (may be less if interrupted)
+        nSlices  % number of slices
+        width    % in pixels
+        height   % in pixels
     end
     
     
     methods
         function self = Reader(filepath)
-            disp 'reading header'
-            self.filepath = filepath;
-            self.info = imfinfo(self.filepath);
-            self.nChans = ...
-                self.hdr.acq.savingChannel1 + ...
-                self.hdr.acq.savingChannel2 + ...
-                self.hdr.acq.savingChannel3 + ...
-                self.hdr.acq.savingChannel4;
-            self.nFrames = length(self.info)/self.nChans;
+            % The filepath must specify the full local path to the tiff file or
+            % multiple files. Multiple files are generated using sprintf
+            % numerical placeholders. For example, '/path/scan001_%03u.tif'
+            % will translate into /path/scan001_001.tif,
+            % /path/scan001_002.tif, etc
+            
+            % generate the file list
+            self.filepaths = {};
+            
+            if exist([filepath '.tif'],'file')
+                self.filepaths{1} = [filepath '.tif'];
+            else
+                for i=1:40
+                    f = sprintf('%s_%03u.tif', filepath, i);
+                    if ismember(f,self.filepaths)
+                        break
+                    end
+                    if ~exist(f, 'file')
+                        break
+                    end
+                    self.filepaths{end+1}=f;
+                end
+            end
+            
+            disp 'reading TIFF header...'
+            for i=1:length(self.filepaths)
+                self.info{i} = imfinfo(self.filepaths{i});
+            end
+            evalc(self.info{1}(1).ImageDescription);
+            self.hdr = state;
+            self.nChans  = self.hdr.acq.numberOfChannelsSave;
+            self.nFrames = sum(cellfun(@length, self.info))/self.nChans;
+            self.nSlices = self.hdr.acq.numberOfZSlices;
+            self.height = self.hdr.acq.linesPerFrame;
+            self.width  = self.hdr.acq.pixelsPerLine;
         end
         
         
-        function hdr = get.hdr(self)
-            hdr = self.getState(1);
+        function yes = hasChannel(self, iChan)
+            yes = ismember(iChan, 1:4) ...
+                && self.hdr.acq.(sprintf('savingChannel%u', iChan))==1;
         end
-        
-        function state = getState(self, i) %#ok<STOUT>
-            evalc(self.info(i).ImageDescription);  % evaluate state
-        end
-        
         
         
         function [img, discardedFinalLine] = read(self, iChan, frameIdx, removeFlyback)
@@ -43,45 +64,23 @@ classdef Reader
                 frameIdx = 1:self.nFrames;
             end
             removeFlyback = nargin<4 || removeFlyback;
-            assert(ismember(iChan,1:4), 'iChan must be between 1 and 4')
-            assert(eval(sprintf('self.hdr.acq.savingChannel%u',iChan))==1, ...
-                'Channel %d was not recorded', iChan)
+            assert(ismember(iChan,1:self.nChans), 'channel out of range')
+            assert(self.hasChannel(iChan), 'Channel %d was not recorded', iChan)
+            
+            % change iChan to the channel number in the gif file.
             for i=1:iChan
-                iChan = iChan - 1 + eval(sprintf('self.hdr.acq.savingChannel%u',i));
+                iChan = iChan - 1 + self.hasChannel(i);
             end
             
-            % --------------Added JR 9/6/12
-            % Based on: http://www.matlabtips.com/how-to-load-tiff-stacks-fast-really-fast/
-            % Requires tifflib.mexa64 in the class directory
-            img = zeros(self.info(1).Height, self.info(1).Width, length(frameIdx),'single');
-            mImage=self.info(1).Width;
-            nImage=self.info(1).Height;
-            
-            
-            FileID = tifflib('open',self.info(1).Filename,'r');
-            rps = tifflib('getField',FileID,Tiff.TagID.RowsPerStrip);
-
-            chanFrames = [iChan : self.nChans : (self.nFrames*self.nChans)];
-            for i=1:length(frameIdx(:))
-                tifflib('setDirectory',FileID,chanFrames(frameIdx(i)));
-                % Go through each strip of data.
-                rps = min(rps,mImage);
-                for r = 1:rps:mImage
-                    row_inds = r:min(mImage,r+rps-1);
-                    stripNum = tifflib('computeStrip',FileID,r);
-                    img(row_inds,:,i) = tifflib('readEncodedStrip',FileID,stripNum);
-                end
+            img = zeros(self.height, self.width, length(frameIdx), 'single');
+            for iFrame=1:length(frameIdx(:))
+                frameNum = (frameIdx(iFrame)-1)*self.nChans + iChan;
+                [fileNum, frameNum] = self.getFileNum(frameNum);
+                img(:,:,iFrame) = imread(self.filepaths{fileNum}, ...
+                    'Index', frameNum, 'Info', self.info{fileNum});
             end
-            tifflib('close',FileID);
-            % -----------------------
-            %
-            %             img = single(zeros(self.info(1).Height, self.info(1).Width, length(frameIdx)));
-            %             for iFrame=1:length(frameIdx(:))
-            %                 img(:,:,iFrame) = ...
-            %                     imread(self.info(1).Filename, ...
-            %                     (frameIdx(iFrame)-1)*self.nChans + iChan, 'Info', self.info);
-            %             end
             
+            % determine if the last line is the flyback line and discard it if so
             discardedFinalLine = false;
             if removeFlyback && ~self.hdr.acq.slowDimDiscardFlybackLine
                 if self.hdr.acq.slowDimFlybackFinalLine
@@ -95,9 +94,25 @@ classdef Reader
         
         
         function signal = readPhotodiode(self)
-            signal = self.read(3, [], false);  % assumed on 3rd channel
+            iChan = 3;   % assume 3rd channel
+            assert(self.hasChannel(iChan), ...
+                'Channel 3 (photodiode) was not recorded')
+            signal = self.read(iChan, [], false);
             signal = squeeze(mean(signal,2));
             signal = reshape(signal, 1, []);
+        end
+    end
+    
+    
+    methods(Access = private)
+        function [fileNum, frameNum] = getFileNum(self, frameNum)
+            for i=1:length(self.filepaths)
+                if frameNum < length(self.info{i})
+                    fileNum = i;
+                    break
+                end
+                frameNum = frameNum - length(self.info{i});
+            end
         end
     end
 end

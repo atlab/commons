@@ -12,7 +12,7 @@ classdef Cos2Map < dj.Relvar & dj.AutoPopulate
 
 	properties(Constant)
 		table = dj.Table('tp.Cos2Map')
-		popRel = tp.OriMap  % !!! update the populate relation
+		popRel = tp.OriMap & 'ndirections >= 4'
 	end
 
 	methods
@@ -27,8 +27,8 @@ classdef Cos2Map < dj.Relvar & dj.AutoPopulate
             % check that angles are uniformly sampled
             trialRel = tp.Sync(key)*psy.Trial*psy.Grating & 'trial_idx between first_trial and last_trial';
             phi = unique(fetchn(trialRel, 'direction'));
-            assert(length(phi)>=8 && mod(length(phi),2)==0 && all(diff(diff(phi))==0), ...
-                'the grating experiment did not provide sufficient angles for von Mises fit')
+            assert(mod(length(phi),2)==0 && all(diff(diff(phi))==0), ...
+                'An even number of directions must be uniformly distributed')
             
             [B, R2, dof, C] = fetch1(tp.OriMap(key), ...
                 'regr_coef_maps', 'r2_map', 'dof_map', 'regressor_cov');
