@@ -133,7 +133,7 @@ classdef plots
                 %catch
                 %end
                 figure
-                method = 'mg-yb';% with luminance';
+                method = 'mg-yb';%'four pictures';% with luminance';
                 switch method
                     case 'onespot'
                         subplot 121
@@ -297,7 +297,9 @@ classdef plots
             for key = fetch(opt.Structure(varargin{:}))'
                 figure
                 structImg=fetchn(opt.Structure(key),'structure_img');
-                structImg=double(structImg{end});
+                structMask=fetchn(opt.StructureMask(key),'structure_mask');
+                %structImg=double(structImg{end});
+                structImg=double(structImg{end}).*double(structMask{end});
                 imagesc(structImg); colormap('gray');
                 axis image
                 set(gca,'xdir','reverse')
