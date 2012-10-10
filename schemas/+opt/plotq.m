@@ -1,5 +1,4 @@
-classdef plots
-    
+classdef plotq
     
     methods(Static)
         function slider(src, event)
@@ -32,8 +31,8 @@ classdef plots
                     set(h(i),'userdata',pHandle,'buttondownfcn',@opt.plotq.moveMarker);
                 end
             end
-        end
-        
+        end                
+            
         function SpotMap(varargin)
             
             if ishandle(varargin{1})
@@ -57,13 +56,9 @@ classdef plots
                 h = findobj(101,'tag','index');
                 set(h,'string',[num2str(d.keyInd) '/' num2str(length(d.key))]);
             else
-                d.key = fetch(opt.SpotMap(varargin{:}))';
-                if ~length(d.key)
-                    warning('No tuples found');
-                    return
-                end
-                d.keyInd = 1;
                 figure(101)
+                d.key = fetch(opt.SpotMap(varargin{:}))';
+                d.keyInd = 1;
                 set(101,'userdata',d);
                 if length(d.key)>1
                     uicontrol('string','<<','units','pixels','position',[0 5 50 20],'tag','prev','callback',@opt.plotq.SpotMap)
@@ -176,7 +171,7 @@ classdef plots
                 error('Can only plot for 1 or 4 spots');
             end
             
-            
+           
             % Structural image
             figure(102)
             hold off
@@ -189,7 +184,7 @@ classdef plots
             p=[p(1) p(2)-.03 p(3) .03];
             uicontrol('style','slider','min',0,'max',127,'value',0,'units','normalized','position',p,'tag','min','callback',@opt.plotq.slider,'userdata',gca);
             uicontrol('style','slider','min',128,'max',255,'value',255,'units','normalized','position',p-[0 .03 0 0],'tag','max','callback',@opt.plotq.slider,'userdata',gca);
-            
+
             h = [findobj(101,'type','axes');findobj(102,'type','axes')];
             for i=1:length(h)
                 if  isempty(get(h(i),'userdata')) || ~ishandle(get(h(i),'userdata'))
@@ -199,22 +194,8 @@ classdef plots
                     set(h(i),'userdata',pHandle);
                 end
             end
-            
+                
             
         end
-        
-        function Structure(varargin)
-            for key = fetch(opt.Structure(varargin{:}))'
-                figure
-                structImg=fetchn(opt.Structure(key),'structure_img');
-                structMask=fetchn(opt.StructureMask(key),'structure_mask');
-                %structImg=double(structImg{end});
-                structImg=double(structImg{end}).*double(structMask{end});
-                imagesc(structImg); colormap('gray');
-                axis image
-                set(gca,'xdir','reverse')
-            end
-        end
-        
     end
 end
