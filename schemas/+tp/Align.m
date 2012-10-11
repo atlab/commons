@@ -119,9 +119,6 @@ classdef Align < dj.Relvar & dj.AutoPopulate
                 disp 'motion correction...'
                 movie = ne7.micro.MotionCorrection.apply(movie, motion);
             end
-            if ~exist(cacheFile, 'file') && exist(cachePath, 'dir')
-                save(cacheFile, 'movie', '-v7.3');
-            end            
         end
         
         
