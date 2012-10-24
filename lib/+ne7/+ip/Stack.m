@@ -127,6 +127,9 @@ classdef Stack < handle
         
         
         function seedMap = findLocalMaxima(self, minSeparation, zrange)
+            % Given the stack self, find local intensity peaks separated by
+            % at lease minSeparation microns whose z positions fall within
+            % zrange.
             
             % find local maxima
             sz = size(self.stack);

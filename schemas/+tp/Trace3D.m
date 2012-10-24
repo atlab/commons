@@ -31,6 +31,42 @@ classdef Trace3D < dj.Relvar
             
             opt = fetch(tp.SegOpt(key), '*');
             switch opt.seg_algo
+                case 'manual'
+                    validFrames = find(fetch1(tp.Segment3D & key, 'validity_trace'));
+                    movie = tp.utils.Movie(key);
+                    r = mean(movie.getFrames(2,validFrames),3);
+                    movie = movie.getFrames(1,validFrames);  % read entire movie
+                    g = mean(movie,3);
+                    imshowpair(g,r)
+                    bw = ne7.ui.drawCells;
+                    assert(~isempty(bw), 'user skipped segmentation, rolling back')
+                    
+                    
+                    
+                    
+                case 'DoG 3D'
+                    assert(false, 'not ready yet')
+                    disp 'filtering stack...'
+                    [stack, zstep, drift]  = fetch1(tp.Ministack(key)*tp.Motion3D, ...
+                        'green_slices', 'zstep', 'xyz_trajectory');
+                    validTimes = fetch1(tp.Segment3D & key, 'validity_trace');
+                    validTimes = logical(validTimes);
+                    zrange = mean(drift(validTimes,3)) + [-2.0 2.0];   % cell centroids must be within 2.5 microns of imaging plane
+                    
+                    stack = ne7.ip.Stack(stack, [px py zstep]);
+                    raster = fetch1(tp.Align(key), 'raster_correction');
+                    stack.applyRasterCorrection(raster)
+                    stack.applyAnscombe(10)
+                    sigma = 4*(0.6*opt.min_radius + 0.4*opt.max_radius);
+                    stack.removeBackground(sigma)
+                    sigma = 1.0*opt.min_radius;
+                    stack.lowpass3(sigma*[1 1 1])
+                    
+                    disp 'segmenting by intensity...'
+                    peaks = stack.findLocalMaxima(3.0*opt.min_radius, zrange);
+                    assert(false, 'not done yet')
+                    
+                    
                 case 'convex 3D'
                     disp 'filtering stack...'
                     % check tissue drift

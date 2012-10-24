@@ -38,6 +38,7 @@ classdef Reader < handle
                     self.filepaths{end+1}=f;
                 end
             end
+            assert(~isempty(self.filepaths), 'files not found')
             
             disp 'reading TIFF header...'
             for i=1:length(self.filepaths)
