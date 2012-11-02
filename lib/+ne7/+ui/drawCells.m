@@ -66,9 +66,9 @@ end
         disp 'Shift-click to delete pixels from mask'
         disp 'Press BACKSPACE to undo'
         disp 'Press 1-9 to set brush size'
-        disp 'Press ESC to discard edit'
-        disp 'Press ENTER to commit'
         disp 'Press SPACE to toggle outlines'
+        disp 'Press ESC to discard all edits'
+        disp 'Press ENTER to commit'
     end
 
     function idx = enumeratePixels

@@ -1,35 +1,35 @@
 %{
 tp.SegmentManual (imported) # manually outlined cells
--> tp.FineAlign
+-> tp.Segment
 -----
 manual_mask  :  longblob   # binary mask on the finely aligned image
 
 %}
 
-classdef SegmentManual < dj.Relvar & dj.AutoPopulate
+classdef SegmentManual < dj.Relvar
+    
     properties(Constant)
         table = dj.Table('tp.SegmentManual')
-        popRel = tp.FineAlign
     end
     
-    methods(Access=protected)
+    methods
+        
         function makeTuples(self, key)
             bw = tp.SegmentManual.outlineCells(key,[]);
             assert(~isempty(bw), 'user aborted segmentation')
             key.manual_mask = bw;
             self.insert(key)
         end
-    end
-    
-    
-    methods
+        
+        
         function redo(self)
             % edit existing segmentations
             for key = fetch(self)
                 bw = fetch1(tp.SegmentManual & key, 'manual_mask');
                 bw = tp.SegmentManual.outlineCells(key, bw);
                 if ~isempty(bw)
-                    del(tp.SegmentManual & key)
+                    del(tp.Segment & key)
+                    insert(tp.Segment, key)
                     key.manual_mask = bw;
                     insert(tp.SegmentManual, key)
                     disp 'updated mask'

@@ -1,13 +1,13 @@
 %{
 tp.OriMap (imported) # responses to directions of full-field drifting gratings
--> tp.Sync
--> tp.CaOpt
------
-ndirections     : tinyint    # number of directions
-regressor_cov   : longblob   # regressor covariance matrix,  nConds x nConds
-regr_coef_maps  : longblob   # regression coefficients, width x height x nConds
-r2_map          : longblob   # pixelwise r-squared after gaussinization
-dof_map         : longblob   # degrees of in original signal, width x height
+
+-> tp.OriDesign
+---
+ndirections                 : tinyint                       # number of directions
+regressor_cov               : longblob                      # regressor covariance matrix,  nConds x nConds
+regr_coef_maps              : longblob                      # regression coefficients, width x height x nConds
+r2_map                      : longblob                      # pixelwise r-squared after gaussinization
+dof_map                     : longblob                      # degrees of in original signal, width x height
 %}
 
 classdef OriMap < dj.Relvar & dj.AutoPopulate
@@ -37,7 +37,6 @@ classdef OriMap < dj.Relvar & dj.AutoPopulate
             opt = fetch(tp.CaOpt(key), '*');
             G = tp.OriMap.makeDesignMatrix(times, trialRel, opt);
             
-            % crop only the part that contains the stimulus
             X = bsxfun(@rdivide, X, mean(X))-1;  %use dF/F
             if opt.highpass_cutoff>0
                 k = hamming(round(fps/opt.highpass_cutoff)*2+1);

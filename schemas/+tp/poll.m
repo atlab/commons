@@ -8,18 +8,22 @@ while true
     switch cycle
         case 1
             parpopulate(tp.Align,     varargin{:})
+            
         case 2
             parpopulate(tp.Sync,    varargin{:})
             parpopulate(tp.OriMap,  varargin{:})
             parpopulate(tp.VonMap,  varargin{:})
-            parpopulate(tp.Cos2Map, varargin{:})            
+            parpopulate(tp.Cos2Map, varargin{:})
+            
         case 3
             parpopulate(tp.Ministack, varargin{:})
             parpopulate(tp.Motion3D,  varargin{:})
             parpopulate(tp.VonMap,  varargin{:})
             parpopulate(tp.Cos2Map, varargin{:})
+            
         case 4
             parpopulate(tp.FineAlign, varargin{:})
+            
         case 5
             parpopulate(tp.FreqMap, varargin{:})
             
