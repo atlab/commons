@@ -36,7 +36,7 @@ classdef Align < dj.Relvar & dj.AutoPopulate
     methods(Access=protected)
         function makeTuples(self, key)
             % read the green movie
-            f = getFilename(common.TpScan(key));
+            f = getFilename(common.TpScan & key);
             f = f{1};
             scim = ne7.scanimage.Reader(f);
             fov = fetch1(common.TpSession(key),'fov');

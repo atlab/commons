@@ -21,7 +21,10 @@ classdef TpScan < dj.Relvar
 			self.restrict(varargin)
         end
         
-        function filenames = getFilename(self)
+        function filenames = getFilename(self, increment, overrideBasename)
+            if nargin<=1
+                increment=0;
+            end
             keys = fetch(self);
             n = length(keys);
             filenames = cell(n,1);
@@ -30,8 +33,11 @@ classdef TpScan < dj.Relvar
                 assert(length(key)==1, 'one scan at a time please')
                 [path, basename] = fetch1(common.TpSession(key), ...
                     'data_path', 'basename');
+                if nargin>=3
+                    basename = overrideBasename;
+                end
                 filenames{i} = sprintf('%s%03u', ...
-                    getLocalPath(fullfile(path, basename)), key.scan_idx);
+                    getLocalPath(fullfile(path, basename)), key.scan_idx+increment);
             end
         end
 	end

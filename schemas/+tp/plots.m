@@ -204,8 +204,10 @@ classdef plots
                     end                    
                 end
                 
-                suptitle(sprintf('%d  %2d::%2d  #%d "%s"', ...
-                    key.animal_id, key.tp_session, key.scan_idx, key.ca_opt, ...
+                depth = fetch1(tp.Geometry & key, 'depth'); 
+                suptitle(sprintf('%d  %2d::%2d #%d z=%1.1f\\mum "%s"', ...
+                    key.animal_id, key.tp_session, key.scan_idx, ...
+                    key.ca_opt, depth,  ...
                     fetch1(common.TpScan(key), 'scan_notes')))
                 
                 f = sprintf('~/figures/ori_maps/fineorimap_%05d_%d_%03d_%02d', ...
@@ -226,7 +228,7 @@ classdef plots
                 xlabel time(s)
                 ylabel offset(\mu m)
                 legend x y z
-                grid on
+                grid one
                 drawnow
             end
         end

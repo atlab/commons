@@ -44,10 +44,11 @@ classdef SegmentManual < dj.Relvar
             [g,r] = fetch1(tp.FineAlign & key, 'fine_green_img', 'fine_red_img');
             g = sqrt(g);
             r = sqrt(r);
-            g = max(0,g-quantile(g(:),0.1));
-            r = max(0,r-quantile(r(:),0.1));
+            g = max(0,g-quantile(g(:),0.01));
+            r = max(0,r-quantile(r(:),0.01));
             f = figure;
-            imshowpair(g,r)
+            %imshowpair(g,r)
+            imshow(g/max(g(:)))
             bw = ne7.ui.drawCells(bw);
             close(f)
         end
