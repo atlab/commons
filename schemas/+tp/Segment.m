@@ -2,7 +2,6 @@
 tp.Segment (imported) # various cell segmentations in the finely aligned movie
 
 -> tp.SegOpt
--> tp.Motion3D
 -> tp.FineAlign
 ---
 %}

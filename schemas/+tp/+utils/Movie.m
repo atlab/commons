@@ -38,7 +38,6 @@ classdef Movie < ne7.scanimage.Reader
             assert(max(self.dx,self.dy)/min(self.dx,self.dy)<1.1, ...
                 'cannot process non-isometric pixels')
             self.nFrames = size(self.raster,1);
-            self.degrees = [0 0 -1];
             
             % recenter motion
             self.motion = bsxfun(@minus, double(self.motion), median(double(self.motion)));            

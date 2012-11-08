@@ -228,7 +228,7 @@ classdef plots
                 xlabel time(s)
                 ylabel offset(\mu m)
                 legend x y z
-                grid one
+                grid on
                 drawnow
             end
         end
@@ -260,7 +260,7 @@ classdef plots
         
         function Ministack(varargin)
             for key = fetch(tp.Ministack(varargin{:}) & 'green_slices is not null' & 'red_slices is not null' & tp.Align)'
-                f = sprintf('~/figures/ministacks/mini%05d_%d_%02d.gif', key.animal_id, key.tp_session, key.scan_idx);
+                f = sprintf('./mini%05d_%d_%02d.gif', key.animal_id, key.tp_session, key.scan_idx);
                 if ~exist(f, 'file')
                     [zstep, gstack, rstack] = fetch1(tp.Ministack(key),'zstep', 'green_slices', 'red_slices');
                     [sy,sx] = fetch1(tp.Align(key),'um_height','um_width');
