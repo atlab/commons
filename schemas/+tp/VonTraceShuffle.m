@@ -4,14 +4,14 @@ tp.VonTraceShuffle (computed) # Von Mises tuning with resampling
 -> tp.Trace
 -> tp.CaOpt
 -----
-vt_pref  : float   # (radians) preferred direction
-vt_base  : float   # von Mises base value
-vt_sharp : float   # sharpness
-vt_amp1  : float   # amplitude at preferred direction
-vt_amp2  : float   # amplitude at opposite direction
-vt_r2    : float   # variance explained
-vt_p     : float   # p-value of variance explained (shuffle test)
-nshuffles: float   # the number of shuffles used to compute p-value
+vt_pref  : float  # (radians) preferred direction
+vt_base  : float  # von Mises base value
+vt_sharp : float  # sharpness
+vt_amp1  : float  # amplitude at preferred direction
+vt_amp2  : float  # amplitude at opposite direction
+vt_r2    : float  # variance explained
+vt_p     : float  # p-value of variance explained (shuffle test)
+nshuffles: int    # the number of shuffles used to compute p-value
 %}
 
 classdef VonTraceShuffle < dj.Relvar & dj.AutoPopulate
@@ -41,19 +41,20 @@ classdef VonTraceShuffle < dj.Relvar & dj.AutoPopulate
             trials = fetch(trials, 'direction', 'flip_times');
             opt = fetch(tp.CaOpt(key), '*');
             
-            [r2, pref, base, sharp, amp1, amp2] = tp.VonTraceShuffle.regress(times,X,trials,opt);
+            [r2, pref, base, sharp, amp1, amp2] = tp.VonTraceShuffle.regress(times,X,trials,opt,false);
             pvalue = 0.5;
             nshuffles = 1e4;
             for i=1:nshuffles
                 if ~mod(sqrt(i),1)
                     fprintf('shuffles %4d/%4d\n', i, nshuffles);
                 end
-                pvalue = pvalue + (r2 <= tp.VonTraceShuffle.regress(times,X,trials(randperm(end)),opt));
+                pvalue = pvalue + (r2 <= tp.VonTraceShuffle.regress(times,X,trials,opt,true));
             end
             pvalue = pvalue/(nshuffles+0.5);
             
             for i=1:length(keys)
                 tuple = keys(i);
+                tuple.nshuffles = nshuffles;
                 tuple.vt_pref = pref(i);
                 tuple.vt_base = base(i);
                 tuple.vt_sharp = sharp(i);
@@ -67,13 +68,20 @@ classdef VonTraceShuffle < dj.Relvar & dj.AutoPopulate
     end
     
     methods(Static)
-        function [r2,pref, base, sharp, amp1, amp2] = regress(times,X,trials,opt)
+        function [r2,pref, base, sharp, amp1, amp2] = regress(times,X,trials,opt,doShuffle)
+            if doShuffle
+                directions = [trials(randperm(end)).direction];
+                for i=1:length(trials)
+                    trials(i).direction = directions(i);
+                end
+            end
             G = tp.OriDesign.makeDesignMatrix(times, trials, opt);
             G = bsxfun(@minus, G, mean(G));
             B = ne7.stats.regress(X, G, 0);
             von = fit(ne7.rf.VonMises2, B);
             F = von.compute(von.phi);
             r2 = 1-sum((X-G*F').^2)./sum(X.^2);
+            
             if nargout>1
                 base = von.w(:,1);
                 amp1 = von.w(:,2);
