@@ -27,15 +27,12 @@ classdef OriMap < dj.Relvar & dj.AutoPopulate
         
         function makeTuples(self, key)
             disp 'loading movie...'
-            times = fetch1(tp.Sync(key), 'frame_times');
             X = getMovie(tp.Align(key),1);
             sz = size(X);
             fps = fetch1(tp.Align(key), 'fps');
             X = reshape(X,[],sz(3))';
             
-            trialRel = tp.Sync(key)*psy.Trial*psy.Grating & 'trial_idx between first_trial and last_trial';
-            opt = fetch(tp.CaOpt(key), '*');
-            G = tp.OriMap.makeDesignMatrix(times, trialRel, opt);
+            G = fetch1(tp.OriDesign & key, 'design_matrix');
             
             X = bsxfun(@rdivide, X, mean(X))-1;  %use dF/F
             if opt.highpass_cutoff>0
@@ -60,34 +57,7 @@ classdef OriMap < dj.Relvar & dj.AutoPopulate
     
     methods(Static)
         function G = makeDesignMatrix(times, trialRel, opt)
-            alpha = @(x,a) (x>0).*x/a/a.*exp(-x/a);  % response shape
-            
-            % relevant trials
-            trials = fetch(trialRel, 'direction', 'flip_times');
-            [~,~,condIdx] = unique([trials.direction]);
-            
-            disp 'constructing design matrix...'
-            G = zeros(length(times), length(unique(condIdx)), 'single');
-            for iTrial = 1:length(trials)
-                trial = trials(iTrial);
-                onset = trial.flip_times(2);  % second flip is the start of the drifting phase
-                offset = trial.flip_times(end);
-                switch opt.transient_shape
-                    case 'onAlpha'
-                        ix = find(times >= onset & times < onset+6*opt.tau);
-                        G(ix, condIdx(iTrial)) = G(ix, condIdx(iTrial)) ...
-                            + alpha(times(ix)-onset,opt.tau)';
-                    case 'exp'
-                        ix = find(times>=onset & times < offset);
-                        G(ix, condIdx(iTrial)) = G(ix, condIdx(iTrial)) ...
-                            + 1 - exp((onset-times(ix))/opt.tau)';
-                        ix = find(times>=offset & times < offset+5*opt.tau);
-                        G(ix, condIdx(iTrial)) = G(ix, condIdx(iTrial)) ...
-                            + (1-exp((onset-offset)/opt.tau))*exp((offset-times(ix))/opt.tau)';
-                    otherwise
-                        assert(false)
-                end
-            end
+            error 'replace tp.OriMap.makeDesignMatrix with tp.OriDesign.makeDesignMatrix'
         end
-    end
+    end    
 end

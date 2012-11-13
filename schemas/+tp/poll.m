@@ -23,8 +23,6 @@ while true
             
         case 4
             parpopulate(tp.FineAlign, varargin{:})
-            parpopulate(tp.FineOriMap, varargin{:})
-            parpopulate(tp.FineVonMap, varargin{:})
             
         case 5
             parpopulate(tp.FreqMap, varargin{:})
@@ -32,6 +30,9 @@ while true
         case 6
             parpopulate(tp.FineOriMap, varargin{:})
             parpopulate(tp.FineVonMap, varargin{:})
+            
+        case 7
+            parpopulate(tp.Extract)
             
             
     end
