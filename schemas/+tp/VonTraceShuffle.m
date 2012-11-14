@@ -53,7 +53,7 @@ classdef VonTraceShuffle < dj.Relvar & dj.AutoPopulate
             pvalue = pvalue/(nshuffles+0.5);
             
             for i=1:length(keys)
-                tuple = keys(i);
+                tuple = dj.struct.join(keys(i), key);
                 tuple.nshuffles = nshuffles;
                 tuple.vt_pref = pref(i);
                 tuple.vt_base = base(i);

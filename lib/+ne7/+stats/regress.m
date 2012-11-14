@@ -19,13 +19,11 @@ assert(isreal(X))
 B = (G/(G'*G))'*X;              % regression coefficients
 if nargout>1
     R2 = sum(X.^2);                 % initial variance
-    if nargout>2
-        xf = abs(fft(X));               % power spectrum
-        dof = sum(xf).^2./sum(xf.^2);   % degrees of freedom in original signal
-        X = X - G*B;                    % residual
-        R2 = 1-sum(X.^2)./R2;           % R-squared
-        dof1 = size(B,1)+addDoF;        % degrees of freedom in model
-        Fp = 1-fcdf(R2.*dof/dof1, dof1, dof);   % p-value of the F distribution
-    end
+    xf = abs(fft(X));               % power spectrum
+    dof = sum(xf).^2./sum(xf.^2);   % degrees of freedom in original signal
+    X = X - G*B;                    % residual
+    R2 = 1-sum(X.^2)./R2;           % R-squared
+    dof1 = size(B,1)+addDoF;        % degrees of freedom in model
+    Fp = 1-fcdf(R2.*dof/dof1, dof1, dof);   % p-value of the F distribution
 end
 end

@@ -38,7 +38,8 @@ classdef Trace < dj.Relvar
                 case 'manual'
                     mask = logical(fetch1(tp.SegmentManual & key, 'manual_mask'));
                     regions = regionprops(mask,...
-                        'PixelIdxList','MajorAxisLength','MinorAxisLength','Centroid','EquivDiameter');
+                        'Area', 'PixelIdxList','MajorAxisLength','MinorAxisLength','Centroid','EquivDiameter');
+                    
                 otherwise
                     error 'not done yet'
             end
@@ -50,7 +51,7 @@ classdef Trace < dj.Relvar
             for iTrace = 1:length(regions)
                 pixels = regions(iTrace).PixelIdxList;
                 tuple.trace_idx = iTrace;
-                tuple.gtrace = single(mean(X(pixels,:)))';
+                tuple.gtrace = single(mean(X(pixels,:),1))';
                 tuple.centroid_x = regions(iTrace).Centroid(1);
                 tuple.centroid_y = regions(iTrace).Centroid(2);
                 tuple.mask_pixels = regions(iTrace).PixelIdxList;
