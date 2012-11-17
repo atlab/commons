@@ -54,7 +54,7 @@ classdef Align < dj.Relvar & dj.AutoPopulate
             tuple.fps = scim.hdr.acq.frameRate;
             tuple.dwell_time = scim.hdr.acq.pixelTime*1e6;
             
-            tuple.nframes = scim.hdr.acq.numberOfFrames;
+            tuple.nframes = scim.nFrames;
             tuple.px_width = size(g,2);
             tuple.px_height = size(g,1);
             tuple.um_width  = abs(fov/(scim.hdr.acq.zoomFactor * scim.hdr.acq.baseZoomFactor) ...

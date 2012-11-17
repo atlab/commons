@@ -38,6 +38,7 @@ classdef Reader < handle
                     self.filepaths{end+1}=f;
                 end
             end
+            assert(~isempty(self.filepaths), 'files not found')
             
             disp 'reading TIFF header...'
             for i=1:length(self.filepaths)
@@ -45,7 +46,13 @@ classdef Reader < handle
             end
             evalc(self.info{1}(1).ImageDescription);
             self.hdr = state;
-            self.nChans  = self.hdr.acq.numberOfChannelsSave;
+            
+            %self.nChans  = self.hdr.acq.numberOfChannelsSave; %% Changed JR 11/16/12
+            self.nChans = self.hdr.acq.savingChannel1 +...
+                          self.hdr.acq.savingChannel2 +...
+                          self.hdr.acq.savingChannel3 +...
+                          self.hdr.acq.savingChannel4;
+            
             self.nFrames = sum(cellfun(@length, self.info))/self.nChans;
             self.nSlices = self.hdr.acq.numberOfZSlices;
             self.height = self.hdr.acq.linesPerFrame;
@@ -97,6 +104,15 @@ classdef Reader < handle
             iChan = 3;   % assume 3rd channel
             assert(self.hasChannel(iChan), ...
                 'Channel 3 (photodiode) was not recorded')
+            signal = self.read(iChan, [], false);
+            signal = squeeze(mean(signal,2));
+            signal = reshape(signal, 1, []);
+        end
+        
+         function signal = readCh4(self)
+            iChan = 4;   
+            assert(self.hasChannel(iChan), ...
+                'Channel 4 was not recorded')
             signal = self.read(iChan, [], false);
             signal = squeeze(mean(signal,2));
             signal = reshape(signal, 1, []);

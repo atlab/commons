@@ -14,7 +14,7 @@ classdef FlipCode
             
             % all times are in seconds
             
-            requiredFlips = 1000;
+            requiredFlips = 200;
             maxDiscrepancy = 0.0075;  % (s) - this may be heigh because of slow time constants of LCD monitors
             
             times = [];

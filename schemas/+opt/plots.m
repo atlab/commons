@@ -29,7 +29,7 @@ classdef plots
                     axes(h(i));
                     hold on
                     pHandle = plot(xy(1),xy(2),'marker','x','linewidth',2);
-                    set(h(i),'userdata',pHandle,'buttondownfcn',@opt.plotq.moveMarker);
+                    set(h(i),'userdata',pHandle,'buttondownfcn',@opt.plots.moveMarker);
                 end
             end
         end
@@ -66,9 +66,9 @@ classdef plots
                 figure(101)
                 set(101,'userdata',d);
                 if length(d.key)>1
-                    uicontrol('string','<<','units','pixels','position',[0 5 50 20],'tag','prev','callback',@opt.plotq.SpotMap)
+                    uicontrol('string','<<','units','pixels','position',[0 5 50 20],'tag','prev','callback',@opt.plots.SpotMap)
                     uicontrol('style','text','units','pixels','position',[60 5 50 20],'tag','index','string',[num2str(d.keyInd) '/' num2str(length(d.key))])
-                    uicontrol('string','>>','units','pixels','position',[120 5 50 20],'tag','next','callback',@opt.plotq.SpotMap)
+                    uicontrol('string','>>','units','pixels','position',[120 5 50 20],'tag','next','callback',@opt.plots.SpotMap)
                 end
             end
             
@@ -109,7 +109,7 @@ classdef plots
                 subplot(2,1,1)
                 hold off
                 h=imagesc(img,[-1 1]*max(abs(img(:))));
-                set(h,'buttondownfcn',@opt.plotq.moveMarker);
+                set(h,'buttondownfcn',@opt.plots.moveMarker);
                 colormap('summer')
                 axis image
                 set(gca,'xdir','reverse','xtick',[],'ytick',[])
@@ -117,8 +117,8 @@ classdef plots
                 p=get(gca,'position');
                 p=[p(1) p(2)-.01 p(3) .03];
                 c=caxis;
-                uicontrol('style','slider','min',c(1)-.005,'max',c(1)+.005,'value',c(1),'units','normalized','position',p,'tag','min','callback',@opt.plotq.slider,'userdata',gca);
-                uicontrol('style','slider','min',c(2)-.005,'max',c(2)+.005,'value',c(2),'units','normalized','position',p-[0 .03 0 0],'tag','max','callback',@opt.plotq.slider,'userdata',gca);
+                uicontrol('style','slider','min',c(1)-.005,'max',c(1)+.005,'value',c(1),'units','normalized','position',p,'tag','min','callback',@opt.plots.slider,'userdata',gca);
+                uicontrol('style','slider','min',c(2)-.005,'max',c(2)+.005,'value',c(2),'units','normalized','position',p-[0 .03 0 0],'tag','max','callback',@opt.plots.slider,'userdata',gca);
             elseif size(amp,3)==4
                 
                 % Four spots - separate subplots
@@ -128,15 +128,15 @@ classdef plots
                     hold off
                     img = amp(:,:,i);
                     h=imagesc(img,[-1 1]*max(abs(img(:))));
-                    set(h,'buttondownfcn',@opt.plotq.moveMarker);
+                    set(h,'buttondownfcn',@opt.plots.moveMarker);
                     colormap('bone')
                     axis image
                     set(gca,'xdir','reverse','xtick',[],'ytick',[])
                     p=get(gca,'position');
                     p=[p(1) p(2)-.01 p(3) .03];
                     c=caxis;
-                    uicontrol('style','slider','min',c(1)-.005,'max',c(1)+.005,'value',c(1),'units','normalized','position',p,'tag','min','callback',@opt.plotq.slider,'userdata',gca);
-                    uicontrol('style','slider','min',c(2)-.005,'max',c(2)+.005,'value',c(2),'units','normalized','position',p-[0 .03 0 0],'tag','max','callback',@opt.plotq.slider,'userdata',gca);
+                    uicontrol('style','slider','min',c(1)-.005,'max',c(1)+.005,'value',c(1),'units','normalized','position',p,'tag','min','callback',@opt.plots.slider,'userdata',gca);
+                    uicontrol('style','slider','min',c(2)-.005,'max',c(2)+.005,'value',c(2),'units','normalized','position',p-[0 .03 0 0],'tag','max','callback',@opt.plots.slider,'userdata',gca);
                 end
                 
                 % Four spots - mgyb
@@ -167,7 +167,7 @@ classdef plots
                 % img = hsv2rgb(img);
                 
                 h=imshow(img);
-                set(h,'buttondownfcn',@opt.plotq.moveMarker);
+                set(h,'buttondownfcn',@opt.plots.moveMarker);
                 keyTitle(key);
                 axis image
                 set(gca,'xdir','reverse')
@@ -181,14 +181,14 @@ classdef plots
             figure(102)
             hold off
             h=imagesc(structImg); colormap('gray');
-            set(h,'buttondownfcn',@opt.plotq.moveMarker);
+            set(h,'buttondownfcn',@opt.plots.moveMarker);
             keyTitle(structKey);
             axis image
             set(gca,'xdir','reverse','xtick',[],'ytick',[])
             p=get(gca,'position');
             p=[p(1) p(2)-.03 p(3) .03];
-            uicontrol('style','slider','min',0,'max',127,'value',0,'units','normalized','position',p,'tag','min','callback',@opt.plotq.slider,'userdata',gca);
-            uicontrol('style','slider','min',128,'max',255,'value',255,'units','normalized','position',p-[0 .03 0 0],'tag','max','callback',@opt.plotq.slider,'userdata',gca);
+            uicontrol('style','slider','min',0,'max',127,'value',0,'units','normalized','position',p,'tag','min','callback',@opt.plots.slider,'userdata',gca);
+            uicontrol('style','slider','min',128,'max',255,'value',255,'units','normalized','position',p-[0 .03 0 0],'tag','max','callback',@opt.plots.slider,'userdata',gca);
             
             h = [findobj(101,'type','axes');findobj(102,'type','axes')];
             for i=1:length(h)
