@@ -14,25 +14,32 @@ classdef Movie < ne7.scanimage.Reader
     
     
     methods
-        function self = Movie(key)           
+        function self = Movie(key, warp, warpDegree)           
             % get the filename and call superclass' constructor
             assert(count(tp.Align & key)==1, 'One Movie at a time please')
             filename = getFilename(common.TpScan(key));
             self = self@ne7.scanimage.Reader(filename{1});
             self.key = key;
+            if nargin < 2
+                if exists(tp.FineAlign & key)
+                    [warp, warpDegree] = ...
+                        fetch1(tp.FineAlign & key, 'warp_polynom', 'warp_degree');
+                else
+                    warp = fech1(tp.Align & key, 'motion_correction');
+                    warpDegree = 0;
+                end
+            end
+            self.motion = warp;
+            self.degrees = [warpDegree warpDegree size(self.motion,2)-2*(warpDegree+1)];
             
-            [self.raster, self.motion, self.fps, self.dx, self.dy] = ...
-                fetch1(tp.Align & key, ...
-                'raster_correction', 'motion_correction', 'fps', ...
+            [self.raster, self.fps, self.dx, self.dy] = ...
+                fetch1(tp.Align & key, 'raster_correction', 'fps', ...
                 'um_width/px_width->px', 'um_height/px_height->py');
             assert(max(self.dx,self.dy)/min(self.dx,self.dy)<1.1, ...
-                'tp.FineAlign cannot process non-isometric pixels')
+                'cannot process non-isometric pixels')
             self.nFrames = size(self.raster,1);
-            self.degrees = [0 0 -1];
-            if exists(tp.FineAlign & self.key)
-                [self.motion, degree] = fetch1(tp.FineAlign & self.key, 'warp_polynom', 'warp_degree');
-                self.degrees = [degree degree size(self.motion,2)-2*(degree+1)];
-            end
+            
+            % recenter motion
             self.motion = bsxfun(@minus, double(self.motion), median(double(self.motion)));            
         end
         
@@ -43,6 +50,18 @@ classdef Movie < ne7.scanimage.Reader
             frames = ne7.micro.RasterCorrection.apply(frames, self.raster(frameIdx,:,:));                        
             for i=1:length(frameIdx)
                 frames(:,:,i) = ne7.ip.YWarp.apply(frames(:,:,i), self.motion(frameIdx(i),:), self.degrees);
+            end
+        end
+        
+        
+        function meanFrame = getMeanFrame(self, channel, frameIdx)
+            if nargin<3
+                frameIdx = 1:self.nFrames;
+            end
+            n = length(frameIdx);
+            meanFrame = 0;
+            for i = frameIdx(:)'
+                meanFrame = meanFrame + double(self.getFrames(channel, i))/n;
             end
         end
         

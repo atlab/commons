@@ -30,15 +30,12 @@ classdef FineAlign < dj.Relvar & dj.AutoPopulate
             
             % compute the most typical frame
             disp 'computing subpixel correction...'
-            key.warp_degree = 2;
-            key.xwarp_degree = 4;
-            ggframe = 0;
-            rrframe = 0;
-            rcount = 0;
+            tuple = key;
+            tuple.warp_degree = 2;
+            tuple.xwarp_degree = 4;
             yWarp = ne7.ip.YWarp(gframe);
-            hasRedChannel = scim.hasChannel(2);
-            degrees = [key.warp_degree*[1 1] key.xwarp_degree];
-            key.warp_polynom = zeros(scim.nFrames, sum(degrees)+2, 'single');
+            degrees = [tuple.warp_degree*[1 1] tuple.xwarp_degree];
+            tuple.warp_polynom = zeros(scim.nFrames, sum(degrees)+2, 'single');
             p = zeros(1, sum(degrees)+2);
             for iFrame = 1:scim.nFrames
                 if ~mod(sqrt(iFrame),1)
@@ -49,27 +46,18 @@ classdef FineAlign < dj.Relvar & dj.AutoPopulate
                 frame = double(scim.read(1, iFrame));
                 frame = ne7.micro.RasterCorrection.apply(frame, raster(iFrame,:,:));
                 
-                % fit polynomials         
+                % fit polynomials
                 yWarp.fit(frame, degrees, p);
                 p = yWarp.coefs;
-                key.warp_polynom(iFrame, :) = p;
-                frame = ne7.ip.YWarp.apply(frame, p, degrees);
-                ggframe = ggframe + frame;
-                
-                if hasRedChannel && ~mod(iFrame-10,20)
-                    % average every 20th red frame
-                    rcount = rcount + 1;
-                    frame = double(scim.read(2, iFrame));
-                    frame = ne7.micro.RasterCorrection.apply(frame, raster(iFrame,:,:));
-                    frame = ne7.ip.YWarp.apply(frame, p, degrees);
-                    rrframe = rrframe + frame;
-                end
+                tuple.warp_polynom(iFrame, :) = p;
             end
             
-            key.fine_green_img = single(ggframe/scim.nFrames);
-            key.fine_red_img   = single(rrframe/rcount);
+            m = tp.utils.Movie(key, tuple.warp_polynom, tuple.xwarp_degree);
+            tuple.fine_green_img = m.getMeanFrame(1);
+            tuple.fine_red_img = m.getMeanFrame(2);
             
-            self.insert(key)
+            
+            self.insert(tuple)
         end
     end
 end

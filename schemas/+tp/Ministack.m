@@ -10,36 +10,32 @@ red_slices=null             : longblob                      # same thing for cha
 %}
 
 classdef Ministack < dj.Relvar & dj.AutoPopulate
-
-	properties(Constant)
-		table = dj.Table('tp.Ministack')
-		popRel = common.TpScan 
-	end
-
-	methods
-		function self = Ministack(varargin)
-			self.restrict(varargin)
-		end
-	end
-
-	methods(Access=protected)
-		function makeTuples(self, key)
-            
-            % make candidate names
-            [path, basename] = fetch1(common.TpSession(key), 'data_path', 'basename');
-            path = getLocalPath(path);
-            
+    
+    properties(Constant)
+        table = dj.Table('tp.Ministack')
+        popRel = common.TpScan
+    end
+    
+    methods
+        function self = Ministack(varargin)
+            self.restrict(varargin)
+        end
+    end
+    
+    methods(Access=protected)
+        function makeTuples(self, key)
             % ministacks are stored either in ministack###.tif with same
-            % number or scan###.tif with next number
+            % number or scan###.tif with next number.
             s = [];
-            key.filepath = fullfile(path, sprintf('ministack%03u.tif', key.scan_idx));
+            key.filepath = getFilename(common.TpScan & key, 0, 'ministack');
+            key.filepath = key.filepath{1};
             try
                 s = ne7.scanimage.Reader(key.filepath);
             catch %#ok<CTCH>
-                key.filepath = fullfile(path, sprintf([basename '%03u.tif'], key.scan_idx+1));
-                try 
+                key.filepath = getFilename(common.TpScan & key, 1);
+                key.filepath = key.filepath{1};
+                try
                     s = ne7.scanimage.Reader(key.filepath);
-                    key.filepath = f;                    
                 catch %#ok<CTCH>
                     key.filepath = '';
                     disp 'No ministack was found'
@@ -51,7 +47,7 @@ classdef Ministack < dj.Relvar & dj.AutoPopulate
                 else
                     disp 'loading stack'
                     key.zstep = s.hdr.acq.zStepSize;
-                    nz = s.hdr.acq.numberOfZSlices;                    
+                    nz = s.hdr.acq.numberOfZSlices;
                     key.green_slices = single(collapseRepeats(s.read(1),nz));
                     try
                         key.red_slices = single(collapseRepeats(s.read(2),nz));
@@ -61,9 +57,9 @@ classdef Ministack < dj.Relvar & dj.AutoPopulate
                 end
             end
             
-			self.insert(key)
+            self.insert(key)
         end
-	end
+    end
 end
 
 

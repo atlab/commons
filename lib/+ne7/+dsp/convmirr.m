@@ -5,10 +5,10 @@
 % Dimitri Yatsenko, 2010-09-07
 
 function x=convmirr(x,k)
-assert( size(k,2)==1, 'kernel must be a column' );
+assert(size(k,2)==1, 'kernel must be a column')
 l = size(x,1);
 n = length(k);
-assert( l>n, 'kernel must be shorter than signal' );
+assert(l>n, 'kernel must be shorter than signal')
 
 % mirror boundaries in time
 n = floor(n/2);
