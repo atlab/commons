@@ -25,7 +25,7 @@ classdef Movie < ne7.scanimage.Reader
                     [warp, warpDegree] = ...
                         fetch1(tp.FineAlign & key, 'warp_polynom', 'warp_degree');
                 else
-                    warp = fech1(tp.Align & key, 'motion_correction');
+                    warp = fetch1(tp.Align & key, 'motion_correction');
                     warpDegree = 0;
                 end
             end
