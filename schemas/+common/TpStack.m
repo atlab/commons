@@ -21,36 +21,26 @@ classdef TpStack < dj.Relvar
             self.restrict(varargin)
         end
         
-        function filenames = getFilename(self)
-            keys = fetch(self);
-            n = length(keys);
-            filenames = cell(n,1);
-            for i = 1:n
-                key = keys(i);
-                path = fetch1(common.TpSession(key), 'data_path');
-                basename = 'stack';
-                f = getLocalPath(fullfile(path, basename));
-                filenames{i} = sprintf([f '%03u.tif'], key.stack_idx);
-            end
-        end
         
         function [r,g] = getStack(self)
             key = fetch(self);
             assert(length(key)==1, 'one stack at a time please')
-            f = self.getFilename;
-            s = trove.Scim(f{1});
+            f = getFilename(common.TpScan & key,0,'stack');
+            f=f{1};
+            scim = ne7.scanimage.Reader(f);
             disp 'reading green channel...'
-            g = s.read(1);
+            g = scim.read(1);
             disp 'reading red channel...'
-            r = s.read(2);
+            r = scim.read(2);
         end
         
         
         function descend(self)
             key = fetch(self);
             assert(length(key)==1, 'one stack at a time please')
-            f = self.getFilename;
-            scim = trove.Scim(f{1});
+            f = getFilename(common.TpScan & key);
+            f=f{1};
+            scim = ne7.scanimage.Reader(f);
             
             slab = 200;
             height = 1200;
