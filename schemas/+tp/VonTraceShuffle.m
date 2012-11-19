@@ -31,7 +31,7 @@ classdef VonTraceShuffle < dj.Relvar & dj.AutoPopulate
             X = double([X{:}]);
             fps = fetch1(tp.Align & key, 'fps');
             
-            % condition traces
+            % compute dF/F
             X = bsxfun(@rdivide, X, mean(X));
             X = ne7.dsp.subtractBaseline(X,fps,0.03);
             
