@@ -14,7 +14,7 @@ classdef OriMap < dj.Relvar & dj.AutoPopulate
     
     properties(Constant)
         table = dj.Table('tp.OriMap')
-        popRel = tp.Sync*tp.CaOpt & psy.Grating
+        popRel = tp.OriDesign
     end
     
     methods

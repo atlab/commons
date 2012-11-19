@@ -12,7 +12,7 @@ classdef FineOriMap < dj.Relvar & dj.AutoPopulate
     
     properties(Constant)
         table = dj.Table('tp.FineOriMap')
-        popRel = tp.CaOpt*tp.FineAlign*tp.Sync & psy.Grating
+        popRel = tp.FineAlign*tp.OriDesign
     end
     
     methods(Access=protected)
@@ -24,7 +24,7 @@ classdef FineOriMap < dj.Relvar & dj.AutoPopulate
             sz = size(X);
             X = reshape(X,[],sz(3))';
             
-            opt = fetch(tp.CaOpt(key), '*');
+            opt = fetch(tp.CaOpt & key, '*');
             G = fetch1(tp.OriDesign & key, 'design_matrix');
             
             X = bsxfun(@rdivide, X, mean(X))-1;  %use dF/F

@@ -24,7 +24,7 @@ classdef OriDesign < dj.Relvar & dj.AutoPopulate
             trialRel = tp.Sync(key)*psy.Trial*psy.Grating & ...
                 'trial_idx between first_trial and last_trial';
             disp 'constructing design matrix'
-            G = tp.OriMap.makeDesignMatrix(times, trialRel, opt);
+            G = tp.OriDesign.makeDesignMatrix(times, trialRel, opt);
             
             key.ndirections = size(G,2);
             key.design_matrix = single(G);
