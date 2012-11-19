@@ -15,6 +15,12 @@ classdef SpikeCorrMap < dj.Relvar & dj.AutoPopulate
         popRel = common.TpPatch*tp.FineAlign*tp.CaOpt
     end
     
+     methods
+        function self = SpikeCorrMap(varargin)
+            self.restrict(varargin{:})
+        end
+     end
+    
     methods(Access=protected)
         
         function makeTuples(self, key)
