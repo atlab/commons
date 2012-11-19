@@ -20,6 +20,7 @@ classdef SpikeCorrMap < dj.Relvar & dj.AutoPopulate
         function makeTuples(self, key)
             
             % read voltage signal
+            ne7.sys.waitForMemory(10,60);
             reader = tp.utils.Movie(key);
             disp 'reading voltage signal...'
             voltage =  reader.read(4,[],false);
@@ -63,6 +64,7 @@ classdef SpikeCorrMap < dj.Relvar & dj.AutoPopulate
             end
             
             % compute pixelwise correlations
+            ne7.sys.waitForMemory(8,60);
             X = reader.getFrames(1,1:reader.nFrames);
             sz = size(X);
             X = reshape(X,[],sz(3));
