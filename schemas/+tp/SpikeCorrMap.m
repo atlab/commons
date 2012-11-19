@@ -20,12 +20,13 @@ classdef SpikeCorrMap < dj.Relvar & dj.AutoPopulate
         function makeTuples(self, key)
             
             % read voltage signal
-            ne7.sys.waitForMemory(10,60);
+            ne7.sys.waitForMemory(10);
             reader = tp.utils.Movie(key);
             disp 'reading voltage signal...'
             voltage =  reader.read(4,[],false);
             samplesPerFrame = size(voltage,1)*size(voltage,2);
-            fs = fetch1(tp.Align & key, 'fps')*samplesPerFrame;
+            fps = fetch1(tp.Align & key, 'fps');
+            fs = fps*samplesPerFrame;
             X = permute(voltage, [2 1 3]);
             X = double(X(:));
             
@@ -44,8 +45,7 @@ classdef SpikeCorrMap < dj.Relvar & dj.AutoPopulate
             % construct calcum response
             disp 'computing pixelwise correlations...'
             alpha = @(x,a) (x>0).*x/a/a.*exp(-x/a);  % alpa response shape
-            times = fetch1(tp.Sync(key), 'frame_times');
-            times = times - times(1);   % calcium frame times starting with first frame
+            times = (0.5:reader.nFrames)/fps;  % calcium frame times starting with first frame
             opt = fetch(tp.CaOpt(key), '*');
             G = zeros(size(times));
             
@@ -64,7 +64,6 @@ classdef SpikeCorrMap < dj.Relvar & dj.AutoPopulate
             end
             
             % compute pixelwise correlations
-            ne7.sys.waitForMemory(8,60);
             X = reader.getFrames(1,1:reader.nFrames);
             sz = size(X);
             X = reshape(X,[],sz(3));
