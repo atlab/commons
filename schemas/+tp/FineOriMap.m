@@ -17,6 +17,8 @@ classdef FineOriMap < dj.Relvar & dj.AutoPopulate
     
     methods(Access=protected)
         function makeTuples(self, key)
+            ne7.sys.waitForMemory(10)
+            
             disp 'loading movie...'
             m = tp.utils.Movie(key);
             X = m.getFrames(1,1:m.nFrames);

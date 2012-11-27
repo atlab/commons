@@ -186,23 +186,23 @@ classdef plots
                 title 'preferred orientation of tuned pixels @ p<0.01'
                 
                 % superpose maxent connections
-                me = tp.MaxEnt & key & 'maxent_model = 3';
-                if me.exists
-                    assert(me.count==1)
-                    regs = regionprops(bw);
-                    [feats,w] = me.fetch1('interactions','strengths');
-                    for i=1:length(feats)
-                        p1 = regs(feats{i}(1)).Centroid;
-                        p2 = regs(feats{i}(2)).Centroid;
-                        hold on
-                        c = [0 1 0];
-                        if w(i)>0
-                            c = [1 0 0];
-                        end
-                        plot([p1(1) p2(1)],[p1(2) p2(2)],'Color',c)
-                        hold off
-                    end                    
-                end
+%                 me = tp.MaxEnt & key & 'maxent_model = 3';
+%                 if me.exists
+%                     assert(me.count==1)
+%                     regs = regionprops(bw);
+%                     [feats,w] = me.fetch1('interactions','strengths');
+%                     for i=1:length(feats)
+%                         p1 = regs(feats{i}(1)).Centroid;
+%                         p2 = regs(feats{i}(2)).Centroid;
+%                         hold on
+%                         c = [0 1 0];
+%                         if w(i)>0
+%                             c = [1 0 0];
+%                         end
+%                         plot([p1(1) p2(1)],[p1(2) p2(2)],'Color',c)
+%                         hold off
+%                     end                    
+%                 end
                 
                 depth = fetch1(tp.Geometry & key, 'depth'); 
                 suptitle(sprintf('%d  %2d::%2d #%d z=%1.1f\\mum "%s"', ...
