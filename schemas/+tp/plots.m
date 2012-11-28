@@ -76,6 +76,8 @@ classdef plots
         end
         
         
+                
+        
         function VonMap(varargin)
             for key = fetch(tp.VonMap(varargin{:}))'
                 clf
@@ -98,21 +100,6 @@ classdef plots
                 set(gca, 'XColor', 'b', 'YColor', 'b')
                 title 'dF/F in range [0 1]'
                 
-                %                 % if vonMasks exist, outline cells
-                %                 masks = fetchn(tp.VonMask(key), 'pixels');
-                %                 if ~isempty(masks)
-                %                     bw = false(size(g));
-                %                     for m = masks'
-                %                         bw(m{:}) = true;
-                %                     end
-                %                     hold on
-                %                     b = bwboundaries(bw,4);
-                %                     for i=1:length(b)
-                %                         plot(b{i}(:,2),b{i}(:,1),'r')
-                %                     end
-                %                     hold off
-                %                 end
-                %
                 subplot 223
                 h = mod(ori,pi)/pi;   % orientation is represented as hue
                 s = p<0.01;   % only significantly tuned pixels are shown in color
@@ -146,7 +133,7 @@ classdef plots
                 grid on
                 set(gca, 'XColor', 'b', 'YColor', 'b')
                 title 'fluorescence'
-                                
+                
                 subplot 222
                 [p, ori, r2, amp1, amp2] = fetch1(tp.FineVonMap & key, ...
                     'von_fp', 'pref_dir', 'von_r2', 'peak_amp1', 'peak_amp2');
@@ -185,26 +172,7 @@ classdef plots
                 set(gca, 'XColor', 'k', 'YColor', 'k')
                 title 'preferred orientation of tuned pixels @ p<0.01'
                 
-                % superpose maxent connections
-%                 me = tp.MaxEnt & key & 'maxent_model = 3';
-%                 if me.exists
-%                     assert(me.count==1)
-%                     regs = regionprops(bw);
-%                     [feats,w] = me.fetch1('interactions','strengths');
-%                     for i=1:length(feats)
-%                         p1 = regs(feats{i}(1)).Centroid;
-%                         p2 = regs(feats{i}(2)).Centroid;
-%                         hold on
-%                         c = [0 1 0];
-%                         if w(i)>0
-%                             c = [1 0 0];
-%                         end
-%                         plot([p1(1) p2(1)],[p1(2) p2(2)],'Color',c)
-%                         hold off
-%                     end                    
-%                 end
-                
-                depth = fetch1(tp.Geometry & key, 'depth'); 
+                depth = fetch1(tp.Geometry & key, 'depth');
                 suptitle(sprintf('%d  %2d::%2d #%d z=%1.1f\\mum "%s"', ...
                     key.animal_id, key.tp_session, key.scan_idx, ...
                     key.ca_opt, depth,  ...
@@ -216,7 +184,7 @@ classdef plots
                 print('-dpdf', f, '-r300')
             end
         end
-
+        
         
         
         function Motion3D(varargin)
@@ -330,10 +298,6 @@ classdef plots
                 stack = stack/max(stack(:));
             end
         end
-        
-        function MaxEnt(varargin)
-            for key = fetch(tp.MaxEnt & varargin)'
-            end
-        end
+                
     end
 end
