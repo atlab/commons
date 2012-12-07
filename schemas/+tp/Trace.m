@@ -39,7 +39,7 @@ classdef Trace < dj.Relvar
                     mask = logical(fetch1(tp.SegmentManual & key, 'manual_mask'));
                     regions = regionprops(mask,...
                         'Area', 'PixelIdxList','MajorAxisLength','MinorAxisLength','Centroid','EquivDiameter');
-                    
+                
                 otherwise
                     error 'not done yet'
             end

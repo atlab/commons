@@ -134,23 +134,26 @@ classdef Align < dj.Relvar & dj.AutoPopulate
         end
                 
        
-        function savePreview(self)
+        function savePreview(self,path)
             for key = fetch(self)'
                 [g,r] = fetch1(tp.Align(key), 'green_img', 'red_img');
                 g = g-min(g(:));
-                g = g/max(g(:));
+                g = g/quantile(g(:),0.99);
                 if numel(r)==1
                     im = cat(3,g,g,g);
                 else
                     r = r-min(r(:));
-                    r = r/max(r(:));
+                    r = r/quantile(r(:),0.99);
                     im = cat(3,r,g,zeros(size(g)));
                 end
                 f = getFilename(common.TpScan(key));
-                f = f{1};
-                f = [f(1:end-4) '_view.png'];
+                [p,f] = fileparts(f{1});
+                if nargin<2
+                    path = p;
+                end
+                f = [f '_view.png'];
                 disp(['Saving ' f])
-                imwrite(im,f,'png')
+                imwrite(im,fullfile(path,f),'png')
             end
         end
     end

@@ -92,18 +92,20 @@ classdef plots
                 subplot 222
                 [p, ori, r2, amp1, amp2] = fetch1(tp.VonMap(key), ...
                     'von_fp', 'pref_dir', 'von_r2', 'peak_amp1', 'peak_amp2');
-                imagesc((amp1+amp2)/2,[0 1])
+                imagesc((amp1+amp2)/2,[0 4])
                 %imagesc(r2,[0 0.05])
                 colormap(1-gray)
                 axis image
                 grid on
                 set(gca, 'XColor', 'b', 'YColor', 'b')
-                title 'dF/F in range [0 1]'
+                title 'dF/F in range [0 4]'
                 
                 subplot 223
                 h = mod(ori,pi)/pi;   % orientation is represented as hue
-                s = p<0.01;   % only significantly tuned pixels are shown in color
+                s = min(p<0.001, min(1, amp1/1));   % only significantly tuned pixels are shown in color
                 v = ones(size(p));  % brightness is proportional to variance explained, scaled between 0 and 10 %
+                v = min(amp1,0.8)/0.8;
+
                 img = hsv2rgb(cat(3, h, s, v));
                 image(img)
                 axis image

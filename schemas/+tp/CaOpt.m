@@ -35,7 +35,7 @@ classdef CaOpt < dj.Relvar
                 11  'onAlpha'  0.0    0.0  1.5
                 12  'onAlpha'  0.0    0.0  0.3
             }', {'ca_opt', 'transient_shape', 'highpass_cutoff', 'latency', 'tau'});
-            self.insert(tuples, 'INSERT IGNORE')
+            self.insert(tuples,'INSERT IGNORE')
             
         end            
 	end
