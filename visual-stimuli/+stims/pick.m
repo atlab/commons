@@ -81,7 +81,7 @@ while ch~='q'
     elseif ismember(ch, '1':char('0'+length(menu)))
         stim = menu{str2double(ch),2};
         rect = stims.core.Visual.screen.rect;
-        if any([stim.constants.resolution_x stim.constants.resolution_x]) ~= rect(3:4) 
+        if any([stim.constants.resolution_x stim.constants.resolution_y] ~= rect(3:4)) 
             disp 'Mismatching screen size'
             fprintf('Stimulus specifies [%d,%d]\n', stim.constants.resolution_x, stim.constants.resolution_y)
             fprintf('Screen resolution is [%d,%d]\n', rect(3), rect(4))
