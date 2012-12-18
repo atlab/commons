@@ -66,11 +66,12 @@ classdef Movie < ne7.scanimage.Reader
         end
         
         
-        function write(self, savepath)
+        function write(self, savepath, skipCorrections)
             % save an AVI file
             if nargin<2
                 savepath = '.';
             end
+            skipCorrections = nargin>=3 && skipCorrections;
             fname = sprintf('%05d_%03d.avi', self.key.animal_id, self.key.scan_idx);
 
             fprintf('making avi %s for\n', fullfile(savepath, fname))
@@ -78,12 +79,20 @@ classdef Movie < ne7.scanimage.Reader
             clf
             targetFps = 3; % Hz
             disp 'reading green channel...'
-            g = self.getFrames(1,1:self.nFrames);
+            if skipCorrections
+                g = self.read(1,1:self.nFrames);
+            else
+                g = self.getFrames(1,1:self.nFrames);
+            end
             disp 'compressing green channel...'           
             g = compressVideo(g, self.fps, targetFps);
             
             disp 'reading red channel...'
-            r = self.getFrames(2,1:self.nFrames);
+            if skipCorrections
+                r = self.read(2,1:self.nFrames);
+            else
+                r = self.getFrames(2,1:self.nFrames);
+            end
             disp 'compressing red channel...'
             r = compressVideo(r, self.fps, targetFps);
             
@@ -98,9 +107,14 @@ classdef Movie < ne7.scanimage.Reader
             v.writeVideo(g)
             v.close
             
+            if skipCorrections
+                prefix = 'u';
+            else
+                prefix = 'c';
+            end
             disp 'converting avi'
-            system(sprintf('ffmpeg -i %s -y -sameq %s', ...
-                fullfile(savepath, fname), fullfile(savepath, ['c' fname])));
+            system(sprintf('ffmpeg -i %s -y -sameq %s.mov', ...
+                fullfile(savepath, fname), fullfile(savepath, [prefix fname(1:end-4)])));
             delete(fullfile(savepath,fname))
             
             disp done

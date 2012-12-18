@@ -11,7 +11,7 @@ while true
             
         case 2
             parpopulate(tp.Sync,    varargin{:})
-            parpopulate(tp.OriDesign, varargin{:})
+            parpopulate(tp.OriDesign, varargin{:}, tp.CaOpt & 'tau between 1.0 and 1.7')
             parpopulate(tp.OriMap,  varargin{:})
             parpopulate(tp.VonMap,  varargin{:})
             parpopulate(tp.Cos2Map, varargin{:})
