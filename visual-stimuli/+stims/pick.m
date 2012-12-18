@@ -65,8 +65,8 @@ end
 %%%% run the execution loop %%%%%
 function run(menu, key, monitorDistance)
 
-% blank the screen and set default luminance 
-stims.core.Visual.screen.open;  
+% blank the screen and set default luminance
+stims.core.Visual.screen.open;
 stims.core.Visual.screen.setContrast(3, 0.5);
 
 % wait for user input
@@ -80,6 +80,13 @@ while ch~='q'
         break
     elseif ismember(ch, '1':char('0'+length(menu)))
         stim = menu{str2double(ch),2};
+        rect = stims.core.Visual.screen.rect;
+        if any([stim.constants.resolution_x stim.constants.resolution_y] ~= rect(3:4)) 
+            disp 'Mismatching screen size'
+            fprintf('Stimulus specifies [%d,%d]\n', stim.constants.resolution_x, stim.constants.resolution_y)
+            fprintf('Screen resolution is [%d,%d]\n', rect(3), rect(4))
+            break
+        end
         stim.init(key, 'monitor_distance', monitorDistance)
         fprintf('Selected stimulus %c\n', ch);
     elseif ch=='r' && ~isempty(stim)
