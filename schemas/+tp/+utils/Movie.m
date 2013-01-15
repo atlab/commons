@@ -113,7 +113,7 @@ classdef Movie < ne7.scanimage.Reader
                 prefix = 'c';
             end
             disp 'converting avi'
-            system(sprintf('ffmpeg -i %s -y -sameq %s.mov', ...
+            system(sprintf('ffmpeg -i %s -y -sameq %s.mp4', ...
                 fullfile(savepath, fname), fullfile(savepath, [prefix fname(1:end-4)])));
             delete(fullfile(savepath,fname))
             

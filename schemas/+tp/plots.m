@@ -126,7 +126,7 @@ classdef plots
         
         
         function FineOri(varargin)
-            for key = fetch(tp.FineVonMap & varargin)'
+            for key = fetch(tp.FineVonMap & varargin & tp.Geometry)'
                 clf
                 subplot 221
                 [g, r] = fetch1(tp.FineAlign & key, 'fine_green_img', 'fine_red_img');
@@ -164,15 +164,14 @@ classdef plots
                 
                 subplot 223
                 h = mod(ori,pi)/pi;   % orientation is represented as hue
-                s = p<0.0001 & amp1>0.1;   % only significantly tuned pixels are shown in color
-                v = ones(size(p));  % brightness is proportional to variance explained, scaled between 0 and 10 %
-                v = min(amp1,0.8)/0.8;
+                s = p<1e-3 & amp1>0.4;   % only significantly tuned pixels are shown in color
+                v = min(amp1,1.0)/1.0;
                 img = hsv2rgb(cat(3, h, s, v));
                 image(img)
                 axis image
                 grid on
                 set(gca, 'XColor', 'k', 'YColor', 'k')
-                title 'preferred orientation of tuned pixels @ p<0.01'
+                title 'preferred orientation of tuned pixels @ p<10^{-3}'
                 
                 depth = fetch1(tp.Geometry & key, 'depth');
                 suptitle(sprintf('%d  %2d::%2d #%d z=%1.1f\\mum "%s"', ...

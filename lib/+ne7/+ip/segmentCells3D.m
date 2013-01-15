@@ -13,10 +13,6 @@ sz = size(stack);
 
 disp segmenting..
 
-% smooth a little (not generally necessary)
-%sigma = 0.1*cellRadius./voxelDims;
-%stack = smoothStack(stack, sigma);
-
 % isolate domes
 m = stack - imreconstruct(stack-contrast,stack);
 
@@ -32,12 +28,13 @@ w = watershed(-d, 26);
 
 if debug
     figure
-    iSlice = 3;
+    iSlice = ceil(sz(3)/2);
         
     subplot 121
     h = imagesc(stack(:,:,iSlice));
     set(h,'AlphaData',(w(:,:,iSlice)~=0)*.3+.7);
     grid on, colormap gray, axis image
+    set(gca, 'Color', 'r')
 end
 
 disp 'shape analysis...'

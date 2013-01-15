@@ -25,7 +25,7 @@ classdef RasterCorrection < handle
             blocks = 1:step:size(movie,3);
             w = nan([length(blocks) polydegree]);
             for i=1:length(blocks)
-                if ~mod(sqrt(i),1)
+                if i>1 && ~mod(sqrt(i),1)
                     fprintf('\n[%3d /%3d] ', i-1, length(blocks))
                 end
                 frame = mean(movie(1:end-1,:,blocks(i):min(end,blocks(i)+block-1)),3);

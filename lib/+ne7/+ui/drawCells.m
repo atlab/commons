@@ -106,7 +106,7 @@ end
         hold on
         for i=1:length(bounds)
             bound = bounds{i};
-            outlines{i} = plot(bound(:,2), bound(:,1), 'w');
+            outlines{i} = plot(bound(:,2), bound(:,1), 'r');
         end
         hold off
     end
