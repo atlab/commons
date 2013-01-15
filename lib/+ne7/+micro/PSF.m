@@ -19,39 +19,38 @@ classdef PSF
         % W. R. Zipfel, R. M. Williams, and W. W. Webb. Nonlinear magic: multiphoton microscopy in the biosciences. Nat Biotechnol, 21(11):1369?77, Nov 2003.
         Nwater  = 1.333   % index of refraction for water
         sigmaX = @(na,lambda) 0.325/2*lambda/1000/na^0.91
-        sigmaZ = @(na,lambda) 0.532/2*lambda/1000/(neu.PSF.Nwater - sqrt(neu.PSF.Nwater^2 - na^2))
+        sigmaZ = @(na,lambda) 0.532/2*lambda/1000/(ne7.micro.PSF.Nwater - sqrt(ne7.micro.PSF.Nwater^2 - na^2))
     end
     
     
     
     methods(Static)
         
-        function scim(scimFile, FOV, params)
+        function scim(scimReader, FOV, params)
             % process beads from the scanimage tiff file
             % FOV is the field of view for the given objective at zoom=1.0
             % -- the scan magnification is extracted from the tiff file.
             %
             % EXAMPLE:
-            %  neu.PSF.scim('psf-16x-800nm003.tif', 864, struct('NA',0.8, 'wavelength', 800, 'printPNG', true, 'title', '16x objective'))
+            %  ne7.micro.PSF.scim('psf-16x-800nm003.tif', 864, struct('NA',0.8, 'wavelength', 800, 'printPNG', true, 'title', '16x objective'))
             
             if nargin<3
-                params = neu.PSF.defaultParams;
+                params = ne7.micro.PSF.defaultParams;
             end
             
             if ~isfield(params, 'baseName')
-                params.baseName = scimFile;
+                [~,params.baseName] = fileparts(scimReader.filepaths{1});
             end
             
             disp 'reading tiff...'
-            scim = neu.Scim(scimFile);
-            assert(scim.hdr.acq.fastScanningX==1 && scim.hdr.acq.fastScanningY==0, ...
+            acq = scimReader.hdr.acq;
+            assert(acq.fastScanningX==1 && acq.fastScanningY==0, ...
                 'the fast scan must be along X')
-            
-            zoom =  scim.hdr.acq.baseZoomFactor*scim.hdr.acq.zoomFactor;
-            dx = FOV/zoom/scim.hdr.acq.pixelsPerLine*scim.hdr.acq.scanAngleMultiplierFast;
-            dy = FOV/zoom/scim.hdr.acq.linesPerFrame*scim.hdr.acq.scanAngleMultiplierSlow;
-            dz = abs(scim.hdr.acq.zStepSize);
-            neu.PSF.compute(scim.read(1), [dx,dy,dz], params);
+            zoom =  acq.baseZoomFactor*acq.zoomFactor;
+            dx = FOV/zoom/acq.pixelsPerLine*acq.scanAngleMultiplierFast;
+            dy = FOV/zoom/acq.linesPerFrame*acq.scanAngleMultiplierSlow;
+            dz = abs(acq.zStepSize);
+            ne7.micro.PSF.compute(scimReader.read(1), [dx,dy,dz], params);
         end
         
         
@@ -71,10 +70,10 @@ classdef PSF
             
             % process input parameters
             stack = double(stack);
-            assert(all(ismember(fieldnames(params), fieldnames(neu.PSF.defaultParams'))), ...
+            assert(all(ismember(fieldnames(params), fieldnames(ne7.micro.PSF.defaultParams'))), ...
                 'Unknown parameter. See PSF.defaultParams')
-            for f = setdiff(fieldnames(neu.PSF.defaultParams),fieldnames(params))'
-                params.(f{1}) = neu.PSF.defaultParams.(f{1});
+            for f = setdiff(fieldnames(ne7.micro.PSF.defaultParams),fieldnames(params))'
+                params.(f{1}) = ne7.micro.PSF.defaultParams.(f{1});
             end
             assert(isnumeric(pitch) && length(pitch)==3, ...
                 'The second argument must contain the pixel pitch as [x,y,z]')
@@ -181,8 +180,8 @@ classdef PSF
                     title 'Z projection'
                     axis image
                     
-                    optSigmaX = neu.PSF.sigmaX(params.NA, params.wavelength);
-                    optSigmaZ = neu.PSF.sigmaZ(params.NA, params.wavelength);
+                    optSigmaX = ne7.micro.PSF.sigmaX(params.NA, params.wavelength);
+                    optSigmaZ = ne7.micro.PSF.sigmaZ(params.NA, params.wavelength);
                     
                     % xz and yz marginals
                     subplot 234
@@ -192,6 +191,7 @@ classdef PSF
                     plot(xi,  exp(-xi.^2/2/optSigmaX.^2), '--', 'Color',[0.3 0.3 0.3])
                     plot(xi,gauss(bx,xi),'r')
                     plot(yi,gauss(by,yi),'g')
+                    axis tight
                     legend('x-axis', 'y-axis','ideal','location','South')
                     legend boxoff
                     hold off
