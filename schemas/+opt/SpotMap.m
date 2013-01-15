@@ -6,9 +6,9 @@ tau       :  tinyint  # tau
 spot_amp  : longblob  # (percent) response magnitudes for each spot
 spot_r2   : longblob  # r-squared of total response
 spot_fp   : longblob  # total response p-value (F-test)
-spot_psth : longblob  # average stimulus-locked response
 %}
 
+%spot_psth : longblob  # average stimulus-locked response
 classdef SpotMap < dj.Relvar & dj.AutoPopulate
 
 	properties(Constant)
@@ -57,13 +57,14 @@ classdef SpotMap < dj.Relvar & dj.AutoPopulate
 %             toc
             
 %           % baseline correction subtract mean            
-%             tic
-%             X = bsxfun(@minus, X, mean(X));
-%             toc
+%            X = bsxfun(@minus, X, mean(X));
+
 
             % baseline correction via interpolation
+            tic
             X=X./interp1q(floor(1:framerate*60:sz(1))',X(floor(1:framerate*60:sz(1)),:),[1:sz(1)]')-1;
             X(isnan(X))=0;
+            toc
 
             trialRel = opt.Sync(key)*psy.Trial*psy.Grating & 'trial_idx between first_trial and last_trial';
             trials = fetch(trialRel, 'aperture_x*1000+aperture_y->position', 'flip_times');
@@ -100,15 +101,15 @@ classdef SpotMap < dj.Relvar & dj.AutoPopulate
                     G(ix, cond) = G(ix, cond) ...
                         + (1-exp((onset-offset)/tau))*exp((offset-times(ix))/tau);
                     
-                    ix = find(times>=onset & times < offset+5*tau);
-                    len = length(ix);
-                    if ~exist('P')
-                        P = zeros(nCond,len+1,size(X,2),'single');
-                    end
-                    P(cond,1:len,:)=squeeze(P(cond,1:len,:))+X(ix,:);
+%                     ix = find(times>=onset & times < offset+5*tau);
+%                     len = length(ix);
+%                     if ~exist('P')
+%                         P = zeros(nCond,len+1,size(X,2),'single');
+%                     end
+%                     P(cond,1:len,:)=squeeze(P(cond,1:len,:))+X(ix,:);
                 end
                 
-                P=P./(nTrials/nCond);
+%                 P=P./(nTrials/nCond);
                 G = bsxfun(@minus, G, mean(G));
                 
                 tic                
@@ -121,7 +122,7 @@ classdef SpotMap < dj.Relvar & dj.AutoPopulate
                 key.spot_amp = reshape(single(B)', sz(2), sz(3), []);
                 key.spot_r2  = reshape(single(R2), sz(2), sz(3));
                 key.spot_fp  = reshape(single(Fp), sz(2), sz(3));
-                key.spot_psth = reshape(P,nCond,size(P,2),sz(2),sz(3));
+%                 key.spot_psth = reshape(P,nCond,size(P,2),sz(2),sz(3));
                 self.insert(key)
             end
 		end

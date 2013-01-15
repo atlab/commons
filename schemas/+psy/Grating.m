@@ -17,6 +17,7 @@ init_phase                  : float                         # 0..1
 trial_duration              : float                         # s, does not include pre_blank duration
 phase2_fraction=0           : float                         # fraction of trial spent in phase 2
 phase2_temp_freq=0          : float                         # (Hz)
+second_photodiode=0         : tinyint                       # 1=paint a photodiode patch in the upper right corner
 %}
 
 
