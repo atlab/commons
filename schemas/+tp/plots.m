@@ -2,6 +2,93 @@ classdef plots
     
     methods(Static)
         
+        
+        function Review(varargin)
+            close all
+            r = struct('seg_opt',3,'extract_opt',1, 'ca_opt',13);
+            bins = 0:2:90;
+            thresh = 1.0;  %red contrast threshold
+            
+            C1 = [];
+            C2 = [];
+            C3 = [];
+            
+            for key = fetch(common.Animal & varargin & (tp.Extract2 & r))'
+                %tp.plots.Trace2(key,r)
+                figure
+                s = fetch(tp.VonTraceShuffle*tp.Trace2 & key & r & 'vt_p<0.05','*');
+                red = [s.r_contrast]>thresh;
+                
+                subplot 211
+                c1 = hist(mod([s(~red).vt_pref]*180/pi, 180), 0:15:180);
+                c2 = hist(mod([s( red).vt_pref]*180/pi, 180), 0:15:180);
+                bar(0:15:180, [c1' c2'], 0.5,'stack')
+                
+                % plot cumulative histogram of preferred orientation
+                % differences for red cells
+                ori = [s(red).vt_pref]*180/pi;
+                n = length(ori);
+                fprintf('found %d tuned red cells\n', n)
+                [i,j] = ndgrid(1:n,1:n);
+                ix = find(i < j);
+                i = i(ix);
+                j = j(ix);
+                d = ne7.rf.oriDiff(ori(i),ori(j));
+                C1 = [C1 d];
+                counts = histc(d,bins);
+                subplot 212
+                plot(bins+bins(2)/2, cumsum(counts)/sum(counts))
+                hold all
+                
+                % overplot cumulative histogram of preferred orientation
+                % differences for non-red cells
+                ori = [s(~red).vt_pref]*180/pi;
+                n = length(ori);
+                fprintf('found %d tuned non-red cells\n', n)
+                [i,j] = ndgrid(1:n,1:n);
+                ix = find(i < j);
+                i = i(ix);
+                j = j(ix);
+                d = ne7.rf.oriDiff(ori(i),ori(j));
+                C2 = [C2 d];
+                counts = histc(d,bins);
+                subplot 212
+                plot(bins+bins(2)/2, cumsum(counts)/sum(counts))
+                
+                % overplot cum histogram of preferred orientation
+                % diffrences between red and non-red cells
+                [ori1,ori2] = ndgrid([s(red).vt_pref]*180/pi, [s(~red).vt_pref]*180/pi);
+                d = ne7.rf.oriDiff(ori1,ori2);
+                d = d(:)';
+                C3 = [C3 d];
+                counts = histc(d,bins);
+                subplot 212
+                plot(bins+bins(2)/2, cumsum(counts)/sum(counts))
+                
+                legend 'red-red' 'nonred-nonred' 'red-nonred'
+                legend 'Location' 'SouthEast'
+                xlabel '\Delta ori'
+                title(sprintf('Mouse %d. red: %d, non-red %d',key.animal_id,sum(red),sum(~red)))
+                
+                set(gcf, 'PaperSize', [3 2])
+                print('-dpng',sprintf('./oridiff_cumsums_%05d',key.animal_id))
+            end
+            
+            figure
+            counts1 = cumsum(histc(C1,bins));
+            counts2 = cumsum(histc(C2,bins));
+            counts3 = cumsum(histc(C3,bins));
+            plot(bins, [counts1'/counts1(end) counts2'/counts2(end) counts3'/counts3(end)])
+            legend 'red-red' 'nonred-nonred' 'red-nonred'
+            legend 'Location' 'SouthEast'
+            xlabel '\Delta ori'
+            title 'pooled across animal'
+            print -dpng ./pooled
+            
+        end
+        
+        
+        
         function FineAlign(varargin)
             for key = fetch(tp.FineAlign & varargin)'
                 
@@ -76,7 +163,7 @@ classdef plots
         end
         
         
-                
+        
         
         function VonMap(varargin)
             for key = fetch(tp.VonMap(varargin{:}))'
@@ -105,7 +192,7 @@ classdef plots
                 s = min(p<0.001, min(1, amp1/0.5));   % only significantly tuned pixels are shown in color
                 v = ones(size(p));  % brightness is proportional to variance explained, scaled between 0 and 10 %
                 v = min(amp1,0.8)/0.8;
-
+                
                 img = hsv2rgb(cat(3, h, s, v));
                 image(img)
                 axis image
@@ -199,6 +286,30 @@ classdef plots
                 legend x y z
                 grid on
                 drawnow
+            end
+        end
+        
+        
+        function Trace2(varargin)
+            for key = fetch(tp.Extract2 & varargin)'
+                fps = fetch1(tp.Align & key, 'fps');
+                X = fetchn(tp.Trace & key,'gtrace');
+                X = [X{:}];
+                X = bsxfun(@rdivide, X, median(X))-1;
+                X = ne7.dsp.subtractBaseline(X,fps,0.05);
+                time = (0:size(X,1)-1)/fps;
+                figure
+                spacing = 0.4;
+                
+                for iTrace = 1:size(X,2)
+                    plot(time,zeros(size(time))+iTrace*spacing,'k')
+                    hold all
+                    plot(time,X(:,iTrace)+iTrace*spacing)
+                end
+                xlabel 'Time (s)'
+                ylabel dF/F
+                axis tight
+                grid on
             end
         end
         
@@ -299,6 +410,6 @@ classdef plots
                 stack = stack/max(stack(:));
             end
         end
-                
+        
     end
 end
