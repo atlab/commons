@@ -2,6 +2,93 @@ classdef plots
     
     methods(Static)
         
+        
+        function Review(varargin)
+            close all
+            r = struct('seg_opt',3,'extract_opt',1, 'ca_opt',13);
+            bins = 0:2:90;
+            thresh = 1.0;  %red contrast threshold
+            
+            C1 = [];
+            C2 = [];
+            C3 = [];
+            
+            for key = fetch(common.Animal & varargin & (tp.Extract2 & r))'
+                %tp.plots.Trace2(key,r)
+                figure
+                s = fetch(tp.VonTraceShuffle*tp.Trace2 & key & r & 'vt_p<0.05','*');
+                red = [s.r_contrast]>thresh;
+                
+                subplot 211
+                c1 = hist(mod([s(~red).vt_pref]*180/pi, 180), 0:15:180);
+                c2 = hist(mod([s( red).vt_pref]*180/pi, 180), 0:15:180);
+                bar(0:15:180, [c1' c2'], 0.5,'stack')
+                
+                % plot cumulative histogram of preferred orientation
+                % differences for red cells
+                ori = [s(red).vt_pref]*180/pi;
+                n = length(ori);
+                fprintf('found %d tuned red cells\n', n)
+                [i,j] = ndgrid(1:n,1:n);
+                ix = find(i < j);
+                i = i(ix);
+                j = j(ix);
+                d = ne7.rf.oriDiff(ori(i),ori(j));
+                C1 = [C1 d];
+                counts = histc(d,bins);
+                subplot 212
+                plot(bins+bins(2)/2, cumsum(counts)/sum(counts))
+                hold all
+                
+                % overplot cumulative histogram of preferred orientation
+                % differences for non-red cells
+                ori = [s(~red).vt_pref]*180/pi;
+                n = length(ori);
+                fprintf('found %d tuned non-red cells\n', n)
+                [i,j] = ndgrid(1:n,1:n);
+                ix = find(i < j);
+                i = i(ix);
+                j = j(ix);
+                d = ne7.rf.oriDiff(ori(i),ori(j));
+                C2 = [C2 d];
+                counts = histc(d,bins);
+                subplot 212
+                plot(bins+bins(2)/2, cumsum(counts)/sum(counts))
+                
+                % overplot cum histogram of preferred orientation
+                % diffrences between red and non-red cells
+                [ori1,ori2] = ndgrid([s(red).vt_pref]*180/pi, [s(~red).vt_pref]*180/pi);
+                d = ne7.rf.oriDiff(ori1,ori2);
+                d = d(:)';
+                C3 = [C3 d];
+                counts = histc(d,bins);
+                subplot 212
+                plot(bins+bins(2)/2, cumsum(counts)/sum(counts))
+                
+                legend 'red-red' 'nonred-nonred' 'red-nonred'
+                legend 'Location' 'SouthEast'
+                xlabel '\Delta ori'
+                title(sprintf('Mouse %d. red: %d, non-red %d',key.animal_id,sum(red),sum(~red)))
+                
+                set(gcf, 'PaperSize', [3 2])
+                print('-dpng',sprintf('./oridiff_cumsums_%05d',key.animal_id))
+            end
+            
+            figure
+            counts1 = cumsum(histc(C1,bins));
+            counts2 = cumsum(histc(C2,bins));
+            counts3 = cumsum(histc(C3,bins));
+            plot(bins, [counts1'/counts1(end) counts2'/counts2(end) counts3'/counts3(end)])
+            legend 'red-red' 'nonred-nonred' 'red-nonred'
+            legend 'Location' 'SouthEast'
+            xlabel '\Delta ori'
+            title 'pooled across animal'
+            print -dpng ./pooled
+            
+        end
+        
+        
+        
         function FineAlign(varargin)
             for key = fetch(tp.FineAlign & varargin)'
                 
@@ -76,6 +163,8 @@ classdef plots
         end
         
         
+        
+        
         function VonMap(varargin)
             for key = fetch(tp.VonMap(varargin{:}))'
                 clf
@@ -98,31 +187,18 @@ classdef plots
                 set(gca, 'XColor', 'b', 'YColor', 'b')
                 title 'dF/F in range [0 1]'
                 
-                %                 % if vonMasks exist, outline cells
-                %                 masks = fetchn(tp.VonMask(key), 'pixels');
-                %                 if ~isempty(masks)
-                %                     bw = false(size(g));
-                %                     for m = masks'
-                %                         bw(m{:}) = true;
-                %                     end
-                %                     hold on
-                %                     b = bwboundaries(bw,4);
-                %                     for i=1:length(b)
-                %                         plot(b{i}(:,2),b{i}(:,1),'r')
-                %                     end
-                %                     hold off
-                %                 end
-                %
                 subplot 223
                 h = mod(ori,pi)/pi;   % orientation is represented as hue
-                s = p<0.01;   % only significantly tuned pixels are shown in color
+                s = min(p<0.001, min(1, amp1/0.5));   % only significantly tuned pixels are shown in color
                 v = ones(size(p));  % brightness is proportional to variance explained, scaled between 0 and 10 %
+                v = min(amp1,0.8)/0.8;
+                
                 img = hsv2rgb(cat(3, h, s, v));
                 image(img)
                 axis image
                 grid on
                 set(gca, 'XColor', 'w', 'YColor', 'w')
-                title 'preferred orientation of tuned pixels @ p<0.01'
+                title 'preferred orientation of tuned pixels @ p<0.001'
                 
                 suptitle(sprintf('%d  %2d::%2d  #%d "%s"', ...
                     key.animal_id, key.tp_session, key.scan_idx, key.ca_opt, ...
@@ -131,13 +207,13 @@ classdef plots
                 f = sprintf('~/figures/ori_maps/orimap_%05d_%d_%03d_%02d', ...
                     key.animal_id, key.tp_session, key.scan_idx, key.ca_opt);
                 set(gcf, 'PaperSize', [8 8], 'PaperPosition', [0 0 8 8])
-                print('-dpng', f, '-r150')
+                print('-dpng', f, '-r300')
             end
         end
         
         
         function FineOri(varargin)
-            for key = fetch(tp.FineVonMap & varargin)'
+            for key = fetch(tp.FineVonMap & varargin & tp.Geometry)'
                 clf
                 subplot 221
                 [g, r] = fetch1(tp.FineAlign & key, 'fine_green_img', 'fine_red_img');
@@ -146,7 +222,7 @@ classdef plots
                 grid on
                 set(gca, 'XColor', 'b', 'YColor', 'b')
                 title 'fluorescence'
-                                
+                
                 subplot 222
                 [p, ori, r2, amp1, amp2] = fetch1(tp.FineVonMap & key, ...
                     'von_fp', 'pref_dir', 'von_r2', 'peak_amp1', 'peak_amp2');
@@ -175,36 +251,16 @@ classdef plots
                 
                 subplot 223
                 h = mod(ori,pi)/pi;   % orientation is represented as hue
-                s = p<0.0001 & amp1>0.1;   % only significantly tuned pixels are shown in color
-                v = ones(size(p));  % brightness is proportional to variance explained, scaled between 0 and 10 %
-                v = min(amp1,0.8)/0.8;
+                s = p<1e-3 & amp1>0.4;   % only significantly tuned pixels are shown in color
+                v = min(amp1,1.0)/1.0;
                 img = hsv2rgb(cat(3, h, s, v));
                 image(img)
                 axis image
                 grid on
                 set(gca, 'XColor', 'k', 'YColor', 'k')
-                title 'preferred orientation of tuned pixels @ p<0.01'
+                title 'preferred orientation of tuned pixels @ p<10^{-3}'
                 
-                % superpose maxent connections
-%                 me = tp.MaxEnt & key & 'maxent_model = 3';
-%                 if me.exists
-%                     assert(me.count==1)
-%                     regs = regionprops(bw);
-%                     [feats,w] = me.fetch1('interactions','strengths');
-%                     for i=1:length(feats)
-%                         p1 = regs(feats{i}(1)).Centroid;
-%                         p2 = regs(feats{i}(2)).Centroid;
-%                         hold on
-%                         c = [0 1 0];
-%                         if w(i)>0
-%                             c = [1 0 0];
-%                         end
-%                         plot([p1(1) p2(1)],[p1(2) p2(2)],'Color',c)
-%                         hold off
-%                     end                    
-%                 end
-                
-                depth = fetch1(tp.Geometry & key, 'depth'); 
+                depth = fetch1(tp.Geometry & key, 'depth');
                 suptitle(sprintf('%d  %2d::%2d #%d z=%1.1f\\mum "%s"', ...
                     key.animal_id, key.tp_session, key.scan_idx, ...
                     key.ca_opt, depth,  ...
@@ -213,10 +269,10 @@ classdef plots
                 f = sprintf('./fine_orimap_%05d_%d_%03d_%02d', ...
                     key.animal_id, key.tp_session, key.scan_idx, key.ca_opt);
                 set(gcf, 'PaperSize', [12 10], 'PaperPosition', [0 0 12 10])
-                print('-dpdf', f, '-r300')
+                print('-dpng', f, '-r300')
             end
         end
-
+        
         
         
         function Motion3D(varargin)
@@ -230,6 +286,30 @@ classdef plots
                 legend x y z
                 grid on
                 drawnow
+            end
+        end
+        
+        
+        function Trace2(varargin)
+            for key = fetch(tp.Extract2 & varargin)'
+                fps = fetch1(tp.Align & key, 'fps');
+                X = fetchn(tp.Trace & key,'gtrace');
+                X = [X{:}];
+                X = bsxfun(@rdivide, X, median(X))-1;
+                X = ne7.dsp.subtractBaseline(X,fps,0.05);
+                time = (0:size(X,1)-1)/fps;
+                figure
+                spacing = 0.4;
+                
+                for iTrace = 1:size(X,2)
+                    plot(time,zeros(size(time))+iTrace*spacing,'k')
+                    hold all
+                    plot(time,X(:,iTrace)+iTrace*spacing)
+                end
+                xlabel 'Time (s)'
+                ylabel dF/F
+                axis tight
+                grid on
             end
         end
         
@@ -331,9 +411,5 @@ classdef plots
             end
         end
         
-        function MaxEnt(varargin)
-            for key = fetch(tp.MaxEnt & varargin)'
-            end
-        end
     end
 end

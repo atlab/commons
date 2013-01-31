@@ -41,14 +41,28 @@ classdef SegmentManual < dj.Relvar
     
     methods(Static,Access=private)
         function bw = outlineCells(key,bw)
-            [g,r] = fetch1(tp.FineAlign & key, 'fine_green_img', 'fine_red_img');
-            g = sqrt(g);
-            r = sqrt(r);
-            g = max(0,g-quantile(g(:),0.01));
-            r = max(0,r-quantile(r(:),0.01));
+            opt = fetch(tp.SegOpt & key, '*');
+            switch opt.source_image
+                case 'green'
+                    img = fetch1(tp.FineAlign & key, 'fine_green_img');
+                    img = sqrt(img);
+                    img = max(0,img-quantile(img(:),0.01));
+                    img = min(1,img/quantile(img(:),0.995));
+                    
+                case 'fine orimap'
+                    cond = struct('ca_opt', 7);
+                    img = fetch1(tp.FineVonMap & key & cond, 'von_r2');
+                    img = sqrt(img);
+                    mx = quantile(img(:),0.995);
+                    fprintf('Max = %f\n', mx);
+                    mx = 0.5;   % always scale the same way
+                    img = 1-max(0, min(1, img/mx));
+            end
             f = figure;
-            %imshowpair(g,r)
-            imshow(g/max(g(:)))
+            imshow(img)
+            set(gca, 'Position', [0.05 0.05 0.9 0.9]);
+            pos = get(f, 'Position');
+            set(f, 'Position', [pos(1:2)/4 pos(3:4)*4])
             bw = ne7.ui.drawCells(bw);
             close(f)
         end

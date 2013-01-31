@@ -28,8 +28,9 @@ classdef Grating < stims.core.Visual
             'temp_freq', 2, ... (Hz)'
             'direction', 0:22.5:359, ... (degrees) 0=north, 90=east
             'phase2_fraction', 0,  ... between 0 and 1
-            'phase2_temp_freq', 2 ...
-            )
+            'phase2_temp_freq', 2, ...
+            'second_photodiode', 0 ... 1=paint photodiode patch in the right corner for the drift period
+        )
     end
     
     properties(Access=private)
@@ -69,15 +70,11 @@ classdef Grating < stims.core.Visual
                 'trial_duration'
                 'phase2_fraction'
                 'phase2_temp_freq'
+                'second_photodiode'
                 }, fieldnames(cond))))
             
             % initialized grating
             if isempty(self.grating)
-%                 if ~strcmp(getenv('USER'), 'dimitri')
-%                     % make sure that the monitor is set to the correct resolution
-%                     assert(all(self.rect(3:4)==[self.constants.resolution_x self.constants.resolution_y]), ...
-%                         'incorrect monitor resolution')
-%                 end
                 radius = inf;
                 if cond.aperture_radius
                     radius = cond.aperture_radius * norm(self.rect(3:4))/2;
@@ -108,9 +105,14 @@ classdef Grating < stims.core.Visual
             for frame = 1:driftFrames1
                 if self.escape, break, end
                 Screen('DrawTexture', self.win, self.grating, [], destRect, direction, [], [], [], [], ...
-                    kPsychUseTextureMatrixForRotation, [phase*360, freq, 0.495, 0]);
+                    kPsychUseTextureMatrixForRotation, [phase*360, freq, 0.495, 0]);                
                 if ~isempty(self.mask)
                     Screen('DrawTexture', self.win, self.mask);
+                end
+                if cond.second_photodiode
+                    rectSize = [0.05 0.06].*self.rect(3:4);  
+                    rect = [self.rect(3)-rectSize(1), 0, self.rect(3), rectSize(2)];
+                    Screen('FillRect', self.win, 255, rect);
                 end
                 phase = phase + phaseIncrement1;
                 self.flip(false, false, frame==1)

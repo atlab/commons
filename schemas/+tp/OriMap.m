@@ -35,6 +35,7 @@ classdef OriMap < dj.Relvar & dj.AutoPopulate
             G = fetch1(tp.OriDesign & key, 'design_matrix');
             
             X = bsxfun(@rdivide, X, mean(X))-1;  %use dF/F
+            opt = fetch(tp.CaOpt & key, '*');
             if opt.highpass_cutoff>0
                 k = hamming(round(fps/opt.highpass_cutoff)*2+1);
                 X = X - ne7.dsp.convmirr(X,k);

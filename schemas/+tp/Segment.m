@@ -17,7 +17,7 @@ classdef Segment < dj.Relvar & dj.AutoPopulate
         
         function makeTuples(self, key)
             self.insert(key)
-            opt = fetch(tp.SegOpt & key, '*');
+            opt = fetch(tp.SegOpt & key, '*');            
             switch opt.seg_algo
                 case 'manual'
                     makeTuples(tp.SegmentManual, key)

@@ -3,10 +3,11 @@ function pick    % stims.pick allows picking one of several preconfigured visual
 parentTable = common.Animal;
 
 menu = {% menu-item    callback
-    'grating: 1s ON/1s OFF (384 s)'               setParams(stims.Grating, 2, 'direction', 0:15:359, 'pre_blank', 1.0, 'trial_duration', 2.0, 'aperture_radius', 0.5, 'init_phase', 0:0.25:0.75)
+    'grating: 1s ON/1s OFF (384 s)'               setParams(stims.Grating, 2, 'direction', 0:15:359, 'pre_blank', 1.0, 'trial_duration', 1.0, 'aperture_radius', 2.0, 'init_phase', 0:0.25:0.75)
+    'grating: 1s ON/1s OFF (384 s)'               setParams(stims.Grating, 1, 'second_photodiode', [0 1], 'direction', 0:15:359, 'pre_blank', 1.0, 'trial_duration', 1.0, 'aperture_radius', 2.0, 'init_phase', 0:0.25:0.75)
     'grating: 1s ON/0s OFF (288 s)'               setParams(stims.Grating, 4, 'direction', 0:15:359, 'pre_blank', 0.0, 'trial_duration', 1.0, 'aperture_radius', 0.63, 'init_phase', 0:0.25:0.75)
     'grating: [0.5 1.0 2.0]s ON/0.5s OFF (960 s)' setParams(stims.Grating, 2, 'direction', 0:15:359, 'pre_blank', 0.5, 'aperture_radius', 0.63, 'trial_duration', [0.5 1.0 2.0], 'init_phase', [0 .5])
-    'grating: in four spots (960 s)'              setParams(stims.Grating, 12, 'pre_blank', 6, 'trial_duration', 4.0, 'direction', [90 180], 'aperture_radius', 0.2, 'aperture_x', [-0.4 0.4], 'aperture_y',[-0.3 0.3], 'temp_freq',4,'spatial_freq',.03)
+    'grating: in four spots (960 s)'              setParams(stims.Grating, 8, 'pre_blank', 2, 'trial_duration', 3.0, 'direction', [90 180], 'aperture_radius', 0.3, 'aperture_x', [-0.47 0.47], 'aperture_y',[-0.32 0.32], 'temp_freq',4,'spatial_freq',.03)
     %'grating: in four spots (960 s)'              setParams(stims.Grating, 12, 'pre_blank', 6, 'trial_duration', 4.0, 'direction', [90 180], 'aperture_radius', 0.2, 'aperture_x', [-0.4 0.4], 'aperture_y',[-0.3 0.3], 'temp_freq',8 ,'spatial_freq',.03)
     %'grating: adaptation in one spot ()'          setParams(stims.Grating, 6, 'pre_blank', 6, 'trial_duration', 4.0, 'direction', [0 90 180 270], 'aperture_radius', 0.3, 'aperture_x', -.4, 'aperture_y', -.4, 'spatial_freq', .08, 'temp_freq', 1, 'phase2_fraction', 0.5, 'phase2_temp_freq', -1')
     %'grating: in one spot (800 s)'                setParams(stims.Grating, 30, 'pre_blank', 6, 'trial_duration', 4.0, 'direction', [90 180], 'aperture_radius', 0.2, 'aperture_x', -0.4, 'aperture_y',-0.3, 'spatial_freq',.046,'temp_freq',0.87)
@@ -65,8 +66,8 @@ end
 %%%% run the execution loop %%%%%
 function run(menu, key, monitorDistance)
 
-% blank the screen and set default luminance 
-stims.core.Visual.screen.open;  
+% blank the screen and set default luminance
+stims.core.Visual.screen.open;
 stims.core.Visual.screen.setContrast(3, 0.5);
 
 % wait for user input
@@ -80,6 +81,13 @@ while ch~='q'
         break
     elseif ismember(ch, '1':char('0'+length(menu)))
         stim = menu{str2double(ch),2};
+        rect = stims.core.Visual.screen.rect;
+        if any([stim.constants.resolution_x stim.constants.resolution_y] ~= rect(3:4)) 
+            disp 'Mismatching screen size'
+            fprintf('Stimulus specifies [%d,%d]\n', stim.constants.resolution_x, stim.constants.resolution_y)
+            fprintf('Screen resolution is [%d,%d]\n', rect(3), rect(4))
+            break
+        end
         stim.init(key, 'monitor_distance', monitorDistance)
         fprintf('Selected stimulus %c\n', ch);
     elseif ch=='r' && ~isempty(stim)

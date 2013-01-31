@@ -10,7 +10,7 @@ classdef Extract < dj.Relvar & dj.AutoPopulate
 
 	properties(Constant)
 		table = dj.Table('tp.Extract')
-		popRel = tp.Segment  % !!! update the populate relation
+		popRel = tp.Segment  
 	end
 
 	methods(Access=protected)

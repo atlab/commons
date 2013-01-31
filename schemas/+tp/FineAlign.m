@@ -18,6 +18,12 @@ classdef FineAlign < dj.Relvar & dj.AutoPopulate
         popRel = tp.Align
     end
     
+    methods
+        function self = FineAlign(varargin)
+            self.restrict(varargin{:})
+        end
+    end
+    
     methods(Access=protected)
         
         function makeTuples(self, key)

@@ -1,36 +1,42 @@
 %{
 tp.Segment3D (imported) # extraction of calcium traces
 -> tp.Motion3D
--> tp.FineAlign
--> tp.SegOpt
+-> tp.Segment
 -----
-validity_trace   : longblob                      # boolean trace indicates periods of signal validity
+mask3d      : longblob                      # boolean stack marking cell bodies
+mask2d      : longblob                      # boolean image marking cells in the imaged planed
+valid_frames: longblob                      # boolean array marking frames for which mask 2D is valid
 %}
 
-classdef Segment3D < dj.Relvar & dj.AutoPopulate
+classdef Segment3D < dj.Relvar 
     
     properties(Constant)
         table = dj.Table('tp.Segment3D')
-        popRel = tp.Motion3D*tp.SegOpt & 'activated=1' ...
-            & 'zdrift<2.5' & 'seg_algo in ("DoG 3D","convex 3D","manual")'
     end
     
-    methods
-        function self = Segment3D(varargin)
-            self.restrict(varargin)
-        end
-    end
-    
-    methods(Access=protected)
+    methods    
         function makeTuples(self, key)
-            tuple = key;
-            tuple.validity_trace = true;
-            drift = fetch1(tp.Motion3D(key), 'xyz_trajectory');
-            zcenter = mean(quantile(drift(:,3), [0.1 0.9]));
-            tuple.validity_trace = abs(drift(:,3)-zcenter) < 1;
-            fprintf('%2.2f%% of the movie was within z-range\n', mean(tuple.validity_trace)*100);
-            self.insert(tuple)
-            makeTuples(tp.Trace3D, key)
+            disp 'raster correction...'
+            stack = fetch1(tp.Ministack & key, 'green_slices');
+            warp = zeros(size(stack,3),3,7);
+            for iSlice = 1:size(stack,3)
+                 warp(iSlice,:,:) = ne7.micro.RasterCorrection.fit(stack(:,:,iSlice), [3 7]);
+            end
+            warp = median(warp);
+            s = ne7.micro.RasterCorrection.apply(stack,warp);
+                            
+            opt = fetch(tp.SegOpt & key, '*');
+            
+            [dx, dy] = fetch1(tp.Align & key, '(px_width/um_width)->px', '(px_height/um_height)->py');
+            dz = fetch1(tp.Ministack & key, 'abs(zstep)->dz');
+            voxelDims = [dy dx dz];
+            debug = true;
+            contrast = double(0.05*mean(stack(:)));
+            cellRadius = opt.min_radius;
+            mask3d = ne7.ip.segmentCells3D(double(stack), voxelDims, cellRadius, contrast, debug);
+            
+            
+            self.insert(key)
         end
     end
 end

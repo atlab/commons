@@ -1,7 +1,7 @@
 %{
 tp.VonTraceShuffle (computed) # Von Mises tuning with resampling
 -> tp.Sync
--> tp.Trace
+-> tp.Trace2
 -> tp.CaOpt
 -----
 vt_pref  : float  # (radians) preferred direction
@@ -18,7 +18,8 @@ classdef VonTraceShuffle < dj.Relvar & dj.AutoPopulate
     
     properties(Constant)
         table  = dj.Table('tp.VonTraceShuffle')
-        popRel = pro(tp.Sync*tp.CaOpt & tp.Trace, psy.Grating, 'count(distinct direction)->ndirections') & 'ndirections>=8'
+        popRel = pro(tp.Sync*tp.CaOpt*tp.Extract2, psy.Grating, 'tau', 'count(distinct direction)->ndirections') ...
+            & 'ndirections>=8' & tp.Trace2 & 'tau between 1.0 and 1.7'
     end
     
     methods(Access=protected)
@@ -27,7 +28,7 @@ classdef VonTraceShuffle < dj.Relvar & dj.AutoPopulate
             % fetch traces
             times = fetch1(tp.Sync(key), 'frame_times');
             
-            [X,keys] = fetchn(tp.Trace & key, 'gtrace');
+            [X,keys] = fetchn(tp.Trace2 & key, 'gtrace');
             X = double([X{:}]);
             fps = fetch1(tp.Align & key, 'fps');
             

@@ -1,6 +1,6 @@
 %{
 tp.TraceOri (computed) # orientation tuning for traces
--> tp.Trace
+-> tp.Trace2
 -> tp.OriDesign
 -----
 regr_coef      : blob   # regression coefficients, width x height x nConds

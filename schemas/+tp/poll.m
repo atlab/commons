@@ -11,18 +11,19 @@ while true
             
         case 2
             parpopulate(tp.Sync,    varargin{:})
+            parpopulate(tp.OriDesign, varargin{:}, tp.CaOpt)
             parpopulate(tp.OriMap,  varargin{:})
             parpopulate(tp.VonMap,  varargin{:})
             parpopulate(tp.Cos2Map, varargin{:})
             
         case 3
             parpopulate(tp.Ministack, varargin{:})
-            parpopulate(tp.Motion3D,  varargin{:})
             parpopulate(tp.VonMap,  varargin{:})
             parpopulate(tp.Cos2Map, varargin{:})
             
         case 4
             parpopulate(tp.FineAlign, varargin{:})
+            parpopulate(tp.Motion3D,  varargin{:})
             
         case 5
             parpopulate(tp.FreqMap, varargin{:})
