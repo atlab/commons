@@ -29,7 +29,7 @@ classdef Grating < stims.core.Visual
             'direction', 0:22.5:359, ... (degrees) 0=north, 90=east
             'phase2_fraction', 0,  ... between 0 and 1
             'phase2_temp_freq', 2, ...
-            'second_photodiode', 0 ... 1=paint photodiode patch in the right corner for the drift period
+            'second_photodiode', 0 ... 1=paint white photodiode patch, -1=black, 0=none
         )
     end
     
@@ -112,7 +112,8 @@ classdef Grating < stims.core.Visual
                 if cond.second_photodiode
                     rectSize = [0.05 0.06].*self.rect(3:4);  
                     rect = [self.rect(3)-rectSize(1), 0, self.rect(3), rectSize(2)];
-                    Screen('FillRect', self.win, 255, rect);
+                    color = (cond.second_photodiode+1)/2*255;
+                    Screen('FillRect', self.win, color, rect);
                 end
                 phase = phase + phaseIncrement1;
                 self.flip(false, false, frame==1)

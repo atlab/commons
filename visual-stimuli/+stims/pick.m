@@ -1,10 +1,11 @@
 function pick    % stims.pick allows picking one of several preconfigured visual stimuli
 
 parentTable = common.Animal;
-
+reload(psy.getSchema)  % preload to speed up the initialization
+ 
 menu = {% menu-item    callback
     'grating: 1s ON/1s OFF (384 s)'               setParams(stims.Grating, 2, 'direction', 0:15:359, 'pre_blank', 1.0, 'trial_duration', 1.0, 'aperture_radius', 2.0, 'init_phase', 0:0.25:0.75)
-    'grating: 1s ON/1s OFF (384 s)'               setParams(stims.Grating, 1, 'second_photodiode', [0 1], 'direction', 0:15:359, 'pre_blank', 1.0, 'trial_duration', 1.0, 'aperture_radius', 2.0, 'init_phase', 0:0.25:0.75)
+    'grating: 1s ON/1s OFF (768 s)'               setParams(stims.Grating, 2, 'second_photodiode', [-1 1], 'direction', 0:15:359, 'pre_blank', 1.0, 'trial_duration', 1.0, 'aperture_radius', 2.0, 'init_phase', 0:0.25:0.75)
     'grating: 1s ON/0s OFF (288 s)'               setParams(stims.Grating, 4, 'direction', 0:15:359, 'pre_blank', 0.0, 'trial_duration', 1.0, 'aperture_radius', 0.63, 'init_phase', 0:0.25:0.75)
     'grating: [0.5 1.0 2.0]s ON/0.5s OFF (960 s)' setParams(stims.Grating, 2, 'direction', 0:15:359, 'pre_blank', 0.5, 'aperture_radius', 0.63, 'trial_duration', [0.5 1.0 2.0], 'init_phase', [0 .5])
     'grating: in four spots (960 s)'              setParams(stims.Grating, 8, 'pre_blank', 2, 'trial_duration', 3.0, 'direction', [90 180], 'aperture_radius', 0.3, 'aperture_x', [-0.47 0.47], 'aperture_y',[-0.32 0.32], 'temp_freq',4,'spatial_freq',.03)
@@ -77,6 +78,8 @@ while ch~='q'
     FlushEvents
     ch = GetChar;
     FlushEvents
+    Screen('DrawText', stims.core.Visual.screen.win, sprintf('Got command %s.',ch));
+    Screen('Flip', stims.core.Visual.screen.win)
     if ch=='q'
         break
     elseif ismember(ch, '1':char('0'+length(menu)))
