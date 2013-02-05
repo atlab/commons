@@ -17,15 +17,14 @@ classdef Visual < handle
     end
     
     properties(Abstract)
-        logger   % an instance of stims.core.Logger
-        constants     % fields to be inserted into the session table
-        params        % structure of cell arrays from which conditions will be derived
-        nBlocks       % number of blocks
+        params          % structure of cell arrays from which conditions will be derived
     end
     
     properties(Access=protected)
         frameStep=1 % 1=full fps, 2=half, 3=third, etc
         conditions
+        logger          % an instance of stims.core.Logger
+        constants       % fields to be inserted into the session table
         saveAfterEachTrial = false
     end
     
@@ -50,23 +49,21 @@ classdef Visual < handle
         end
         
         
-        function init(self, key, varargin)
+        function self = init(self, logger, constants)
             if isempty(self.conditions)
-                for i=1:2:length(varargin)
-                    self.constants.(varargin{i}) = varargin{i+1};
-                end
+                % not yet initialized
+                assert(~isempty(self.params), 'Use setParams first')
+                disp 'generating conditions'
+                self.logger = logger;
+                self.constants = constants;
                 self.conditions = makeFactorialConditions(self.params);
-                self.logger.init(key);
-                self.logger.logSession(self.constants);
-                self.logger.logConditions(self.conditions);
-                disp initialized
+                self.conditions = self.logger.logConditions(self.conditions);
             end
         end
         
         
-        function self = setParams(self, nBlocks, varargin)
+        function self = setParams(self, varargin)
             % update condition parameters
-            self.nBlocks = nBlocks;
             for i=1:2:length(varargin)
                 self.params.(varargin{i}) = varargin{i+1};
             end
@@ -77,44 +74,31 @@ classdef Visual < handle
             self.screen.escape;   % clear the escape
             self.flipCount = self.logger.getLastFlip;
             
-            if ~stims.core.Visual.DEBUG
-                HideCursor
-                Priority(MaxPriority(self.win)); % Use realtime priority for better timing precision:
-            end
-            
-            for irep = 1:self.nBlocks
-                fprintf('\nBlock [%02d/%02d] (%d trials):', irep, self.nBlocks, length(self.conditions))
+            self.flip(true, false, true)  % clear screen
+            for condIdx = randperm(length(self.conditions))   % shuffle conditions
+                condition = dj.struct.join(self.conditions(condIdx), self.constants);
                 
-                self.flip(true, false, true)  % clear screen
-                for condIdx = randperm(length(self.conditions))   % shuffle conditions
-                    condition = dj.struct.join(self.conditions(condIdx), self.constants);
-                    
-                    %%%%%% show stimulus %%%%%%%
-                    if self.escape, break, end
-                    self.showTrial(condition)
-                    if self.escape, break, end
-                    fprintf .
-                    
-                    % log trial (or queue to save at the end of the block)
-                    self.logger.logTrial(struct(...
-                        'cond_idx', condIdx, ...
-                        'flip_times', self.flipTimes, ...
-                        'last_flip_count', self.flipCount))
-                    if self.saveAfterEachTrial
-                        self.logger.flushTrials
-                    end
-                    self.flipTimes = [];
-                end
-                self.flip(true, false, true)  % clear screen
-                
-                % save trials between blocks
-                self.logger.flushTrials;
-                self.flipTimes = [];
+                %%%%%% show stimulus %%%%%%%
                 if self.escape, break, end
+                self.showTrial(condition)
+                if self.escape, break, end
+                fprintf .
+                
+                % log trial (or queue to save at the end of the block)
+                self.logger.logTrial(struct(...
+                    'cond_idx', condition.cond_idx, ...
+                    'flip_times', self.flipTimes, ...
+                    'last_flip_count', self.flipCount))
+                if self.saveAfterEachTrial
+                    self.logger.flushTrials
+                end
+                self.flipTimes = [];
             end
-            Priority(0);
-            fprintf \n
-            ShowCursor;
+            self.flip(true, false, true)  % clear screen
+            
+            % save trials between blocks
+            self.logger.flushTrials;
+            self.flipTimes = [];
         end
         
         
@@ -142,11 +126,10 @@ classdef Visual < handle
     
     
     methods(Static)
-    
         function r = escape
+            % an alias for convenience
             r = stims.core.Screen.escape;
         end
-        
     end
 end
 

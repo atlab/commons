@@ -1,19 +1,6 @@
 classdef Grating < stims.core.Visual
     
     properties
-        nBlocks = 12       
-        logger = stims.core.Logger(psy.Session, psy.Condition, psy.Trial, psy.Grating)
-        
-        % stimulus settings
-        constants = struct(...
-            'stimulus', 'grating', ...
-            'monitor_distance', nan, ...  (cm)
-            'monitor_size', 7, ...       (inches) diagonal
-            'monitor_aspect', 1.7, ...   (physical aspect ratio W/H)
-            'resolution_x', 1024, ...     (pixels)
-            'resolution_y',  600 ...      (pixels)
-            )
-        
         params = struct(...
             'pre_blank', 0.5, ...   (s) blank period preceding trials
             'luminance', 5, ...    cd/m^2 mean
@@ -38,7 +25,7 @@ classdef Grating < stims.core.Visual
         grating
         mask 
     end
-    
+
     
     methods
         function d = degPerPix(self)
