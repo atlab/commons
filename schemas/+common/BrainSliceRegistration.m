@@ -28,7 +28,7 @@ classdef BrainSliceRegistration < dj.Relvar & dj.AutoPopulate
                     'slice_filepath')));
                 
                 [key.input_points, key.base_points] = cpselect(inputImg, baseImg, 'Wait', true);
-                tform = cp2tform(key.input_points, key.base_points, 'piecewise linear');
+                tform = cp2tform(key.input_points, key.base_points, 'affine');
                 
                 clf
                 disp 'displaying results'
