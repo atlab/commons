@@ -19,7 +19,7 @@ classdef BrainSliceRegistration < dj.Relvar & dj.AutoPopulate
         function makeTuples(self, key)
             baseKey = key;
             baseKey.slice_id = key.slice_id - 1;
-            if ~exists(common.BranSliceImage & baseKey)
+            if ~exists(common.BrainSliceImage & baseKey)
                 warning 'no previous slice found... skipped'
             else
                 inputImg = imread(strtrim(fetch1(common.BrainSliceImage & key, ...
@@ -28,7 +28,7 @@ classdef BrainSliceRegistration < dj.Relvar & dj.AutoPopulate
                     'slice_filepath')));
                 
                 [key.input_points, key.base_points] = cpselect(inputImg, baseImg, 'Wait', true);
-                tform = cp2tform(key.input_points, key.base_points, 'affine');
+                tform = cp2tform(key.input_points, key.base_points, 'similarity');
                 
                 clf
                 disp 'displaying results'
@@ -36,7 +36,7 @@ classdef BrainSliceRegistration < dj.Relvar & dj.AutoPopulate
                 imshowpair(inputImg(:,:,2), baseImg(:,:,2))
                 title original
                 subplot 122
-                imshowpair(imtransform(inputImg(:,:,2), tform), baseImg(:,:,2))
+                imshowpair(imtransform(inputImg(:,:,2), tform, 'xdata', [1 size(baseImage,2)], 'ydata', [1 size(baseImage,1)]))
                 title registered
                 
                 if strncmpi('y', input('Commit results? y|n >', 's'), 1)
