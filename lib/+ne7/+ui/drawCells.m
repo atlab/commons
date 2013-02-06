@@ -101,8 +101,7 @@ end
             % buffer only if modified
             undoBuffer = [undoBuffer(max(1,end-30):end) {bw}];  % append but limit buffer size
         end
-        bw = imfill(bw, 'holes');
-        bounds = bwboundaries(bw);
+        bounds = bwboundaries(bw,4);
         hold on
         for i=1:length(bounds)
             bound = bounds{i};

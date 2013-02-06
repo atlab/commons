@@ -29,6 +29,7 @@ while true
             parpopulate(tp.FreqMap, varargin{:})
             
         case 6
+            parpopulate(tp.Geometry,   varargin{:})
             parpopulate(tp.FineOriMap, varargin{:})
             parpopulate(tp.FineVonMap, varargin{:})
             

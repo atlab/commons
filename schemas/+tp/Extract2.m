@@ -10,7 +10,7 @@ classdef Extract2 < dj.Relvar & dj.AutoPopulate
     
     properties(Constant)
         table = dj.Table('tp.Extract2')
-        popRel = tp.SegmentManual * tp.ExtractOpt & (tp.ExtractOpt & 'pixel_averaging in ("NNMF","median","mean")')
+        popRel = tp.SegmentManual * tp.ExtractOpt & 'pixel_averaging in ("NNMF","median","mean")'
     end
     
     methods(Access=protected)
