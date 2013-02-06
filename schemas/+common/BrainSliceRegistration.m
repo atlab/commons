@@ -36,7 +36,7 @@ classdef BrainSliceRegistration < dj.Relvar & dj.AutoPopulate
                 imshowpair(inputImg(:,:,2), baseImg(:,:,2))
                 title original
                 subplot 122
-                imshowpair(imtransform(inputImg(:,:,2), tform, 'xdata', [1 size(baseImage,2)], 'ydata', [1 size(baseImage,1)]))
+                imshowpair(imtransform(inputImg(:,:,2), tform, 'xdata', [1 size(baseImg,2)], 'ydata', [1 size(baseImg,1)]), baseImg)
                 title registered
                 
                 if strncmpi('y', input('Commit results? y|n >', 's'), 1)
