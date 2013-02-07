@@ -40,6 +40,7 @@ classdef BrainSliceRegistration < dj.Relvar & dj.AutoPopulate
                 title registered
                 
                 if strncmpi('y', input('Commit results? y|n >', 's'), 1)
+                    key.n_points=size(key.input_points,1);
                     self.insert(key)
                 end
             end
