@@ -27,9 +27,14 @@ classdef BrainSliceRegistration < dj.Relvar & dj.AutoPopulate
                     'slice_filepath')));
                 baseImg  = imread(strtrim(fetch1(common.BrainSliceImage & baseKey,...
                     'slice_filepath')));
-                
-                [key.input_points, key.base_points] = cpselect(inputImg, baseImg, cache('input'), cache('base'), 'Wait', true);
-                cache  
+                inputxy = cache('input');
+                basexy = cache('base');
+                if isempty(inputxy)
+                    [key.input_points, key.base_points] = cpselect(inputImg, baseImg, 'Wait', true);
+                else
+                    [key.input_points, key.base_points] = cpselect(inputImg, baseImg, inputxy, basexy, 'Wait', true);
+                    cache
+                end
                 tform = cp2tform(key.input_points, key.base_points, 'similarity');
                 clf
                 disp 'displaying results'
