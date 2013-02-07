@@ -22,14 +22,15 @@ classdef BrainSliceRegistration < dj.Relvar & dj.AutoPopulate
             if ~exists(common.BrainSliceImage & baseKey)
                 warning 'no previous slice found... skipped'
             else
+                disp 'reading images...'
                 inputImg = imread(strtrim(fetch1(common.BrainSliceImage & key, ...
                     'slice_filepath')));
                 baseImg  = imread(strtrim(fetch1(common.BrainSliceImage & baseKey,...
                     'slice_filepath')));
                 
-                [key.input_points, key.base_points] = cpselect(inputImg, baseImg, 'Wait', true);
+                [key.input_points, key.base_points] = cpselect(inputImg, baseImg, cache('input'), cache('base'), 'Wait', true);
+                cache  
                 tform = cp2tform(key.input_points, key.base_points, 'similarity');
-                
                 clf
                 disp 'displaying results'
                 subplot 121
@@ -43,7 +44,43 @@ classdef BrainSliceRegistration < dj.Relvar & dj.AutoPopulate
                     key.n_points=size(key.input_points,1);
                     self.insert(key)
                 end
+                close all
             end
         end
     end
+    
+    methods        
+        function refine(self)
+            % refine an existing registration
+            for key = fetch(self)'
+                disp 'About to refine:'
+                disp(key)
+                cache
+                [input,base] = fetch1(common.BrainSliceRegistration & key, 'input_points', 'base_points');
+                cache('input',input)
+                cache('base',base)
+                del(common.BrainSliceRegistration & key)
+                populate(common.BrainSliceRegistration, key);
+                cache
+            end
+        end
+    end
+end
+
+
+function ret = cache(field,value)
+persistent CACHE
+if ~nargout
+    if ~nargin
+        CACHE = struct;
+    else
+        CACHE.(field) = value;
+    end
+else
+    if ~isempty(CACHE) && isfield(CACHE,field)
+        ret = CACHE.(field);
+    else
+        ret = [];
+    end
+end    
 end
