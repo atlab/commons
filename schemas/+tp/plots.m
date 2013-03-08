@@ -236,7 +236,7 @@ classdef plots
                 
                 subplot 221
                 masks = fetchn(tp.Trace & key, 'mask_pixels');
-                if ~isempty(masks)
+                if false && ~isempty(masks)
                     bw = false(size(g));
                     for m = masks'
                         bw(m{:}) = true;
@@ -251,7 +251,7 @@ classdef plots
                 
                 subplot 223
                 h = mod(ori,pi)/pi;   % orientation is represented as hue
-                s = p<1e-3 & amp1>0.4;   % only significantly tuned pixels are shown in color
+                s = p<1e-2 & amp1>0.1;   % only significantly tuned pixels are shown in color
                 v = min(amp1,1.0)/1.0;
                 img = hsv2rgb(cat(3, h, s, v));
                 image(img)

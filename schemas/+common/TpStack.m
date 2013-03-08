@@ -22,7 +22,7 @@ classdef TpStack < dj.Relvar
         end
         
         
-        function [r,g] = getStack(self)
+        function [r,g,scim] = getStack(self)
             key = fetch(self);
             assert(length(key)==1, 'one stack at a time please')
             f = getFilename(common.TpScan & key,0,'stack');
@@ -38,7 +38,9 @@ classdef TpStack < dj.Relvar
         function descend(self)
             key = fetch(self);
             assert(length(key)==1, 'one stack at a time please')
-            f = getFilename(common.TpScan & key);
+            key = fetch(self);
+            assert(length(key)==1, 'one stack at a time please')
+            f = getFilename(common.TpScan & key,0,'stack');
             f=f{1};
             scim = ne7.scanimage.Reader(f);
             
