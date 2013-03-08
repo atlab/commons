@@ -57,10 +57,10 @@ classdef Logger < handle
         end
         
         
-        function nextFlip = getLastFlip(self)
-            nextFlip = max(fetchn(self.trialTable & self.parentKey, 'last_flip_count'));  % flip counts are unique per animal
-            if isempty(nextFlip)
-                nextFlip = 0;
+        function lastFlip = getLastFlip(self)
+            lastFlip = max(fetchn(self.trialTable & self.parentKey, 'last_flip_count'));  % flip counts are unique per animal
+            if isempty(lastFlip)
+                lastFlip = 0;
             end
         end
         
