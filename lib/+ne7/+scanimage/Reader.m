@@ -73,7 +73,6 @@ classdef Reader < handle
                 frameIdx = 1:self.nFrames;
             end
             removeFlyback = nargin<4 || removeFlyback;
-            assert(ismember(iChan,1:self.nChans), 'channel out of range')
             assert(self.hasChannel(iChan), 'Channel %d was not recorded', iChan)
             
             % change iChan to the channel number in the gif file.

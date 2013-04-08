@@ -73,6 +73,13 @@ classdef Grating < stims.core.Visual
             phase = cond.init_phase;
             freq = cond.spatial_freq * self.degPerPix;  % cycles per pixel
             if cond.pre_blank>0
+                if cond.second_photodiode
+                    rectSize = [0.05 0.06].*self.rect(3:4);  
+                    rect = [self.rect(3)-rectSize(1), 0, self.rect(3), rectSize(2)];
+                    Screen('FillRect', self.win, 0, rect);
+                end
+                    
+                % display black photodiode rectangle during the pre-blank
                 self.flip(false, false, true)
                 WaitSecs(cond.pre_blank);
             end

@@ -68,7 +68,7 @@ classdef Align < dj.Relvar & dj.AutoPopulate
             end
             
             disp 'raster correction'
-            warp = ne7.micro.RasterCorrection.fit(g, [3 5]);
+            warp = ne7.micro.RasterCorrection.fit(double(g), [3 5]);
             tuple.raster_correction = warp;
             g = ne7.micro.RasterCorrection.apply(g, warp);
             

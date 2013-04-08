@@ -46,6 +46,8 @@ classdef Trace < dj.Relvar
             X = movie.getFrames(1,1:movie.nFrames);
             sz = size(X);
             X = reshape(X,[],sz(3));
+            f = getFilename(common.TpScan(key));
+            scim = ne7.scanimage.Reader(f{1});
             
             tuple = key;
             for iTrace = 1:length(regions)
@@ -58,8 +60,11 @@ classdef Trace < dj.Relvar
                 tuple.major_length = regions(iTrace).MajorAxisLength*pitch;
                 tuple.minor_length = regions(iTrace).MinorAxisLength*pitch;
                 bgRadius = regions(iTrace).EquivDiameter*1.5;
+                
                 tuple.g_contrast = getContrast(g, pixels, bgRadius);
-                tuple.r_contrast = getContrast(r, pixels, bgRadius);
+                if scim.hdr.acq.savingChannel2
+                    tuple.r_contrast = getContrast(r, pixels, bgRadius);
+                end
                 self.insert(tuple)
             end
         end
