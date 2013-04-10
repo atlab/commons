@@ -3,7 +3,9 @@ persistent schemaObject
 
 if isempty(schemaObject)
     common.getSchema;
-    schemaObject = dj.Schema(dj.conn, 'psy', 'common_psy');
+    psy.getSchema;
+    tp.getSchema;
+    schemaObject = dj.Schema(dj.conn, 'pop', 'dimitri_population');
 end
 
 obj = schemaObject;

@@ -18,12 +18,6 @@ classdef FineAlign < dj.Relvar & dj.AutoPopulate
         popRel = tp.Align
     end
     
-    methods
-        function self = FineAlign(varargin)
-            self.restrict(varargin{:})
-        end
-    end
-    
     methods(Access=protected)
         
         function makeTuples(self, key)
@@ -60,10 +54,13 @@ classdef FineAlign < dj.Relvar & dj.AutoPopulate
             
             m = tp.utils.Movie(key, tuple.warp_polynom, tuple.xwarp_degree);
             tuple.fine_green_img = m.getMeanFrame(1);
-            tuple.fine_red_img = m.getMeanFrame(2);
             
+            if scim.hdr.acq.savingChannel2
+                tuple.fine_red_img = m.getMeanFrame(2);
+            end
             
             self.insert(tuple)
         end
     end
 end
+
