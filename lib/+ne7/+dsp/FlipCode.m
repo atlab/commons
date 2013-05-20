@@ -38,6 +38,11 @@ classdef FlipCode
                 trialFlipTimes = [trialFlipTimes{:}];
                 assert(length(trialFlipTimes)==length(trialFlipNums));
                 
+                % the following line needed to be introduced after the stimulus change on Feb. 14, 2013.
+                % Stimuli recorded before then should be processed without
+                % this line.
+                flipNums = flipNums - 1;
+                
                 % fit times from the trial table to detected flips
                 commonFlipNums = intersect(flipNums, trialFlipNums);
                 if length(commonFlipNums)<requiredFlips
