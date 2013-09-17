@@ -1,7 +1,8 @@
 %{
 reso.Segment (imported) # 2d cell segmentation
+
+-> reso.VolumeSlice
 -> reso.Align
-slice_num       : smallint              # slice number in volume
 ---
 mask                        : longblob                      # binary 4-connected mask image segmenting the aligned image
 segment_ts=CURRENT_TIMESTAMP: timestamp                     # automatic

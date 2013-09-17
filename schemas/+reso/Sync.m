@@ -48,6 +48,8 @@ classdef Sync < dj.Relvar & dj.AutoPopulate
                 
                 [stimTimes, firstTrial, lastTrial] = fetch1(patch.Sync & patchKey, ...
                     'vis_time','first_trial','last_trial');
+                nSlices = fetch1(reso.ScanInfo & key,'nslices');
+                peaks = peaks(1:nSlices:end);  % keep only the first slice's times
                 key.frame_times = stimTimes(peaks);
                 key.first_trial = firstTrial;
                 key.last_trial = lastTrial;
