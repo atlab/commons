@@ -34,7 +34,7 @@ for i = 1:nFrames
     % find peak correlation and its offsets
     [peakcorr(i), idx(i)]=max(c(:)); %#ok<AGROW>
 end
-[y x]=ind2sub(sz,idx);
+[y,x]=ind2sub(sz,idx);
 
 % compute offsets (coordinate of peak correlation relative to the center of the image)
 y = y(:) - ceil((sz(1)+1)/2);

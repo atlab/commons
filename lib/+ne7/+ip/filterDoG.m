@@ -21,5 +21,3 @@ n = (-n:n)'/sigma;
 k = exp(-n.^2/2);
 k = k/sum(k);
 end
-
-

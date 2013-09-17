@@ -3,6 +3,7 @@ reso.ScanInfo (imported) # header information
 -> common.TpScan
 
 -----
+nframes_requested           : smallint                       # number of valumes (from header)
 px_width                    : smallint                      # pixels per line
 px_height                   : smallint                      # lines per frame
 um_width                    : float                         # width in microns
@@ -28,12 +29,13 @@ classdef ScanInfo < dj.Relvar & dj.AutoPopulate
         function makeTuples(self, key)
             [path, basename, scanIdx] = fetch1(...
                 common.TpSession*common.TpScan & key, ...
-                'data_path', 'basename', 'scan_idx');            
+                'data_path', 'basename', 'scan_idx');
             reader = reso.reader(path,basename,scanIdx);
-
+            
             assert(reader.hdr.acqNumAveragedFrames == 1, 'averaging should be off')
             assert(strcmp(reader.hdr.fastZImageType,'XY-Z'),'we assume XY-Z scanning')
-
+            
+            key.nframes_requested = reader.hdr.fastZNumVolumes;
             key.px_height = reader.hdr.scanLinesPerFrame;
             key.px_width  = reader.hdr.scanPixelsPerLine;
             fov = fetch1(common.TpSession & key, 'fov');
@@ -41,7 +43,7 @@ classdef ScanInfo < dj.Relvar & dj.AutoPopulate
             key.um_height = fov/zoom*reader.hdr.scanAngleMultiplierSlow;
             key.um_width  = fov/zoom*reader.hdr.scanAngleMultiplierFast;
             key.fps =  1/reader.hdr.fastZPeriod;
-  
+            
             key.bidirectional = ~strncmpi(reader.hdr.scanMode, 'uni', 3);
             key.zoom = zoom;
             key.dwell_time = reader.hdr.scanPixelTimeMean*1e6;

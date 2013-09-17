@@ -1,29 +1,53 @@
-classdef reader < Tiff
-    % scanimage 4.0 reader
+classdef reader < handle
+    % scanimage 4.0 sequential reader
     
     properties(SetAccess=private)
+        path
+        base
+        scanNumber
+        
+        tiff
         hdr
+        multifile
+        currentFrame
+        done
+        
+        currentFileNumber
+    end
+    
+    properties(Dependent)
+        filename
+        nSlices
+        channels
     end
     
     methods
-        function self = reader(path, base, number)
-            filename = getLocalPath(fullfile(path,sprintf('%s_%03u.tif', base, number)));
-            
-            % clean up filename
-            if iscellstr(filename)
-                assert(numel(filename)==1, 'one file at a time');
-                filename = filename{1};
+        function f = get.filename(self)
+            if ~self.multifile
+                f = getLocalPath(fullfile(self.path,sprintf('%s_%03u.tif', self.base, self.scanNumber)));
+            else
+                f = getLocalPath(fullfile(self.path,sprintf('%s_%03u_%03u.tif', self.base, self.scanNumber, self.currentFileNumber)));
             end
-            filename = strtrim(filename);
-            if isempty(regexp(filename,'\.tif?f$','once'))
-                filename = [filename '.tif'];
+        end
+        
+        function self = reader(path, base, scanNumber)
+            self.path = path;
+            self.base = base;
+            self.scanNumber = scanNumber;
+            self.multifile = false;
+            if ~exist(self.filename,'file')
+                self.multifile = true;
+                self.currentFileNumber = 1;
+                assert(exist(self.filename,'file')==2, 'can''t find scanimage file "%s"', self.filename)
             end
             
             % open Tiff
-            self = self@Tiff(filename, 'r');
+            self.tiff = Tiff(self.filename, 'r');
+            self.currentFrame = 0;
+            self.done = false;
             
             % read header
-            self.hdr = self.getTag('ImageDescription');
+            self.hdr = self.tiff.getTag('ImageDescription');
             self.hdr = textscan(self.hdr,'%s','Delimiter',char([10]));
             self.hdr = strtrim(self.hdr{1});
             self.hdr = regexp(self.hdr,'^scanimage\.SI4\.(?<attr>\w*)\s*=(?<value>.*)$','names');
@@ -46,8 +70,52 @@ classdef reader < Tiff
             end
         end
         
+        function reset(self)
+            self.done = false;
+            self.currentFrame = 0;
+            self.tiff.setDirectory(1);
+            if self.multifile
+                self.currentFileNumber = 1;
+            end
+            
+        end
         
-        function varargout = readBlock(self, channels, slices, blockSize)
+        
+        function advance(self)
+            % advance to next directory
+            if ~self.tiff.lastDirectory
+                try
+                    self.tiff.nextDirectory;
+                catch err
+                    disp(err)
+                    self.done = true;
+                end
+            else
+                if ~self.multifile
+                    self.done = true;
+                else
+                    % advance to next file
+                    self.currentFileNumber = self.currentFileNumber+1;
+                    self.done = ~exist(self.filename,'file');
+                    if ~self.done
+                        self.tiff = Tiff(self.filename);
+                    end
+                end
+            end
+        end
+        
+        
+        function n = get.nSlices(self)
+            n = self.hdr.stackNumSlices;
+        end
+        
+        
+        function channels = get.channels(self)
+            channels = self.hdr.channelsSave;
+        end
+        
+        
+        function block = read(self, channels, slices, blockSize)
             % [stack1, stack2, ...] = reader.readBlock(channels, slices, blockSize)
             % Read scanimage4 tiff file.
             % INPUTS:
@@ -55,35 +123,41 @@ classdef reader < Tiff
             %   slices:  list of slices to read in each channel
             %   bloackSize: number of frames (stacks)
             
-            nSlices = self.hdr.stackNumSlices;
-            assert(all(slices>=1 & slices <= nSlices), 'invalid slice indices')
-            assert(all(ismember(channels, self.hdr.channelsSave)), ...
+            assert(all(slices>=1 & slices <= self.nSlices), 'invalid slice indices')
+            assert(all(ismember(channels, self.channels)), ...
                 'requested channel was not recorded')
             sz = [self.hdr.scanLinesPerFrame self.hdr.scanPixelsPerLine length(slices) blockSize];
             blocks = repmat({nan(sz)}, length(channels), 1);
-            done = false;
             for iFrame=1:blockSize
-                for iSlice = 1:nSlices
-                    for iChannel = self.hdr.channelsSave
+                self.currentFrame = self.currentFrame + 1;
+                for iSlice = 1:self.nSlices
+                    for iChannel = self.channels(:)'
                         % read frame
                         if ismember(iChannel, channels) && ismember(iSlice, slices)
-                            blocks{iChannel==channels}(:,:,iSlice==slices,iFrame) = self.read;
+                            blocks{iChannel==channels}(:,:,iSlice==slices,iFrame) = self.tiff.read;
                         end
-                        try
-                            self.nextDirectory
-                        catch
-                            done = true;
-                            for i=1:length(channels)
-                                blocks{i}(:,:,:,iFrame:end)=[];
-                            end
-                            break
-                        end
+                        self.advance
+                        if self.done, break, end
                     end
-                    if done, break, end
+                    if self.done, break, end
                 end
-                if done, break, end
+                if self.done, break, end
             end
-            varargout = blocks;
+            
+            % remove extra frames
+            if ~isempty(blocks)
+                ix = find(any(any(any(isnan(blocks{self.channels==channels(end)}),1),2),3),1,'first');
+                if ix
+                    for iChannel = 1:length(channels)
+                        blocks{iChannel==channels}(:,:,:,ix:end)=[];
+                    end
+                end
+                
+                block = struct;
+                for i = 1:length(channels)
+                    block.(sprintf('channel%u',channels(i))) = blocks{i};
+                end
+            end
         end
     end
 end

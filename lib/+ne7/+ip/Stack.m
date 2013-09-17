@@ -18,6 +18,67 @@ classdef Stack < handle
             end
         end
         
+        
+        function c = corr(self, stack2)
+            % compute correlation with another stack of the same size
+            assert(all(size(self.stack)==size(stack2)))
+            
+            % if first time, compute conjFFT
+            firstTime = isempty(self.conjFFT);
+            if firstTime
+                tempStack = self.stack;
+            end
+            
+            % apply Difference-of-Gaussians filter
+            sigmas = [1 5];
+            stack2 = ne7.ip.filterDoG(stack2, sigmas);
+            if firstTime
+                tempStack = ne7.ip.filterDoG(tempStack, sigmas);
+            end
+            
+            % mask out features near bounadries
+            sz = size(self.stack);
+            mask = atan(10*hanning(sz(1)))*atan(10*hanning(sz(2)))' /atan(10)^2;
+            stack2 = bsxfun(@times, stack2, mask);
+            if firstTime
+                tempStack = bsxfun(@times, tempStack, mask);
+            end
+            
+            % normalize each frame
+            stack2   = bsxfun(@rdivide, stack2, sqrt(sum(sum(stack2.^2))));
+            if firstTime
+                tempStack = bsxfun(@rdivide, tempStack, sqrt(sum(sum(tempStack.^2))));
+            end
+            
+            % transfer to frequency domain
+            stack2 = fft2(stack2);
+            if firstTime
+                self.conjFFT = conj(fftn(tempStack));
+                clear tempStack
+            end
+            
+            % compute the shift of the peak correlation
+            nFrames = size(stack2,3);
+            for iFrame=1:nFrames
+                c = ifftn(bsxfun(@times, img(:,:,iFrame), self.conjFFT));
+                c = fftshift(fftshift(real(c),1),2);
+                [peakcorr(iFrame),idx(iFrame)] = max(c(:)); %#ok<AGROW>
+            end
+            [y, x, z] = ind2sub(size(self.conjFFT),idx);
+            
+            % recenter offsets
+            y = y(:) - ceil((sz(1)+1)/2);
+            x = x(:) - ceil((sz(2)+1)/2);
+            z = z(:) - ceil((sz(3)+1)/2);
+
+            
+        end
+        
+        
+        
+        
+        
+        
         function [x,y,z, peakcorr] = xcorrpeak3d(self, img)
             % finds the optimal offset between image and stack.
             % If img is a movie, does so for every frame.
@@ -64,10 +125,10 @@ classdef Stack < handle
             nFrames = size(img,3);
             for iFrame=1:nFrames
                 c = ifftn(bsxfun(@times, img(:,:,iFrame), self.conjFFT));
-                c = fftshift(fftshift(c,1),2);
+                c = fftshift(fftshift(real(c),1),2);
                 [peakcorr(iFrame),idx(iFrame)] = max(c(:)); %#ok<AGROW>
             end
-            [y x z] = ind2sub(size(self.conjFFT),idx);
+            [y, x, z] = ind2sub(size(self.conjFFT),idx);
             
             % recenter offsets
             y = y(:) - ceil((sz(1)+1)/2);
