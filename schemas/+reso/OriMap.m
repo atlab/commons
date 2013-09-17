@@ -22,10 +22,7 @@ classdef OriMap < dj.Relvar & dj.AutoPopulate
     methods(Access=protected)
         
         function makeTuples(self, key)
-            xymotion = fetch1(reso.Align & key, 'motion_xy');
-            xymotion(:,:,end+1) = xymotion(:,:,end);  % extend by one frame 
             reader = getReader(reso.Align & key);
-            
             for iSlice=1:reader.nSlices
                 fprintf('loading slice %d: \n', iSlice);
                 reader.reset
@@ -73,6 +70,4 @@ classdef OriMap < dj.Relvar & dj.AutoPopulate
             end
         end
     end
-    
-    
 end
