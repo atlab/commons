@@ -21,7 +21,7 @@ classdef OriDesign < dj.Relvar & dj.AutoPopulate
         function makeTuples(self, key)
             times = fetch1(reso.Sync & key, 'frame_times');
             opt = fetch(reso.CaOpt & key, '*');
-            trialRel = reso.Sync*psy.Trial*psy.Grating & ...
+            trialRel = reso.Sync*psy.Trial*psy.Grating & key & ...
                 'trial_idx between first_trial and last_trial';
             disp 'constructing design matrix...'
             G = reso.OriDesign.makeDesignMatrix(times, trialRel, opt);

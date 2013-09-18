@@ -28,7 +28,7 @@ classdef OriMap < dj.Relvar & dj.AutoPopulate
                 reader.reset
                 blockSize = 500;
                 xymotion = fetch1(reso.Align & key, 'motion_xy');
-                xymotion(:,:,end+1) = xymotion(:,:,end);  % extend by one frame
+                xymotion(:,:,end+1) = xymotion(:,:,end);  %#ok<AGROW> % extend by one frame
                 
                 X = [];
                 while ~reader.done
@@ -48,6 +48,7 @@ classdef OriMap < dj.Relvar & dj.AutoPopulate
                 G = fetch1(reso.OriDesign & key, 'design_matrix');
                 G = G(1:size(X,1),:);
                 
+                % high-pass filtration
                 X = bsxfun(@rdivide, X, mean(X))-1;  %use dF/F
                 opt = fetch(reso.CaOpt & key, '*');
                 if opt.highpass_cutoff>0
