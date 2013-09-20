@@ -29,11 +29,11 @@ classdef BrainState < dj.Relvar & dj.AutoPopulate
             amp = abs(hilbert(vm));
             
             % filter below 0.5 Hz
-            cutoff = 0.5;  % Hz
-            k = hamming(round(fs/cutoff)*2+1); k = k/sum(k);
-            amp = ne7.dsp.convmirr(amp,k);
+%             cutoff = 2;  % Hz
+%             k = hamming(round(fs/cutoff)*2+1); k = k/sum(k);
+%             amp = ne7.dsp.convmirr(amp,k);
             amp(isnan(cleanVm)) = nan;            
-            key.brain_state_trace = amp;
+            key.brain_state_trace = single(amp);
             
             self.insert(key)
         end

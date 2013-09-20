@@ -35,7 +35,9 @@ classdef ScanInfo < dj.Relvar & dj.AutoPopulate
             assert(reader.hdr.acqNumAveragedFrames == 1, 'averaging should be off')
             assert(strcmp(reader.hdr.fastZImageType,'XY-Z'),'we assume XY-Z scanning')
             
-            key.nframes_requested = reader.hdr.fastZNumVolumes;
+            key.nframes_requested = ...
+                reader.hdr.fastZActive*reader.hdr.fastZNumVolumes + ...
+                (1-reader.hdr.fastZActive)*reader.hdr.acqNumFrames;
             key.px_height = reader.hdr.scanLinesPerFrame;
             key.px_width  = reader.hdr.scanPixelsPerLine;
             fov = fetch1(common.TpSession & key, 'fov');

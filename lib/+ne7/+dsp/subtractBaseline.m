@@ -10,9 +10,9 @@ function y = subtractBaseline(x, fs, bandwidth)
 
 k = hamming(round(fs/bandwidth)*2+1);
 k = k/sum(k);
-zthresh = 1.5;
+zthresh = 1.0;
 y = double(x);
-for iter = 1:5
+for iter = 1:15
     s = ne7.dsp.convmirr(y,k);
     d = y - s;
     negSigma = sqrt(sum(min(0,d.^2))/sum(d<0));    % stddev of negative outliers
