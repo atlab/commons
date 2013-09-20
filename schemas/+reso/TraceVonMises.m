@@ -5,6 +5,7 @@ reso.TraceVonMises (computed) # VonMises tuning fits for traces
 -> reso.CaOpt
 
 -----
+responses : blob    # the responses to each direction
 von_r2    : double  # fraction of variance explained (after gaussinization)
 von_fp    : double  # p-value of F-test
 sharpness : float   # tuning sharpness
@@ -41,12 +42,13 @@ classdef TraceVonMises < dj.Relvar & dj.AutoPopulate
             [X, traceKeys] = fetchn(reso.Trace & key, 'ca_trace');
             X = double([X{:}]);
             X = bsxfun(@rdivide, X, mean(X));
-            X = ne7.dsp.subtractBaseline(X,fps,0.03);
-            X = bsxfun(@minus, X, mean(X));
+            X = ne7.dsp.subtractBaseline(X,fps,0.02);
+            M = mean(X);
+            X = bsxfun(@minus, X, M);
             
             % linear regression & von Mises fit
             trials = fetch(trialRel, 'direction', 'flip_times');
-            [von,R2,Fp] = regress(times, X, trials, opt);
+            [von,B,R2,Fp] = regress(times, X, trials, opt);
             
             % compute significance by shuffling
             nShuffles = 1e4;
@@ -56,20 +58,21 @@ classdef TraceVonMises < dj.Relvar & dj.AutoPopulate
                     fprintf .
                 end
                 trials = arrayfun(@(x,y) struct('flip_times',x.flip_times,'direction',y.direction), trials, trials(randperm(end)));
-                [~,R2_] = regress(times, X, trials, opt);
+                [~,~,R2_] = regress(times, X, trials, opt);
                 p = p + (R2_ >= R2)/nShuffles;
             end
             fprintf \n
             
             for i=1:length(traceKeys)
                 tuple = dj.struct.join(key,traceKeys(i));
+                tuple.responses = single(B(:,i)) + M(i);
                 tuple.von_r2    = R2(i);
                 tuple.von_fp    = Fp(i);
                 tuple.pref_dir  = von.w(i,5);
                 tuple.sharpness = von.w(i,4);
                 tuple.peak_amp1 = von.w(i,2);
                 tuple.peak_amp2 = von.w(i,3);
-                tuple.von_base  = von.w(i,1);
+                tuple.von_base  = von.w(i,1) + M(i);
                 tuple.nshuffles = nShuffles;
                 tuple.shuffle_p = p(i);
                 self.insert(tuple)
@@ -79,10 +82,12 @@ classdef TraceVonMises < dj.Relvar & dj.AutoPopulate
 end
 
 
-function [von, R2, Fp] = regress(times, X, trials, opt)
+function [von, B, R2, Fp] = regress(times, X, trials, opt)
 G = reso.OriDesign.makeDesignMatrix(times, trials, opt);
+G = double(G);
 C = G'*G;
 
+G = G(1:size(X,1),:);
 [B,R2,~,dof] = ne7.stats.regress(X, G, 0);
 von = fit(ne7.rf.VonMises2, B);
 F = von.compute(von.phi);  % fitted tuning curves

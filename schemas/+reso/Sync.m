@@ -1,11 +1,12 @@
 %{
-reso.Sync (computed) # one-to-one mapping to patch recordings
+reso.Sync (imported) # one-to-one mapping to patch recordings
 -> reso.Align
------
+---
+-> patch.Sync
 -> psy.Session
-first_trial :   int         # first trial in recording
-last_trial :    int         # last trial in recording
-frame_times : longblob    # times of frames and slices
+first_trial          : int                   # first trial in recording
+last_trial           : int                   # last trial in recording
+frame_times          : longblob              # times of frames and slices
 %}
 
 classdef Sync < dj.Relvar & dj.AutoPopulate
@@ -19,11 +20,11 @@ classdef Sync < dj.Relvar & dj.AutoPopulate
         
         function makeTuples(self, key)
             % borrow synchronization from matching patch.Session
-            patchKey = fetch(pro(reso.Align & key,'scan_idx->file_num')*patch.Recording);
-            assert(length(patchKey)==1)
+            key = fetch(pro(reso.Align & key,'(scan_idx)->file_num')*patch.Sync);
+            assert(numel(key)==1)
                 
             % find frame pulses
-            [p,f] = fetch1(patch.Session*patch.Recording & patchKey,'path','filename');
+            [p,f] = fetch1(patch.Session*patch.Recording & key,'path','filename');
             filename = getLocalPath(fullfile(p,f));
             dat = patch.utils.readPatchStimHD5(filename);
             datT = patch.utils.ts2sec(dat.ts);
@@ -44,7 +45,7 @@ classdef Sync < dj.Relvar & dj.AutoPopulate
             assert(ismember(length(peaks), [requestedFrames, recordedFrames]),...
                 'Could not detect frame pulses')
             
-            [stimTimes, firstTrial, lastTrial] = fetch1(patch.Sync & patchKey, ...
+            [stimTimes, firstTrial, lastTrial] = fetch1(patch.Sync & key, ...
                 'vis_time','first_trial','last_trial');
             nSlices = fetch1(reso.ScanInfo & key,'nslices');
             peaks = peaks(1:nSlices:end);  % keep only the first slice's times

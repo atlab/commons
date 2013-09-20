@@ -12,7 +12,7 @@ classdef plots  < handle
                     g = fetch1(reso.Align & key, 'green_img');
                     [amp, r2, ori, p] = fetchn(reso.Cos2Map & key, ...
                         'cos2_amp', 'cos2_r2', 'pref_ori', 'cos2_fp');
-                   
+                    
                     % add a black line at the bottom of each figure
                     p = cellfun(@(x) cat(1,x,nan(3,size(x,2))), p, 'uni',false);
                     amp = cellfun(@(x) cat(1,x,nan(3,size(x,2))), amp, 'uni',false);
@@ -41,6 +41,13 @@ classdef plots  < handle
                 end
             end
         end
+        
+        
+        
+        function TraceVonMises(varargin)
+            
+        end
+        
     end
     
     
