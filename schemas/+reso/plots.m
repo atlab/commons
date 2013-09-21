@@ -46,13 +46,14 @@ classdef plots  < handle
         
         function BrainStateTuning(varargin)
             traceKeys = fetch(reso.Trace & (reso.TraceVonMises & 'shuffle_p<0.001') & reso.BrainState & varargin);
+            prior = 0.5;  % time before the stimulus at which to measure the brain state
             for key = traceKeys'
                 [eTime,brainState] = fetch1(reso.BrainState*reso.Sync*patch.Sync & key,'vis_time','brain_state_trace');
                 s = fetch(reso.PeriStimTrace & key, '*');
                 if ~isempty(s)
                     bs = nan(length(s),1);
                     for i = 1:length(s)
-                        [~,ix] = min(abs(s(i).stim_onset - eTime));
+                        [~,ix] = min(abs(eTime - (s(i).stim_onset - prior)));
                         bs(i) = brainState(ix);
                     end
                     [bs,ix] = sort(bs);
@@ -60,11 +61,12 @@ classdef plots  < handle
                 end
                 x = ((1:length(s(1).trial_trace))-s(1).onset_idx)*s(1).peristim_dt;
                 imagesc(x,bs,cat(1,s.trial_trace),[0 0.2])
+                colormap(1-gray)
                 xlabel 'time since stimulus onset'
                 ylabel 'sorted by brain state'
                 set(gcf, 'PaperSize', [4 3], 'PaperPosition', [0 0 4 3])
                 f = sprintf('~/dev/figures/reso/brain_states/Mouse%d_%03u_%u_%03u.png',key.animal_id,key.scan_idx,key.slice_num,key.trace_id);
-                print('-dpng','-r150',f) 
+                print('-dpng','-r150',f)
             end
         end
         
