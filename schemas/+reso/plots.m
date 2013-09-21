@@ -44,7 +44,11 @@ classdef plots  < handle
         
         
         
-        function TraceVonMises(varargin)
+        function BrainStateTuning(varargin)
+            traceKeys = fetch(reso.Trace & reso.PeriStimTrace & (reso.TraceVonMises & 'shuffle_p<0.001') & reso.BrainState & varargin);
+            for key = traceKeys'
+                reso.
+            end
             
         end
         
