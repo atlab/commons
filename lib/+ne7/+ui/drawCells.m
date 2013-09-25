@@ -97,6 +97,9 @@ end
 
     function redraw
         removeOutlines
+        if isempty(undoBuffer)
+            return
+        end
         if ~all(undoBuffer{end}(:)==bw(:))
             % buffer only if modified
             undoBuffer = [undoBuffer(max(1,end-30):end) {bw}];  % append but limit buffer size
