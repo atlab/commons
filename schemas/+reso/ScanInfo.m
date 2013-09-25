@@ -30,7 +30,12 @@ classdef ScanInfo < dj.Relvar & dj.AutoPopulate
             [path, basename, scanIdx] = fetch1(...
                 common.TpSession*common.TpScan & key, ...
                 'data_path', 'basename', 'scan_idx');
-            reader = reso.reader(path,basename,scanIdx);
+            try
+                reader = reso.reader(path,basename,scanIdx);
+            catch
+                basename = fetch1(pro(patch.Recording * patch.Patch, 'file_num->scan_idx','filebase') & key, 'filebase');
+                reader = reso.reader(path,basename,scanIdx);
+            end
             
             assert(reader.hdr.acqNumAveragedFrames == 1, 'averaging should be off')
             assert(strcmp(reader.hdr.fastZImageType,'XY-Z'),'we assume XY-Z scanning')
@@ -44,7 +49,13 @@ classdef ScanInfo < dj.Relvar & dj.AutoPopulate
             zoom = reader.hdr.scanZoomFactor;
             key.um_height = fov/zoom*reader.hdr.scanAngleMultiplierSlow;
             key.um_width  = fov/zoom*reader.hdr.scanAngleMultiplierFast;
-            key.fps =  1/reader.hdr.fastZPeriod;
+            if reader.hdr.fastZActive
+                key.fps =  1/reader.hdr.fastZPeriod;
+                key.slice_pitch = reader.hdr.stackZStepSize;
+            else
+                key.fps = reader.hdr.scanFrameRate;
+                key.slice_pitch = 0;
+            end
             
             key.bidirectional = ~strncmpi(reader.hdr.scanMode, 'uni', 3);
             key.zoom = zoom;
@@ -54,7 +65,6 @@ classdef ScanInfo < dj.Relvar & dj.AutoPopulate
             if key.nslices == 1
                 key.fps = reader.hdr.scanFrameRate;
             end
-            key.slice_pitch = reader.hdr.stackZStepSize;
             
             self.insert(key)
         end

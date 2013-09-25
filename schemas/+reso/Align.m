@@ -24,8 +24,16 @@ classdef Align < dj.Relvar & dj.AutoPopulate
     
     methods(Access=protected)
         function makeTuples(self, key)
+            [path, basename, scanIdx] = fetch1(...
+                common.TpSession*common.TpScan & key, ...
+                'data_path', 'basename', 'scan_idx');
+            try
+                reader = reso.reader(path,basename,scanIdx);
+            catch
+                basename = fetch1(pro(patch.Recording * patch.Patch, 'file_num->scan_idx','filebase') & key, 'filebase');
+                reader = reso.reader(path,basename,scanIdx);
+            end
             
-            reader = getReader(self & key);
             info = fetch(reso.ScanInfo & key, '*');
             minFrames = 300;
             assert(info.nframes_requested > minFrames, 'we assume at least %d frames', minFrames)
