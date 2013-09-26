@@ -142,7 +142,7 @@ classdef Align < dj.Relvar & dj.AutoPopulate
             try
                 obj = reso.reader(path,basename,scanIdx);
             catch
-                basename = fetch1(pro(patch.Recording * patch.Patch, 'file_num->scan_idx','filebase') & key, 'filebase');
+                basename = fetch1(pro(patch.Recording * patch.Patch, 'file_num->scan_idx','filebase') & self, 'filebase');
                 obj = reso.reader(path,basename,scanIdx);
             end
 

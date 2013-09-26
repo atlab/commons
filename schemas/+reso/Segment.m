@@ -39,7 +39,11 @@ classdef Segment < dj.Relvar & dj.AutoPopulate
             imshow(img)
             set(gca, 'Position', [0.05 0.05 0.9 0.9]);
             pos = get(f, 'Position');
-            set(f, 'Position', [pos(1:2)/4 pos(3:4)*4])
+            if strcmp(computer,'GLNXA64')
+                set(f,'Position',[160 160 1400 1000])
+            else
+                set(f, 'Position', [pos(1:2)/4 pos(3:4)*4])
+            end
             bw = ne7.ui.drawCells(bw);
             close(f)
         end
