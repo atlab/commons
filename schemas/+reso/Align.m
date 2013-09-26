@@ -134,10 +134,18 @@ classdef Align < dj.Relvar & dj.AutoPopulate
     methods
         function obj = getReader(self)
             assert(self.count == 1, 'one scan at a time please')
+            
             [path, basename, scanIdx] = fetch1(...
                 common.TpSession*common.TpScan & self, ...
                 'data_path', 'basename', 'scan_idx');
-            obj = reso.reader(path,basename,scanIdx);
+            
+            try
+                obj = reso.reader(path,basename,scanIdx);
+            catch
+                basename = fetch1(pro(patch.Recording * patch.Patch, 'file_num->scan_idx','filebase') & key, 'filebase');
+                obj = reso.reader(path,basename,scanIdx);
+            end
+
         end
             
     end
