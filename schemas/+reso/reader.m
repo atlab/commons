@@ -2,9 +2,11 @@ classdef reader < handle
     % scanimage 4.0 sequential reader
     
     properties(SetAccess=private)
+        fullfile 
         path
         base
         scanNumber
+        
         
         tiff
         hdr
@@ -23,22 +25,34 @@ classdef reader < handle
     
     methods
         function f = get.filename(self)
-            if ~self.multifile
-                f = getLocalPath(fullfile(self.path,sprintf('%s_%03u.tif', self.base, self.scanNumber)));
+            if ~isempty(self.fullfile)
+                f = self.fullfile;
             else
-                f = getLocalPath(fullfile(self.path,sprintf('%s_%03u_%03u.tif', self.base, self.scanNumber, self.currentFileNumber)));
+                if ~self.multifile
+                    f = getLocalPath(fullfile(self.path,sprintf('%s_%03u.tif', self.base, self.scanNumber)));
+                else
+                    f = getLocalPath(fullfile(self.path,sprintf('%s_%03u_%03u.tif', self.base, self.scanNumber, self.currentFileNumber)));
+                end
             end
         end
         
         function self = reader(path, base, scanNumber)
-            self.path = path;
-            self.base = base;
-            self.scanNumber = scanNumber;
+            % r = reso.reader('/fullpath/fullfile.tif')
+            % OR
+            % r = reso.reader('path', 'basename', scanNumer)
+            
             self.multifile = false;
-            if ~exist(self.filename,'file')
-                self.multifile = true;
-                self.currentFileNumber = 1;
-                assert(exist(self.filename,'file')==2, 'can''t find scanimage file "%s"', self.filename)
+            if exist(path,'file')
+                self.fullfile = path;
+            else
+                self.path = path;
+                self.base = base;
+                self.scanNumber = scanNumber;
+                if ~exist(self.filename,'file')
+                    self.multifile = true;
+                    self.currentFileNumber = 1;
+                    assert(exist(self.filename,'file')==2, 'can''t find scanimage file "%s"', self.filename)
+                end
             end
             
             % open Tiff

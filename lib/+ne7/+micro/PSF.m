@@ -54,7 +54,7 @@ classdef PSF
         end
         
         
-        function [psfs,fwhm,sigmas] = compute(stack, pitch, params)
+        function [psfs,fwhm,sigmas,center,base,amplitude,proj] = compute(stack, pitch, params)
             % PSF.extract - extract point spread functions and their
             % properties from a stack containing beads.
             %
@@ -108,8 +108,13 @@ classdef PSF
             s = s/max(s(:));  %normalize the image
             
             psfs   = cell(1,params.numpsfs);
-            fwhm   = zeros(1,params.numpsfs);
-            sigmas = zeros(1,params.numpsfs);
+            fwhm   = nan(1,params.numpsfs);
+            sigmas = nan(1,params.numpsfs);
+            center = nan(3,params.numpsfs);
+            base = nan(3,params.numpsfs);
+            amplitude = nan(3,params.numpsfs);
+            proj = cell(3,params.numpsfs);
+            
             for iPSF=1:params.numpsfs
                 [amp,idx] = max(s(:));
                 if amp<params.thresh
@@ -152,6 +157,10 @@ classdef PSF
                 yi = (-(length(xzmarg)-1)/2:(length(xzmarg)-1)/2)*pitch(1);
                 zi = (-(length(xymarg)-1)/2:(length(xymarg)-1)/2)*pitch(3);
                 
+                proj{1,iPSF} = [xi(:) yzmarg(:)];
+                proj{2,iPSF} = [yi(:) xzmarg(:)];
+                proj{3,iPSF} = [zi(:) xymarg(:)];
+                
                 % robust fit to gaussian curve
                 gauss = @(a, x) a(4)+a(3)*exp(-(x-a(1)).^2/a(2)^2/2)/sqrt(2*pi)/a(2);
                 beta0 = [0 1 1 0];
@@ -159,13 +168,11 @@ classdef PSF
                 by = nlinfit(yi, xzmarg, gauss, beta0, struct('Robust','on'));
                 bz = nlinfit(zi, xymarg',gauss, beta0, struct('Robust','on'));
                 
-                fwhm(1,iPSF) = 2*bx(2)*sqrt(2*log(2));
-                fwhm(2,iPSF) = 2*by(2)*sqrt(2*log(2));
-                fwhm(3,iPSF) = 2*bz(2)*sqrt(2*log(2));
-                
-                sigmas(1,iPSF) = bx(2);
-                sigmas(2,iPSF) = by(2);
-                sigmas(3,iPSF) = bz(2);
+                sigmas(1:3,iPSF) = [bx(2) by(2) bz(2)]';
+                fwhm(1:3,iPSF) = 2*sqrt(2*log(2))*sigmas(:,iPSF);
+                center(1:3,iPSF) = [bx(1) by(1) bz(1)]';
+                base(1:3,iPSF) = [bx(4) by(4) bz(4)]';
+                amplitude(1:3,iPSF) = [bx(3) by(3) bz(3)]';
                 
                 % visualize PSFs
                 if params.showFigures

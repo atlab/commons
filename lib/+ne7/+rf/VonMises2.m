@@ -1,6 +1,6 @@
 classdef VonMises2 < handle
     % VonMises2 - fast fitting of vonMises tuning curves.
-    % For usage example, see trove.VonMises/test
+    % For usage example, see ne7.rf.VonMises/test
     % Dimitri Yatsenko, 2012-07-09
     
     properties(SetAccess = private)
@@ -24,12 +24,12 @@ classdef VonMises2 < handle
             sharpness = random('gam',1,4,n,1)+1;
             prefDir = random('uni',0,2*pi,n,1);
             v = [base bigPeak smallPeak sharpness, prefDir];
-            x = compute(trove.VonMises2(v), ph);
+            x = compute(ne7.rf.VonMises2(v), ph);
             x = x+0.2*random('norm', 0, 1, size(x));  % add noise
             
             % now fit the tuning functions
             tic
-            f = fit(trove.VonMises2, x');
+            f = fit(ne7.rf.VonMises2, x');
             toc
             
             if n<=8
@@ -133,6 +133,9 @@ classdef VonMises2 < handle
         end
         
         function F = compute(self, phi)
+            if nargin < 2
+                phi = self.phi;
+            end
             g2 = cos(bsxfun(@minus, phi, self.w(:,5)));
             g1 = exp(bsxfun(@times, self.w(:,4),  g2-1));
             g2 = exp(bsxfun(@times, self.w(:,4), -g2-1));
