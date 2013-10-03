@@ -1,9 +1,10 @@
 %{
 reso.Align (imported) # motion correction
-
 -> reso.ScanInfo
 ---
 nframes                     : smallint                      # actual number of recorded frames
+fill_fraction               : float                         # scan fill fraction (see scanimage)
+raster_phase                : float                         # shift of odd vs even raster lines
 motion_xy                   : longblob                      # (pixels) y,x motion correction offsets
 motion_rms                  : float                         # (um) stdev of motion
 xcorr_traces                : longblob                      # peak correlations between frames
@@ -36,12 +37,22 @@ classdef Align < dj.Relvar & dj.AutoPopulate
             
             info = fetch(reso.ScanInfo & key, '*');
             minFrames = 300;
-            assert(info.nframes_requested > minFrames, 'we assume at least %d frames', minFrames)
+            assert(info.nframes_requested > minFrames, ...
+                'we assume at least %d frames', minFrames)
+            assert(strcmp(reader.hdr.scanMode, 'bidirectional'), ...
+                'scanning must be bidirectional')
             
             disp 'computing template for motion alignment...'
             reader.read([], [], 60);    % skip some frames (stacks)
             blockSize = 300;   % number of frames used for template
             templateBlock = getfield(reader.read(1,1:info.nslices,blockSize),'channel1'); %#ok<GFLD>
+            
+            % compute raster correction
+            fillFraction = reader.hdr.scanFillFraction;
+            rasterPhase = computeRasterCorrection(squeeze(mean(templateBlock(:,:,1,:),4)), fillFraction);
+            
+            % compute motion correction template
+            templateBlock = reso.Align.correctRaster(templateBlock, rasterPhase, fillFraction);
             key.green_upper = quantile(templateBlock(:),0.99);
             c = ones(1,blockSize);
             for iter=1:3
@@ -53,7 +64,7 @@ classdef Align < dj.Relvar & dj.AutoPopulate
             
             disp 'aligning motion...'
             reader.reset
-            blockSize = 250;
+            blockSize = 320;
             fTemplate = conj(fft2(template));  % template in frequency domain
             accum = [];
             channels = intersect(1:2, reader.hdr.channelsSave);
@@ -63,24 +74,20 @@ classdef Align < dj.Relvar & dj.AutoPopulate
             img = struct('green',0,'red',0);
             
             while ~reader.done
-                
                 % load block
                 block = reader.read(channels,1:info.nslices,blockSize);
                 sz = size(block.channel1);
                 greenBlock = block.channel1;
                 
                 % compute motion correction
-                xymotion = zeros(2,sz(3),sz(4),'int8');
+                xymotion = zeros(2,sz(3),sz(4),'single');
                 cc = zeros(sz(3),sz(4));
                 for iFrame=1:sz(4)
                     if ~mod(iFrame,32), fprintf ., end
                     for iSlice = 1:sz(3)
                         % compute cross-corelation as product in frequency domain
-                        c = real(fftshift(ifft2(fft2(conditionStack(greenBlock(:,:,iSlice,iFrame))).*fTemplate(:,:,iSlice))));
-                        [cc(iSlice,iFrame), idx] = max(c(:));
-                        [y,x] = ind2sub(sz(1:2),idx);
-                        y = y - ceil((sz(1)+1)/2);
-                        x = x - ceil((sz(2)+1)/2);
+                        frame = reso.Align.correctRaster(greenBlock(:,:,iSlice,iFrame), rasterPhase, fillFraction);
+                        [x,y] = measureShift(fft2(conditionStack(frame)).*fTemplate(:,:,iSlice));
                         xymotion(:,iSlice,iFrame) = [x y];
                     end
                 end
@@ -107,15 +114,17 @@ classdef Align < dj.Relvar & dj.AutoPopulate
                 
                 % accumuluate raw frames and corrected frame
                 raw.green = raw.green + sum(greenBlock,4);
-                img.green = img.green + sum(reso.Align.correctMotion(greenBlock,xymotion),4);
+                img.green = img.green + sum(reso.Align.correctMotion(reso.Align.correctRaster(greenBlock, rasterPhase, fillFraction), xymotion),4);
                 if hasRed
                     raw.red = raw.red + sum(redBlock,4);
-                    img.red = img.red + sum(reso.Align.correctMotion(redBlock,xymotion),4);
+                    img.red = img.red + sum(reso.Align.correctMotion(reso.Align.correctRaster(redBlock, rasterPhase, fillFraction), xymotion),4);
                 end
                 
                 fprintf(' Aligned %4d frames\n', size(accum.cc,2))
             end
             nFrames = size(accum.cc,2);
+            key.fill_fraction = fillFraction;
+            key.raster_phase = rasterPhase;
             key.nframes = nFrames;
             key.motion_xy = accum.xymotion;
             key.xcorr_traces = single(accum.cc);
@@ -131,6 +140,7 @@ classdef Align < dj.Relvar & dj.AutoPopulate
         end
     end
     
+    
     methods
         function obj = getReader(self)
             assert(self.count == 1, 'one scan at a time please')
@@ -142,17 +152,32 @@ classdef Align < dj.Relvar & dj.AutoPopulate
             try
                 obj = reso.reader(path,basename,scanIdx);
             catch
-                basename = fetch1(pro(patch.Recording * patch.Patch, 'file_num->scan_idx','filebase') & self, 'filebase');
+                basename = fetch1(pro(patch.Recording * patch.Patch, ...
+                    'file_num->scan_idx','filebase') & self, 'filebase');
                 obj = reso.reader(path,basename,scanIdx);
             end
-
-        end
             
+        end
+        
     end
     
     
-    methods(Static)        
-        function block = correctMotion(block, xymotion)
+    methods(Static)
+        
+        function img = correctMotion(img, xymotion)
+            sz = size(img);
+            for iFrame = 1:sz(4)
+                for iSlice = 1:sz(3)
+                    im = img(:,:,iSlice,iFrame);
+                    g = griddedInterpolant(im,'linear','nearest');
+                    [y,x] = ndgrid((1:sz(1))+xymotion(2,iSlice,iFrame), (1:sz(2))+xymotion(1,iSlice,iFrame));
+                    img(:,:,iSlice,iFrame) = g(y,x);
+                end
+            end
+        end
+        
+        
+          function block = correctMotion2(block, xymotion)
             sz = size(block);
             for iFrame = 1:sz(4)
                 for iSlice = 1:sz(3)
@@ -161,8 +186,62 @@ classdef Align < dj.Relvar & dj.AutoPopulate
                 end
             end
         end
+        
+        function img = correctRaster(img, rasterPhase, fillFraction)
+            sz = size(img);
+            ix = (-sz(2)/2+0.5:sz(2)/2-0.5)/(sz(2)/2);
+            tx = asin(ix*fillFraction);  % convert index to time
+            for iSlice = 1:size(img,3)
+                for iFrame = 1:size(img, 4)
+                    im = img(:,:,iSlice,iFrame);
+                    extrapVal = mean(im(:));
+                    img(1:2:end,:,iSlice,iFrame) = interp1(ix, im(1:2:end,:)', ...
+                        sin(tx'+rasterPhase)/fillFraction,'linear',extrapVal)';
+                    img(2:2:end,:,iSlice,iFrame) = interp1(ix, im(2:2:end,:)', ...
+                        sin(tx'-rasterPhase)/fillFraction,'linear',extrapVal)';
+                end
+            end
+        end
+        
     end
 end
+
+
+
+function rasterPhase = computeRasterCorrection(img, fillFraction)
+
+k = hamming(7); k = k/sum(k);
+odd   = imfilter(img(1:2:end,:), k,'symmetric');
+even  = imfilter(img(2:2:end,:), k,'symmetric');
+odd  =  odd(4:end-3,:);
+even = even(4:end-3,:);
+odd = odd - mean(odd(:));
+odd = odd / sqrt(sum(odd(:).^2));
+even = even - mean(even(:));
+even = even / sqrt(sum(even(:).^2));
+sz = size(odd);
+ix = (-sz(2)/2+0.5:sz(2)/2-0.5)/(sz(2)/2);
+tx = asin(ix*fillFraction);  % convert index to time
+odd = odd';
+even = even';
+
+rasterPhase = 0;
+step = 0.02;
+while step>1e-4
+    phases = rasterPhase + step*[-0.5 -0.25 -0.1 0.1 0.25 0.5]*fillFraction;
+    c= nan(size(phases));
+    for iPhase = 1:length(phases);
+        odd_  = interp1(ix,  odd, sin(tx'+phases(iPhase))/fillFraction,'linear');
+        even_ = interp1(ix, even, sin(tx'-phases(iPhase))/fillFraction,'linear');
+        c(iPhase) = sum(sum(odd_(18:end-17,:).*even_(18:end-17,:)));
+    end
+    p = polyfit(phases,c,2);
+    rasterPhase = max(phases(1),min(phases(end),-p(2)/2/p(1)));
+    assert(abs(rasterPhase)<0.02, 'weird raster correction')
+    step = step/4;
+end
+end
+
 
 
 
@@ -188,4 +267,27 @@ stack = bsxfun(@times, stack, mask);
 
 % normalize
 stack = bsxfun(@rdivide, stack, sqrt(sum(sum(stack.^2))));
+end
+
+
+function [x,y] = measureShift(ixcorr)
+% measure the shift of img relative to refImg from xcorr = fft2(img).*conj(fft2(refImg))
+sz = size(ixcorr);
+assert(length(sz)==2 && all(sz(1:2)>=128 & mod(sz(1:2),2)==0), ...
+    'image must have even height and width, at least 128 in size')
+
+phase = fftshift(angle(ixcorr));
+mag   = fftshift(abs(ixcorr));
+center = sz/2+1;
+phaseSlope = [0 0];
+for r=[10 15 20]
+    [x,y] = meshgrid(-r:r,-r:r);
+    plane  = phaseSlope(1)*x + phaseSlope(2)*y;
+    phase_ = mod(pi + phase(center(1)+(-r:r),center(2)+(-r:r)) - plane, 2*pi) - pi + plane;
+    mag_ = mag(center(1)+(-r:r),center(2)+(-r:r));
+    mdl = LinearModel.fit([x(:) y(:)], phase_(:), 'Weights', mag_(:));
+    phaseSlope = mdl.Coefficients.Estimate(2:3)';
+end
+x = -phaseSlope(1)*sz(2)/(2*pi);
+y = -phaseSlope(2)*sz(1)/(2*pi);
 end
