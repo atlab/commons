@@ -6,14 +6,13 @@ trace_id   : smallint   #  mask number in segmentation
 ca_trace   : longblob   # raw calcium trace
 %}
 
-classdef Trace < dj.Relvar & dj.AutoPopulate
+classdef Trace < dj.Relvar 
     
     properties(Constant)
         table = dj.Table('reso.Trace')
-        popRel  = reso.Align & reso.Segment;
-    end
+   end
     
-    methods(Access=protected)
+    methods
         
         function makeTuples(self, key)
             
@@ -33,10 +32,13 @@ classdef Trace < dj.Relvar & dj.AutoPopulate
             disp 'loading traces...'
             traces = cell(nSlices, 1);
             blockSize = 500;
+            [rasterPhase, fillFraction] = fetch1(reso.Align & key, ...
+                'raster_phase', 'fill_fraction');
             while ~reader.done
                 block = getfield(reader.read(1, 1:reader.nSlices, blockSize),'channel1'); %#ok<GFLD>
                 xy = xymotion(:,:,1:size(block,4));
                 xymotion(:,:,1:size(block,4)) = [];
+                block = reso.Align.correctRaster(block, rasterPhase, fillFraction);
                 block = reso.Align.correctMotion(block, xy);
                 sz = size(block);
                 for iSlice = 1:length(slices)

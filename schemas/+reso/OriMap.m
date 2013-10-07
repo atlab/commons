@@ -23,6 +23,7 @@ classdef OriMap < dj.Relvar & dj.AutoPopulate
         
         function makeTuples(self, key)
             reader = getReader(reso.Align & key);
+            [fillFraction, rasterPhase] = fetch1(reso.Align & key, 'fill_fraction', 'raster_phase');
             for iSlice=1:reader.nSlices
                 fprintf('loading slice %d: \n', iSlice);
                 reader.reset
@@ -30,21 +31,24 @@ classdef OriMap < dj.Relvar & dj.AutoPopulate
                 xymotion = fetch1(reso.Align & key, 'motion_xy');
                 xymotion(:,:,end+1) = xymotion(:,:,end);  %#ok<AGROW> % extend by one frame
                 
-                X = [];
+                [width,height,nFrames] = fetch1(reso.Align*reso.ScanInfo & key, ...
+                    'px_width','px_height','nframes');
+                X = nan(nFrames,width*height,'single');
+                lastPos = 0;
                 while ~reader.done
                     block = getfield(reader.read(1, iSlice, blockSize),'channel1'); %#ok<GFLD>
                     sz = size(block);
                     xy = xymotion(:,:,1:sz(4));
                     xymotion(:,:,1:size(block,4)) = [];
+                    block = reso.Align.correctRaster(block,rasterPhase,fillFraction);
                     block = reso.Align.correctMotion(block, xy);
-                    X = cat(3,X,reshape(block,sz([1 2 4])));
-                    fprintf('frame %4d\n',size(X,3));
+                    X(lastPos+(1:sz(4)),:) = reshape(block,[],sz(4))';
+                    lastPos = lastPos + sz(4);
+                    fprintf('frame %4d\n',lastPos);
                 end
                 
-                sz = size(X);
-                fps = fetch1(reso.ScanInfo & key, 'fps');
-                X = reshape(X,[],sz(3))';
-                
+                assert(~any(any(isnan(X))))
+                fps = fetch1(reso.ScanInfo & key, 'fps');                
                 G = fetch1(reso.OriDesign & key, 'design_matrix');
                 G = G(1:size(X,1),:);
                 
@@ -64,9 +68,9 @@ classdef OriMap < dj.Relvar & dj.AutoPopulate
                 tuple.slice_num = iSlice;
                 tuple.ndirections = size(G,2);
                 tuple.regressor_cov = single(G'*G);
-                tuple.regr_coef_maps = reshape(single(B'), sz(1), sz(2),[]);
-                tuple.r2_map = reshape(R2, sz(1:2));
-                tuple.dof_map = reshape(DoF, sz(1:2));
+                tuple.regr_coef_maps = reshape(single(B'), width, height,[]);
+                tuple.r2_map = reshape(R2, width, height);
+                tuple.dof_map = reshape(DoF, width, height);
                 self.insert(tuple)
             end
         end

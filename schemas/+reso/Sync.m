@@ -31,7 +31,7 @@ classdef Sync < dj.Relvar & dj.AutoPopulate
             dt = median(diff(datT));
             n = ceil(0.0002/dt);
             k = hamming(2*n);
-            k = k/sum(k);
+            k = -k/sum(k);
             k(1:n) = -k(1:n);
             
             pulses = conv(dat.stimPd,k,'same');

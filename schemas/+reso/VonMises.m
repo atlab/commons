@@ -12,14 +12,13 @@ von_sharp : float     # tuning sharpness
 von_p : float     # p-value computed by shuffling
 %}
 
-classdef VonMises < dj.Relvar & dj.AutoPopulate
+classdef VonMises < dj.Relvar
     
     properties(Constant)
         table = dj.Table('reso.VonMises')
-        popRel = reso.Segment*reso.TuningCondition & (reso.Trial*psy.Grating);
     end
     
-    methods(Access=protected)
+    methods
         
         function makeTuples(self, key)
             

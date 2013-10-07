@@ -9,11 +9,12 @@ motion_xy                   : longblob                      # (pixels) y,x motio
 motion_rms                  : float                         # (um) stdev of motion
 xcorr_traces                : longblob                      # peak correlations between frames
 green_upper                 : float                         # 99th pecentile of intensity on green channel from the beginning of the movie
-raw_green_img = null        : longblob                      # unaligned mean green image
-raw_red_img = null          : longblob                      # unaligned mean red image
-green_img = null            : longblob                      # aligned mean green image
-red_img = null              : longblob                      # aligned mean red image
-align_ts= CURRENT_TIMESTAMP : timestamp                     # automatic
+raw_green_img=null          : longblob                      # unaligned mean green image
+raw_red_img=null            : longblob                      # unaligned mean red image
+green_img=null              : longblob                      # aligned mean green image
+red_img=null                : longblob                      # aligned mean red image
+align_ts=CURRENT_TIMESTAMP  : timestamp                     # automatic
+test="two"                  : enum('one','two','three','four')# testing
 %}
 
 classdef Align < dj.Relvar & dj.AutoPopulate
@@ -176,16 +177,6 @@ classdef Align < dj.Relvar & dj.AutoPopulate
             end
         end
         
-        
-          function block = correctMotion2(block, xymotion)
-            sz = size(block);
-            for iFrame = 1:sz(4)
-                for iSlice = 1:sz(3)
-                    block(:,:,iSlice,iFrame) = ...
-                        ne7.ip.shift(block(:,:,iSlice,iFrame), xymotion([2 1],iSlice,iFrame));
-                end
-            end
-        end
         
         function img = correctRaster(img, rasterPhase, fillFraction)
             sz = size(img);

@@ -18,6 +18,7 @@ classdef Segment < dj.Relvar & dj.AutoPopulate
         
         function makeTuples(self, key)
             self.insert(fetch(reso.ManualSegment & key, '*'))
+            makeTuples(reso.Trace, key)
         end
         
     end
