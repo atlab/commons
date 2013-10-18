@@ -1,5 +1,5 @@
 %{
-reso.BrainState (computed) # brain state from patch
+bs.BrainState (computed) # brain state from patch
 -> reso.Sync
 -----
 -> patch.CleanEphys
@@ -11,8 +11,8 @@ brain_state_trace   : longblob  # trace classifying brain states
 classdef BrainState < dj.Relvar & dj.AutoPopulate
     
     properties(Constant)
-        table = dj.Table('reso.BrainState')
-        popRel = reso.Sync & patch.CleanEphys
+        table = dj.Table('bs.BrainState')
+        popRel = reso.Sync*reso.TrialSet & patch.CleanEphys
     end
     
     methods(Access=protected)
@@ -39,10 +39,12 @@ classdef BrainState < dj.Relvar & dj.AutoPopulate
             amp(isnan(cleanVm)) = nan;
             
             % save results
-            key.band_low = band(1);
-            key.band_high = band(2);
-            key.brain_state_trace = single(amp);
-            self.insert(key)
+            self.insert(dj.struct.join(key, struct(...
+                'band_low', band(1), ...
+                'band_high', band(2), ...
+                'brain_state_trace', single(amp))))
+            
+            makeTuples(bs.TrialBrainState, key)
         end
     end
 end

@@ -1,17 +1,18 @@
 %{
-reso.VonMisesSet (computed) # von mises tuning of groups of traces from the same slice
+bs.VonMisesSet (computed) # von mises tuning of groups of traces from the same slice
 -> reso.TrialTraceSet
--> reso.TuningCondition
+-> bs.BrainState
+-> bs.TuningCondition
 -----
-ndirs : tinyint # number of directions
-nshuffles = 10000 : int  # numbger of shuffles for p-value computation
+ndirs           : tinyint     # number of directions
+nshuffles=10000 : int         # numbger of shuffles for p-value computation
 %}
 
 classdef VonMisesSet < dj.Relvar & dj.AutoPopulate
     
     properties(Constant)
-        table = dj.Table('reso.VonMisesSet')
-        popRel = pro(reso.TuningCondition*reso.TrialTraceSet, psy.Grating, ...
+        table = dj.Table('bs.VonMisesSet')
+        popRel = pro(bs.TuningCondition*reso.TrialTraceSet*bs.BrainState, psy.Grating, ...
             'count(distinct direction)->ndirs') & 'ndirs>=8';
     end
     
@@ -25,7 +26,7 @@ classdef VonMisesSet < dj.Relvar & dj.AutoPopulate
             tuple = key;
             tuple.ndirs = length(directions);
             self.insert(tuple)
-            makeTuples(reso.VonMises, key)
+            makeTuples(bs.VonMises, key)
         end
     end
 end

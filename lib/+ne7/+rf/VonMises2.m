@@ -48,7 +48,34 @@ classdef VonMises2 < handle
                 hold off
             end
         end
+        
+        function [von, r2, p] = computeSignificance(responses, nShuffles)
+            % compute von mises tuning and its siginifiance by shuffling
+            % responses must be a matrix of responses with dimensions
+            %   nCells * nOris * nTrials
+            % and it may contain NaNs
+            [von,r2] = computeTuning(responses);
+            
+            sz = size(responses);
+            responses = reshape(responses, sz(1),[]);
+            p = 0.5/nShuffles;
+            for i=1:nShuffles
+                if ~mod(i,250) || any(i==[1 nShuffles])
+                    fprintf('Shuffles [%4d/%4d]\n', i, nShuffles)
+                end
+                [~, r2_] = computeTuning(reshape(responses(:,randperm(end)),sz));
+                p = p + (r2_>=r2)/nShuffles;
+            end
+            
+            function [von, r2] = computeTuning(x)
+                von = fit(ne7.rf.VonMises2, nanmean(x,3)');
+                y = bsxfun(@minus, x, von.compute);
+                r2 = 1-nanvar(reshape(y,size(x,1),[])')./nanvar(reshape(x,size(x,1),[])');
+            end
+        end
     end
+
+
     
     methods
         function self = VonMises2(w)
@@ -143,7 +170,10 @@ classdef VonMises2 < handle
                 bsxfun(@times, self.w(:,3), g2);
             F = bsxfun(@plus, self.w(:,1), F);
         end
+        
+               
     end
+    
 
     
     methods(Access = private)

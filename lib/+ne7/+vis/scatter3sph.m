@@ -31,8 +31,8 @@ function scatter3sph(X,Y,Z,varargin)
 % grid ON
 
 %-- Some checking...
-if nargin < 3 error('Need at least three arguments'); return; end
-if mean([length(X),length(Y),length(Z)]) ~= length(X) error ('Imput vectors X, Y, Z are of different lengths'); return; end
+if nargin < 3, error 'Need at least three arguments', end
+if mean([length(X),length(Y),length(Z)]) ~= length(X), error 'Imput vectors X, Y, Z are of different lengths', end
 
 %-- Defaults
 C= ones(length(X),1)*[0 0 1];
@@ -48,8 +48,7 @@ for j= 1:2:length(varargin)
 			if length(S) == 1
 				S= ones(length(X),1)*S;
 			elseif length(S) < length(X)
-				error('The vector of sizes must be of the same length as coordinate vectors (or 1)');
-				return
+				error 'The vector of sizes must be of the same length as coordinate vectors (or 1)'
 			end
 
 		case 'col'
@@ -58,12 +57,11 @@ for j= 1:2:length(varargin)
 			if size(C,1) == 1
 				C= ones(length(X),1)*C(1:3);
 			elseif size(C,1) < length(X)
-				error('Colors matrix must have the same number of rows as length of coordinate vectors (or 1)');
-				return
+				error 'Colors matrix must have the same number of rows as length of coordinate vectors (or 1)'
 			end
 
 		otherwise
-			error('Unknown parameter name. Allowed names: ''size'', ''color'' ');
+			error 'Unknown parameter name. Allowed names: ''size'', ''color'' '
 	end
 end
 
@@ -75,14 +73,14 @@ hold on
 for j= 1:length(X)
 	surf(sx*S(j)+X(j), sy*S(j)+Y(j), sz*S(j)+Z(j),...
 		'LineStyle','none',...
-		'AmbientStrength',0.8,...
+		'AmbientStrength',0.4,...
 		'FaceColor',C(j,:),...
-		'SpecularStrength',0.2,...
-		'DiffuseStrength',0.2,...
-		'FaceAlpha',0.5,...
-		'SpecularExponent',2);
+		'SpecularStrength',0.4,...
+		'DiffuseStrength',0.3,...
+		'FaceAlpha',1.0,...
+		'SpecularExponent',1);
 end
-light('Position',[0 0 -1],'Style','infinit','Color',[1 1 1]);
+light('Position',[0.5 0.5 1],'Style','infinit','Color',[1 1 1])
 lighting gouraud
 view(30,15)
 
