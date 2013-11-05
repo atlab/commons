@@ -1,7 +1,7 @@
 f = figure;
 set(f, 'position',[900 600 1106 420])
 
-uicontrol('style','text','string','Open Requests','position',[15 400 1076 16],'fontsize',14,'HorizontalAlignment','Center');
+uicontrol('style','text','string','Open Requests','position',[15 400 1076 16],'fontunits','normalized','fontsize',.8,'HorizontalAlignment','Center');
 
 cnames = {'Requestor','DOR','#Requested','#Filled','Age','Line1','Genotype1','Line2','Genotype2','Line3','Genotype3','Comments'};
 cformat = {'char','char','char','char','char','char','char','char','char','char','char','char'};

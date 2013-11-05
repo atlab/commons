@@ -15,12 +15,6 @@ for i = 1:size(mouseStruct,1)
     if ischar(mouseStruct(i).animal_id)
         mouseStruct(i).animal_id = str2num(mouseStruct(i).animal_id);
     end
-    if ischar(mouseStruct(i).rack)
-        mouseStruct(i).rack = str2num(mouseStruct(i).rack);
-    end
-    if isempty(mouseStruct(i).rack)
-        mouseStruct(i).rack = nan;
-    end
 end
 
 founderStruct = struct('animal_id',m.new_mice(:,1),'line',m.new_mice(:,9),'source',m.new_mice(:,16),'doa',m.new_mice(:,5),'founder_notes',m.new_mice(:,17));
@@ -49,7 +43,9 @@ errorCount = 0;
 if ~isempty(errorString)
     h.errorMessage = uicontrol('style','text','String',['Cannot add mouse due to the following errors: '], 'position', [150 760 500 16],'fontsize',14,'tag','errorMessage');
     h.errorBox = uicontrol('style','listbox','string',errorString,'tag','errorBox','position',[150 710 500 50]);
-else for i = 1:size(mouseStruct,1)
+else schema = mice.getSchema;
+    schema.conn.startTransaction
+    for i = 1:size(mouseStruct,1)
         tuple = mouseStruct(i,:);
         if isempty(tuple.dob)
             tuple = rmfield(tuple,'dob');
@@ -67,6 +63,7 @@ else for i = 1:size(mouseStruct,1)
         makeTuples(mice.Founders,tuple);
     end
     makeTuples(mice.Genotypes,genotypeStruct);
+    schema.conn.commitTransaction
     set(h.new_mice,'Data',{},'RowName','');
     mice.GUIs.clearEntry(src);
 end

@@ -85,56 +85,45 @@ if ~isempty(m.range_start) && ~isempty(m.range_end)
     end
 end
 
-% parents must be in database
-
-parent1 = {};
-if ~isempty(m.parent1)
-    try parent1 = fetch(mice.Mice & ['animal_id=' m.parent1],'*');
-    catch if isempty(parent1)
-        try parent1 = fetch(mice.Mice & ['other_id="' m.parent1 '"'],'*');
-        catch if isempty(parent1)
-            errorCount = errorCount + 1;
-            errorString{errorCount} = ['Parent ' m.parent1 ' is not in the database.'];
-        end
-        end
-        end
-    end
-end
-
-
-parent2 = {};
-if ~isempty(m.parent2)
-    try parent2 = fetch(mice.Mice & ['animal_id=' m.parent2],'*');
-    catch if isempty(parent2)
-        try parent2 = fetch(mice.Mice & ['other_id="' m.parent2 '"'],'*');
-        catch if isempty(parent2)
-            errorCount = errorCount + 1;
-            errorString{errorCount} = ['Parent ' m.parent2 ' is not in the database.'];
-        end
-        end
-    end
-    end
-end
-
 % Parents listed must have at least one offspring
-a = {};
-b = {};
+parent1 = {};
+parent2 = {};
+a1 = {};
+a2 = {};
+a3 ={};
+b1 = {};
+b2 = {};
+b3 = {};
+
 if ~isempty(m.parent1) 
-    try a = fetch(mice.Parents & ['parent_id=' num2str(parent1.animal_id)]);
-    catch if isempty(a)
-        try a = fetch(mice.Parents & ['parent_id="' parent1.other_id '"' ]);
+    a1 = fetch(mice.Parents & ['parent_id="' m.parent1 '"'])
+    try parent1 = fetch(mice.Mice & ['animal_id=' m.parent1 ''],'*');
+    end
+    if isempty(parent1)
+        try parent1 = fetch(mice.Mice & ['other_id="' m.parent1 '"'],'*');
         end
     end
+    try a2 = fetch(mice.Parents & ['parent_id="' num2str(parent1.animal_id) '"'])
     end
+    try a3 = fetch(mice.Parents & ['parent_id="' parent1.other_id '"'])
+    end
+    a = fetch(mice.Parents & ((mice.Parents & a1) | (mice.Parents & a2) | (mice.Parents & a3)))
 end
 
-if ~isempty(m.parent2)
-    try b = fetch(mice.Parents & ['parent_id=' num2str(parent2.animal_id)]);
-    catch if isempty(b)
-        try b = fetch(mice.Parents & ['parent_id="' parent2.other_id '"']);
+if ~isempty(m.parent2) 
+    b = fetch(mice.Parents & ['parent_id="' m.parent2 '"']);
+    if isempty(b)
+        parent2 = fetch(mice.Mice & ['animal_id=' str2num(m.parent2) '']);
         end
-    end
-    end
+        if isempty(parent2)
+            parent2 = fetch(mice.Mice & ['other_id="' m.parent2 '"']);
+        end
+        try b = fetch(mice.Parents & ['parent_id="' num2str(parent2.animal_id) '"']);
+        end
+        if isempty(b)
+            try b = fetch(mice.Parents & ['parent_id="' parent2.other_id '"']);
+            end
+        end
 end
 
 offspringCount = 0;

@@ -100,6 +100,8 @@ end
 % if there are no errors, update genotypes in database
 
 if isempty(errorString)
+    schema = mice.getSchema;
+    schema.conn.startTransaction
     for i = 1:size(m.table,1)
         if ~isempty(m.table{i,2})
             update(mice.Genotypes & ['animal_id=' m.table{i,1}] & ['line="' m.table{i,2} '"'],'genotype',m.table{i,3})
@@ -111,6 +113,7 @@ if isempty(errorString)
             update(mice.Genotypes & ['animal_id=' m.table{i,1}] & ['line="' m.table{i,6} '"'],'genotype',m.table{i,7})
         end
     end
+    schema.conn.commitTransaction
     set(h.table,'Data',{},'RowName','');
     set(h.animal_id1,'string','');
     set(h.animal_id2,'string','');

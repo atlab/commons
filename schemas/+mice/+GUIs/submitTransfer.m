@@ -126,6 +126,8 @@ end
 % if there are no errors, update info in database and add to transfer table
 
 if isempty(errorString)
+    schema = mice.getSchema;
+    schema.conn.startTransaction
     for i = 1:size(m.table,1)
         from = fetch(mice.Mice & ['animal_id=' m.table{i,1}],'*');
         update(mice.Mice & ['animal_id=' m.table{i,1}],'owner',m.owner)
@@ -157,6 +159,7 @@ if isempty(errorString)
         end
         makeTuples(mice.Transfers,newTransfer);
     end
+    schema.conn.commitTransaction
     set(h.table,'Data',{},'RowName','');
     set(h.owner,'value',1);
     set(h.facility,'value',1);

@@ -25,11 +25,6 @@ if isempty(m.animal_id)
     errorCount = errorCount + 1;
     errorString{errorCount} = 'Ear tag number is required.';
 end
-    
-if isempty(m.doa)
-    errorCount = errorCount + 1;
-    errorString{errorCount} = 'Date of arrival is required.';
-end
 
 if isempty(m.source)
     errorCount = errorCount + 1;
@@ -240,7 +235,6 @@ else h.autopopulate = findobj(figHand,'tag','autoBox');
     if get(h.autopopulate,'Value') == 1
         set(h.animal_id,'String',[x.animal_id+1]);
         set(h.other_id,'String','');
-        set(h.mouse_notes,'String','');
         set(h.ear_punch,'Value',1);
     else mice.GUIs.clearEntry(src);
     end

@@ -272,7 +272,7 @@ if ~isempty(m.line3)
 end
 
 for i = 1:length(s)
-    if ~any(strcmp(s{i},m.lines)) && ~isempty(s{i})
+    if ~any(strcmp(s{i},m.lines)) && ~isempty(s{i}) && ~(strcmp(s{i},'C57Bl/6')) && ~(strcmp(s{i},'Fvb'))
         errorCount = errorCount + 1;
         errorString{errorCount} = 'A line from the parents is not listed.';
     end
@@ -407,11 +407,7 @@ else h.autopopulate = findobj(figHand,'tag','autoBox');
     if get(h.autopopulate,'Value') == 1
         set(h.animal_id,'String',[x.animal_id+1]);
         set(h.other_id,'String','');
-        set(h.mouse_notes,'String','');
         set(h.ear_punch,'Value',1);
-        set(h.genotype1,'Value',7);
-        set(h.genotype2,'Value',7);
-        set(h.genotype3,'Value',7);
     else mice.GUIs.clearEntry(src);
     end
 end

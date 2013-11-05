@@ -39,8 +39,8 @@ end
 
 set(h.sex,'Value',3);
 set(h.color,'Value',4);
-set(h.ear_punch,'Value',7);
-set(h.owner,'Value',12);
+set(h.ear_punch,'Value',1);
+set(h.owner,'Value',13);
 set(h.facility,'Value',4);
 set(h.room,'Value',6);
 set(h.line1,'Value',1);

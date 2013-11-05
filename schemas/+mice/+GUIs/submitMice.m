@@ -19,12 +19,6 @@ for i = 1:size(s,1)
     if ischar(s(i).animal_id)
         s(i).animal_id = str2num(s(i).animal_id);
     end
-    if ischar(s(i).rack)
-        s(i).rack = str2num(s(i).rack);
-    end
-    if isempty(s(i).rack)
-        s(i).rack = nan;
-    end
 end
 
 fields = {'parent1','parent2','parent3','line1','genotype1','line2','genotype2','line3','genotype3'};
@@ -102,7 +96,9 @@ end
 if ~isempty(errorString)
     h.errorMessage = uicontrol('style','text','String',['Cannot add mouse due to the following errors: '], 'position', [150 760 500 16],'fontsize',14,'tag','errorMessage');
     h.errorBox = uicontrol('style','listbox','string',errorString,'tag','errorBox','position',[150 710 500 50]);
-else for i = 1:size(mouseStruct,1)
+else schema = mice.getSchema;
+    schema.conn.startTransaction
+    for i = 1:size(mouseStruct,1)
         tuple = mouseStruct(i,:);
         if isempty(tuple.dow)
             tuple = rmfield(tuple,'dow');
@@ -111,6 +107,7 @@ else for i = 1:size(mouseStruct,1)
     end
     makeTuples(mice.Parents,parentStruct);
     makeTuples(mice.Genotypes,genotypeStruct);
+    schema.conn.commitTransaction
     set(h.new_mice,'Data',{},'RowName','');
     mice.GUIs.clearEntry(src);
 end

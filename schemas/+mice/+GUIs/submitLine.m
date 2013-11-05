@@ -78,6 +78,8 @@ for i=1:size(s,1)
     lines{i} = s(i).line;
 end
 
+schema = mice.getSchema;
+schema.conn.startTransaction
 if m.modify_box == 1 && any(strcmp(m.line,lines))
     update(mice.Lines & ['line="' m.line '"'],'line_full',m.line_full);
     update(mice.Lines & ['line="' m.line '"'],'rec_strain',m.rec_strain);
@@ -104,7 +106,7 @@ if m.modify_box == 0
     alterAttribute(mice.Lines.table,'line',str,false);
     makeTuples(mice.Lines,lineStruct);
 end
-
+schema.conn.commitTransaction
 set(h.line,'string','');
 set(h.line_full,'string','');
 set(h.rec_strain,'string','');
