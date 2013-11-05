@@ -104,14 +104,14 @@ classdef Align < dj.Relvar & dj.AutoPopulate
                 
                 % display raw averaged block
                 if hasRed, redBlock = block.channel2; end
-                g = reshape(mean(greenBlock,4), size(greenBlock,1),[])/key.green_upper;
-                if hasRed
-                    g = cat(3,reshape(mean(redBlock,4), size(redBlock,1),[])/quantile(redBlock(:),0.99),g);
-                    g(:,:,3) = 0;
-                end
-                imshow(g)
-                title(sprintf('frames %d-%d', length(accum.cc)-length(cc)+1, length(accum.cc)))
-                drawnow
+                %g = reshape(mean(greenBlock,4), size(greenBlock,1),[])/key.green_upper;
+                %if hasRed
+                %    g = cat(3,reshape(mean(redBlock,4), size(redBlock,1),[])/quantile(redBlock(:),0.99),g);
+                %    g(:,:,3) = 0;
+                %end
+                %imshow(g)
+                %title(sprintf('frames %d-%d', length(accum.cc)-length(cc)+1, length(accum.cc)))
+                %drawnow
                 
                 % accumuluate raw frames and corrected frame
                 raw.green = raw.green + sum(greenBlock,4);

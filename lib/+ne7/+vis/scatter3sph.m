@@ -80,7 +80,5 @@ for j= 1:length(X)
 		'FaceAlpha',1.0,...
 		'SpecularExponent',1);
 end
-light('Position',[0.5 0.5 1],'Style','infinit','Color',[1 1 1])
-lighting gouraud
 view(30,15)
 

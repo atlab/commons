@@ -1,11 +1,11 @@
 %{
 bs.BrainState (computed) # brain state from patch
 -> reso.Sync
------
--> patch.CleanEphys
-band_low  : decimal(5,2)    # Hz
-band_high : decimal(5,2)    # Hz
-brain_state_trace   : longblob  # trace classifying brain states
+---
+-> patch.Ephys
+band_low                    : decimal(5,2)                  # Hz
+band_high                   : decimal(5,2)                  # Hz
+brain_state_trace           : longblob                      # trace classifying brain states
 %}
 
 classdef BrainState < dj.Relvar & dj.AutoPopulate
