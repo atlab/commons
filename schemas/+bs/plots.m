@@ -22,9 +22,9 @@ classdef plots
                 interval = [-2.0  2.5]; % seconds before trial
                 keys = fetch(reso.Trial & key);
                 bsTrace = fetch1(reso.BrainState & key, 'brain_state_trace');
-                cleanVm = fetch1(patch.CleanEphys*reso.Sync & key, 'vm');
+                [eTimes,CleanVm] = patch.utils.cleanVm(key);
                 [ballTimes,ballVel] = fetch1(patch.Ball*reso.Sync & key, 'ball_time','ball_vel');
-                eTimes = fetch1(patch.Ephys*reso.Sync & key, 'ephys_time');
+               
                 ballTimes = interp1(eTimes,times,ballTimes);
                 k = hamming(51); k = k/sum(k);
                 ballVel = ne7.dsp.convmirr(ballVel,k);
