@@ -1,6 +1,6 @@
 %{
 mice.Lines (manual) # Basic mouse line info
-line            : enum('Nestin-Cre','Nestin-CreER(W)','Nestin-CreER(J)','Wfs1-CreER','ChAT-Cre','Viaat-Cre','SST-Cre','PV-Cre','VIP-Cre','GAD67-GFP','KOPRCS','Ai9','R-EYFP','R-ChR2-EYFP','R-ChR2-tdTomato','R-TVA/G','R-Arch','R-GCaMP3','Confetti','Nuc4','Nuc24','Cyt47','C57Bl/6','Fvb')# Mouse Line Abbreviation
+line            : enum('Nestin-Cre','Nestin-CreER(W)','Nestin-CreER(J)','Wfs1-CreER','ChAT-Cre','Viaat-Cre','SST-Cre','PV-Cre','VIP-Cre','GAD67-GFP','KOPRCS','Ai9','R-EYFP','R-ChR2-EYFP','R-ChR2-tdTomato','R-TVA/G','R-Arch','R-GCaMP3','Confetti','Nuc4','Nuc24','Cyt47','C57Bl/6','Fvb','Etv1-CreER')# Mouse Line Abbreviation
 ---
 line_full=""                : varchar(100)                  # full line name
 rec_strain=""               : varchar(20)                   # recipient strain

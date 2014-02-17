@@ -1,5 +1,5 @@
 f = figure;
-set(f, 'position',[900 600 1106 420])
+set(f, 'position',[0 0 1106 420])
 
 uicontrol('style','text','string','Open Requests','position',[15 400 1076 16],'fontunits','normalized','fontsize',.8,'HorizontalAlignment','Center');
 
@@ -11,6 +11,7 @@ h.request_table = uitable('position',[15 10 1076 390],'ColumnName',cnames,'Colum
 requestTable = {};
 row = 0;
 requestors = getEnumValues(mice.Requests.table,'requestor');
+transferID = {};
 for r = 1:length(requestors)
     requests = fetch(mice.Requests & ['requestor="' requestors{r} '"'],'*');
     transfers = fetch(mice.Transfers & ['to_owner="' requestors{r} '"'],'*');

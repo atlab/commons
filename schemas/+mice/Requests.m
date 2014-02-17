@@ -1,21 +1,19 @@
 %{
 mice.Requests (manual) # requests for transgenic mice
-
-request_idx         : int                       # request number
+request_idx     : int                   # request number
 ---
-requestor="none"    :enum('Jake','Manolis','Dimitri','Shan','Keith','Cathryn','Deumani','Matt','Megan','Other','Available','none')   # person who requested the mice
-dor=null            : date                      # date of request
-number_mice=null         : int                       # number of mice requested
-age="any"           : enum('any','P18-P21','P21-P28','4-6 Weeks')   # age requested
-line1=""            : enum('','Nestin-Cre','Nestin-CreER(W)','Nestin-CreER(J)','Wfs1-CreER','ChAT-Cre','Viaat-Cre','SST-Cre','PV-Cre','VIP-Cre','GAD67-GFP','KOPRCS','Ai9','R-EYFP','R-ChR2-EYFP','R-ChR2-tdTomato','R-TVA/G','R-Arch','R-GCaMP3','Confetti','Nuc4','Nuc24','Cyt47','C57Bl/6','Fvb') # Mouse Line 1 Abbreviation
-genotype1=""        : enum('homozygous','heterozygous','hemizygous','positive','negative','wild type','')        # genotype for line 1 
-line2=""            : enum('','Nestin-Cre','Nestin-CreER(W)','Nestin-CreER(J)','Wfs1-CreER','ChAT-Cre','Viaat-Cre','SST-Cre','PV-Cre','VIP-Cre','GAD67-GFP','KOPRCS','Ai9','R-EYFP','R-ChR2-EYFP','R-ChR2-tdTomato','R-TVA/G','R-Arch','R-GCaMP3','Confetti','Nuc4','Nuc24','Cyt47','C57Bl/6','Fvb') # Mouse Line 2 Abbreviation
-genotype2=""        : enum('homozygous','heterozygous','hemizygous','positive','negative','wild type','')        # genotype for line 2
-line3=""            : enum('','Nestin-Cre','Nestin-CreER(W)','Nestin-CreER(J)','Wfs1-CreER','ChAT-Cre','Viaat-Cre','SST-Cre','PV-Cre','VIP-Cre','GAD67-GFP','KOPRCS','Ai9','R-EYFP','R-ChR2-EYFP','R-ChR2-tdTomato','R-TVA/G','R-Arch','R-GCaMP3','Confetti','Nuc4','Nuc24','Cyt47','C57Bl/6','Fvb') # Mouse Line 3 Abbreviation
-genotype3=""        : enum('homozygous','heterozygous','hemizygous','positive','negative','wild type','')        # genotype for line 3 
-
-request_notes=""    : varchar(4096)             # other comments 
-request_ts=CURRENT_TIMESTAMP : timestamp        # automatic
+requestor="none"            : enum('Jake','Manolis','Dimitri','Shan','Keith','Cathryn','Deumani','Matt','Megan','Other','Available','none')# person who requested the mice
+dor=null                    : date                          # date of request
+number_mice                 : int                           # number of mice requested
+age=null                    : enum('any','P18-P21','P21-P28','4-6 Weeks')# age requested
+line1=null                  : enum('','Nestin-Cre','Nestin-CreER(W)','Nestin-CreER(J)','Wfs1-CreER','ChAT-Cre','Viaat-Cre','SST-Cre','PV-Cre','VIP-Cre','GAD67-GFP','KOPRCS','Ai9','R-EYFP','R-ChR2-EYFP','R-ChR2-tdTomato','R-TVA/G','R-Arch','R-GCaMP3','Confetti','Nuc4','Nuc24','Cyt47','C57Bl/6','Fvb','Etv1-CreER')# Mouse Line 1 Abbreviation
+genotype1=null              : enum('homozygous','heterozygous','hemizygous','positive','negative','wild type','')# genotype for line 1
+line2=null                  : enum('','Nestin-Cre','Nestin-CreER(W)','Nestin-CreER(J)','Wfs1-CreER','ChAT-Cre','Viaat-Cre','SST-Cre','PV-Cre','VIP-Cre','GAD67-GFP','KOPRCS','Ai9','R-EYFP','R-ChR2-EYFP','R-ChR2-tdTomato','R-TVA/G','R-Arch','R-GCaMP3','Confetti','Nuc4','Nuc24','Cyt47','C57Bl/6','Fvb','Etv1-CreER')# Mouse Line 2 Abbreviation
+genotype2=null              : enum('homozygous','heterozygous','hemizygous','positive','negative','wild type','')# genotype for line 2
+line3=null                  : enum('','Nestin-Cre','Nestin-CreER(W)','Nestin-CreER(J)','Wfs1-CreER','ChAT-Cre','Viaat-Cre','SST-Cre','PV-Cre','VIP-Cre','GAD67-GFP','KOPRCS','Ai9','R-EYFP','R-ChR2-EYFP','R-ChR2-tdTomato','R-TVA/G','R-Arch','R-GCaMP3','Confetti','Nuc4','Nuc24','Cyt47','C57Bl/6','Fvb','Etv1-CreER')# Mouse Line 3 Abbreviation
+genotype3=null              : enum('homozygous','heterozygous','hemizygous','positive','negative','wild type','')# genotype for line 3
+request_notes=null          : varchar(4096)                 # other comments
+request_ts=CURRENT_TIMESTAMP: timestamp                     # automatic
 %}
 
 

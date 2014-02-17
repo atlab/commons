@@ -105,6 +105,25 @@ if m.modify_box == 0
     str=[str ') # Mouse Line Abbreviation'];
     alterAttribute(mice.Lines.table,'line',str,false);
     makeTuples(mice.Lines,lineStruct);
+    s = [' ' s];
+    str = ['line1=null : enum(''' s{1} ''''];
+    for i = 2:length(s)
+        str = [str ', ''' s{i} ''''];
+    end
+    str = [str ') # Mouse Line 1 Abbreviation'];
+    alterAttribute(mice.Requests.table,'line1',str,false);
+    str = ['line2=null : enum(''' s{1} ''''];
+    for i = 2:length(s)
+        str = [str ', ''' s{i} ''''];
+    end
+    str = [str ') # Mouse Line 2 Abbreviation'];
+    alterAttribute(mice.Requests.table,'line2',str,false);
+    str = ['line3=null : enum(''' s{1} ''''];
+    for i = 2:length(s)
+        str = [str ', ''' s{i} ''''];
+    end
+    str = [str ') # Mouse Line 3 Abbreviation'];
+    alterAttribute(mice.Requests.table,'line3',str,false);
 end
 schema.conn.commitTransaction
 set(h.line,'string','');

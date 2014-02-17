@@ -4,6 +4,8 @@ figHand = get(src,'parent');
 
 [h,m] = mice.GUIs.getUIData(figHand);
 
+isempty(h.new_mice)
+
 cnames = get(h.new_mice,'columnname');
 cnames = cnames.';
 data = cell(size(m.new_mice,1)+1,size(m.new_mice,2));

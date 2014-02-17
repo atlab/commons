@@ -4,6 +4,14 @@ figHand = get(src,'parent');
 
 [h,m] = mice.GUIs.getUIData(figHand);
 
+% Clear previous error messages
+
+h.errorMessage = findobj(figHand,'tag','errorMessage');
+h.errorBox = findobj(figHand,'tag','errorBox');
+
+delete(h.errorMessage);
+delete(h.errorBox);
+
 
 % Generate data structures compatible with Data Joint tables
 
@@ -66,7 +74,9 @@ end
 
 errorString = {};
 errorCount = 0;
-mouse_id = {m(:,1).animal_id};
+
+mouse_id = m.new_mice(:,1);
+
 if ~(length(unique(mouse_id)) == length(mouse_id))
     errorCount = errorCount + 1;
     errorString{errorCount} = ['A Mouse ID was entered twice.'];
@@ -94,8 +104,8 @@ end
 
 % if there are no errors, add mice to the database
 if ~isempty(errorString)
-    h.errorMessage = uicontrol('style','text','String',['Cannot add mouse due to the following errors: '], 'position', [150 760 500 16],'fontsize',14,'tag','errorMessage');
-    h.errorBox = uicontrol('style','listbox','string',errorString,'tag','errorBox','position',[150 710 500 50]);
+    h.errorMessage = uicontrol('style','text','String',['Cannot add mouse due to the following errors: '], 'position', [300 569 500 16],'fontsize',14,'tag','errorMessage');
+    h.errorBox = uicontrol('style','listbox','string',errorString,'tag','errorBox','position',[300 519 500 50]);
 else schema = mice.getSchema;
     schema.conn.startTransaction
     for i = 1:size(mouseStruct,1)

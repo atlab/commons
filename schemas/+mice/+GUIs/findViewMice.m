@@ -543,8 +543,8 @@ end
 % if there are errors, display them to the user
 
 if ~isempty(errorString)
-    h.errorMessage = uicontrol('style','text','String',['Cannot find mice due to the following errors: '], 'position', [50 750 300 29],'fontsize',14,'tag','errorMessage');
-    h.errorBox = uicontrol('style','listbox','string',errorString,'tag','errorBox','position',[350 750 300 29]);
+    h.errorMessage = uicontrol('style','text','String',['Cannot find mice due to the following errors: '], 'position', [400 617 300 29],'fontsize',14,'tag','errorMessage');
+    h.errorBox = uicontrol('style','listbox','string',errorString,'tag','errorBox','position',[400 587 300 29]);
     set(h.table,'data',{},'rowname','');
     return
 end
