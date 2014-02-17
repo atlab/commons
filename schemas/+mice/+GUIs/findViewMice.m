@@ -72,16 +72,20 @@ end
 % All ID numbers must be in the database
 
 rangeID = {};
-
+kk=1;
 if ~isempty(m.range_start) && ~isempty(m.range_end)
     idx = str2num(m.range_start):str2num(m.range_end);
     for i = 1:length(idx)
-        id(i) = fetch(mice.Mice & ['animal_id=' num2str(idx(i)) '']);
-        if isempty(id(i))
-            errorCount = errorCount + 1;
-            errorString{errorCount} = ['Id ' num2str(idx(i)) ' does not exist in the database.'];
-        else rangeID{i} = id(i).animal_id;
+        fetchedMouse = fetch(mice.Mice & ['animal_id=' num2str(idx(i)) '']);
+        if ~isempty(fetchedMouse)
+            id(kk) = fetchedMouse;
+            rangeID{kk} = id(kk).animal_id;
+            kk=kk+1;
         end
+    end
+    if isempty(rangeID)
+        errorCount = errorCount + 1;
+        errorString{errorCount} = ['No mice found in this range of mice IDs.'];
     end
 end
 
