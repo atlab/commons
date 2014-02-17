@@ -2,26 +2,26 @@
 bs.BrainState (computed) # brain state from patch
 -> reso.Sync
 -----
--> patch.CleanEphys
-band_low  : decimal(5,2)    # Hz
-band_high : decimal(5,2)    # Hz
-brain_state_trace   : longblob  # trace classifying brain states
+-> patch.Ephys
+band_low                    : decimal(5,2)                  # Hz
+band_high                   : decimal(5,2)                  # Hz
+brain_state_trace           : longblob                      # trace classifying brain states
 %}
 
 classdef BrainState < dj.Relvar & dj.AutoPopulate
     
     properties(Constant)
         table = dj.Table('bs.BrainState')
-        popRel = reso.Sync*reso.TrialSet & patch.CleanEphys
+        popRel = reso.Sync*reso.TrialSet & patch.Ephys
     end
     
     methods(Access=protected)
         
         function makeTuples(self, key)
-            key = fetch(reso.Sync*patch.CleanEphys & key);
+            key = fetch(reso.Sync*patch.Ephys & key);
             assert(numel(key)==1)
             [ephysTimes, vm] = fetch1(patch.Ephys & key, 'ephys_time', 'vm');
-            cleanVm = fetch1(patch.CleanEphys & key, 'vm');
+            cleanVm = patch.utils.cleanVm(key);
             fs = 1./mean(diff(ephysTimes));
             
             % compute subtreshold membrane potential filtered to [4-7] Hz

@@ -2,8 +2,8 @@
 bs.TrialBrainState (computed) # the brain state at trial
 -> bs.BrainState
 -> reso.Trial
------
-trial_brain_state : float  # brain state measured right before trial
+---
+trial_brain_state=null      : float                         # brain state measured right before trial
 %}
 
 classdef TrialBrainState < dj.Relvar
@@ -21,7 +21,7 @@ classdef TrialBrainState < dj.Relvar
             for key = fetch(reso.Trial & key)'
                 onset = fetch1(reso.Trial & key,'onset');
                 ix = times > onset + interval(1) & times < onset + interval(2);
-                key.trial_brain_state = mean(brainState(ix));
+                key.trial_brain_state =nanmean(brainState(ix));
                 self.insert(key)
             end
         end
