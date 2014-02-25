@@ -1,5 +1,4 @@
-% interactive tables
+function work2(varargin)
 
-populate(reso.Segment)
-populate(reso.TrialTraceSet)
-populate(bs.VonMisesSet)
+parpopulate(reso.Segment, varargin)
+parpopulate(reso.TrialTraceSet, varargin)

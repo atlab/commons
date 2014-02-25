@@ -9,10 +9,6 @@ trial_trace :  longblob   # deconvolved, upsampled, resampled to have stimulus o
 
 classdef TrialTrace < dj.Relvar
     
-    properties(Constant)
-        table = dj.Table('reso.TrialTrace')
-    end
-    
     methods
         
         function makeTuples(self, key)

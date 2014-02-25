@@ -10,9 +10,8 @@ regressor_cov   : longblob   # regressor covariance matrix,  nConds x nConds
 
 classdef OriDesign < dj.Relvar & dj.AutoPopulate
     
-    properties(Constant)
-        table = dj.Table('reso.OriDesign')
-        popRel = (reso.Sync * reso.CaOpt) & (reso.Sync*psy.Grating);
+    properties
+        popRel = (reso.Sync * reso.CaOpt) & psy.Grating
     end
     
     
@@ -37,7 +36,7 @@ classdef OriDesign < dj.Relvar & dj.AutoPopulate
     methods(Static)
         function G = makeDesignMatrix(times, trials, opt)
             % compute the directional tuning design matrix with a separate
-            % regressor for each direction.  
+            % regressor for each direction.
             
             alpha = @(x,a) (x>0).*x/a/a.*exp(-x/a);  % response shape
             

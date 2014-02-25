@@ -32,7 +32,7 @@ classdef VonMises2 < handle
             f = fit(ne7.rf.VonMises2, x');
             toc
             
-            if n<=8
+            if true
                 % if eight traces or fewer, print and plot results
                 disp 'Original coeffs:'
                 disp(v)

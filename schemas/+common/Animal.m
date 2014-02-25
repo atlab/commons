@@ -16,10 +16,9 @@ animal_ts=CURRENT_TIMESTAMP : timestamp                     # automatic
 
 classdef Animal < dj.Relvar
 
-	properties(Constant)
-		table = dj.Table('common.Animal')
-	end
-
+    properties(Constant)
+        table = dj.Table('common.Animal')
+    end
 	methods
 		function self = Animal(varargin)
 			self.restrict(varargin)

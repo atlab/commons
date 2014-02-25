@@ -7,11 +7,7 @@ ca_trace   : longblob   # raw calcium trace
 %}
 
 classdef Trace < dj.Relvar 
-    
-    properties(Constant)
-        table = dj.Table('reso.Trace')
-   end
-    
+
     methods
         
         function makeTuples(self, key)
