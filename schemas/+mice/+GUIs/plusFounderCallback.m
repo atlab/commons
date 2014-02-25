@@ -229,8 +229,8 @@ if isempty(errorString) && ~isempty(m.new_mice) && duplicateCount == 0
 end
 
 if ~isempty(errorString)
-    h.errorMessage = uicontrol('style','text','String',['Cannot add mouse due to the following errors: '], 'position', [150 760 500 16],'fontsize',14,'tag','errorMessage');
-    h.errorBox = uicontrol('style','listbox','string',errorString,'tag','errorBox','position',[150 710 500 50]);
+    h.errorMessage = uicontrol('style','text','String',['Cannot add mouse due to the following errors: '], 'position', [300 569 500 16],'fontsize',14,'tag','errorMessage');
+    h.errorBox = uicontrol('style','listbox','string',errorString,'tag','errorBox','position',[300 519 500 50]);
 else h.autopopulate = findobj(figHand,'tag','autoBox');
     if get(h.autopopulate,'Value') == 1
         set(h.animal_id,'String',[x.animal_id+1]);

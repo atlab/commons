@@ -47,10 +47,6 @@ s = get(h.room,'string');
 m.room = s{v};
 
 m.rack = get(h.rack,'string');
-m.rack = str2num(m.rack);
-if isempty(m.rack)
-    m.rack = nan;
-end
 
 m.row = get(h.row,'string');
 m.dot = get(h.dot,'string');

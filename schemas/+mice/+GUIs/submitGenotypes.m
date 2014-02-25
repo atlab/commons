@@ -69,8 +69,10 @@ for i = 1:size(m.table,1)
     for j = 1:size(parents,1)
         if isempty(str2num(parents(j).parent_id))
             parents(j).parent_id = fetch(mice.Mice & ['other_id="' parents(j).parent_id '"']);
-            parents(j).parent_id = num2str(parents(j).parent_id.animal_id);
+            try parents(j).parent_id = num2str(parents(j).parent_id.animal_id);
+            end
         end
+        if ~isempty(parents(j).parent_id)
         homo_lines = fetch(mice.Genotypes & ['animal_id=' parents(j).parent_id] & 'genotype="homozygous"','line');
         for k = 1:size(homo_lines,1)
             if strcmp(m.table(i,2),homo_lines(k).line) && strcmp('negative',m.table(i,3))
@@ -85,6 +87,7 @@ for i = 1:size(m.table,1)
                 errorCount = errorCount + 1;
                 errorString{errorCount} = ['Animal ' m.table{i,1} ' cannot be negative for ' homo_lines(k).line ' because parent ' parents(j).parent_id ' is homozygous.'];
             end
+        end
         end
     end
 end

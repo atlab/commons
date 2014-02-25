@@ -1,5 +1,5 @@
 f = figure;
-set(f, 'position',[800 500 900 600]);
+set(f, 'position',[0 0 900 600]);
 
 uicontrol('style','text','string','Enter Mouse IDs:','position',[50 530 110 29],'fontunits','normalized','fontsize',.4,'HorizontalAlignment','Right');
 uicontrol('style','text','string','Or Enter Range:','position',[50 500 110 29],'fontunits','normalized','fontsize',.4,'HorizontalAlignment','Right');

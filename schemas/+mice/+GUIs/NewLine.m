@@ -1,5 +1,5 @@
 f = figure;
-set(f, 'position',[1000 600 500 500])
+set(f, 'position',[0 0 500 500])
 
 uicontrol('style','text','string','Line Abbreviation:','position',[50 400 200 29],'fontunits','normalized','fontsize',.4,'HorizontalAlignment','Right');
 uicontrol('style','text','string','Full Line Name:','position',[50 370 200 29],'fontunits','normalized','fontsize',.4,'HorizontalAlignment','Right');

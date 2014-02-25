@@ -1,5 +1,5 @@
 f = figure;
-set(f, 'position',[1000 600 706 500])
+set(f, 'position',[0 0 706 500])
 
 uicontrol('style','text','string','Requested By:','position',[50 420 110 29],'fontunits','normalized','fontsize',.4,'HorizontalAlignment','Right');
 uicontrol('style','text','string','Date:','position',[50 385 110 29],'fontunits','normalized','fontsize',.4,'HorizontalAlignment','Right');

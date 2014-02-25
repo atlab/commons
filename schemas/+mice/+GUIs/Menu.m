@@ -1,5 +1,5 @@
 f = figure;
-set(f,'position',[100 100 300 720]);
+set(f,'position',[0 0 300 720]);
 
 uicontrol('style','pushbutton','string','View Current Mice','fontunits','normalized','fontsize',.2,'position',[25 625 250 70],'Callback',@mice.GUIs.MenuViewMice);
 uicontrol('style','pushbutton','fontunits','normalized','fontsize',.2,'position',[25 550 250 70],'string','Add New Mice (From Within Colony)','Callback',@mice.GUIs.MenuNewMice);

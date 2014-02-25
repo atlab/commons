@@ -16,6 +16,7 @@ end
 
 requests = fetch(mice.Requests & ['requestor="' m.requestor '"'],'*');
 transfers = fetch(mice.Transfers & ['to_owner="' m.requestor '"']);
+transferID = {};
 for i = 1:size(transfers,1)
     transferID{i} = transfers(i).animal_id;
 end
