@@ -1,6 +1,6 @@
 %{
-pupil.VonMises (computed) # directional tuning conditioned on pupil phase
--> pupil.VonMisesSet
+pupil.EpochVonMises (computed) # directional tuning conditioned on pupil phase
+-> pupil.EpochVonMisesSet
 -> reso.Trace
 -----
 responses : longblob  # table with 2 columns: directions and responses
@@ -13,7 +13,7 @@ von_sharp : float     # tuning sharpness
 von_p : float     # p-value computed by shuffling
 %}
 
-classdef VonMises < dj.Relvar
+classdef EpochVonMises < dj.Relvar
     
     methods
         
@@ -21,7 +21,7 @@ classdef VonMises < dj.Relvar
             
             disp 'fetching trials...'
             trialTimes = fetch1(reso.TrialTraceSet & key, 'trial_times');
-            s = fetch(pupil.Trial*reso.TrialTrace*psy.Trial*psy.Grating & key, ...
+            s = fetch(pupil.EpochTrial*reso.TrialTrace*psy.Trial*psy.Grating & key, ...
                 'direction', 'trial_trace');
             
             disp 'integrating responses...'
@@ -32,7 +32,7 @@ classdef VonMises < dj.Relvar
             assert(all(directions == 0:360/length(directions):359))
             
             disp 'computing von Mises tuning ...'
-            nShuffles = fetch1(pupil.VonMisesSet & key, 'nshuffles');
+            nShuffles = fetch1(pupil.EpochVonMisesSet & key, 'nshuffles');
             [von, r2, p] = ne7.rf.VonMises2.computeSignificance(responses, nShuffles);
             
             % report results
