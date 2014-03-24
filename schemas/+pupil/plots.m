@@ -2,409 +2,499 @@ classdef plots
     
     methods(Static)
         
-        function durations(varargin)
-            for key = fetch(reso.Sync & (pupil.Classify & varargin))'
-                caTimes = fetch1(reso.Sync & key, 'frame_times');
-                mem1 = fetch1(pupil.Classify & key & 'phase_id = 1', 'membership');
-                mem2 = fetch1(pupil.Classify & key & 'phase_id = 2', 'membership');
+        function binnedR2
+            helper(8,9,false,.78,'~/Google Drive/Pupil Paper/Figure3/binned_r2-with-saccades-noblanks.eps')
+            helper(6,7,false,.78,'~/Google Drive/Pupil Paper/Figure3/binned_r2-sans-saccades-noblanks.eps')
+            
+            function helper(epoch1,epoch2,includeBlanks,uplim,filename)
                 
-                plot(caTimes-caTimes(1), mem1, 'go')
-                hold on
-                plot(caTimes-caTimes(1), mem2, 'r*')
-                hold off
+                r = pupil.BinnedNoiseCorr & struct('include_blanks',includeBlanks) & 'r2 is not null' & 'animal_id in (2380,2381,2382,2660,2662)';
+                rr1 = [];  rr2 = [];
+                for key = fetch(reso.Sync & (r & struct('epoch_opt',epoch1)) & (r & struct('epoch_opt',epoch2)))'
+                    tunedIdx = find(fetchn(pupil.EpochVonMises & key & 'epoch_opt=1','(von_amp1>0.1 && von_p<0.01)->p','ORDER BY trace_id'));
+                    disp(key)
+                    [r2,epoch] = fetchn(pupil.BinnedNoiseCorr & key & struct('include_blanks',includeBlanks) & struct('epoch_opt',{epoch1,epoch2}),...
+                        'r2','epoch_opt','ORDER BY epoch_opt');
+                    assert(length(epoch)==2 && all(epoch==[epoch1 epoch2]'))
+                    rr1 = [rr1; r2{1}(tunedIdx)]; %#ok<AGROW>
+                    rr2 = [rr2; r2{2}(tunedIdx)]; %#ok<AGROW>
+                end
+                
+                fig = Figure(1,'size',[45 45]);
+                scatter(rr2,rr1,1,'k','filled')
+                set(gca,'XTick', 0:0.2:1, 'YTick', 0:0.2:1)
+                ylabel 'Quiet dilating'
+                xlabel 'Quiet constricting'
+                title Reliability
+                axis image
+                axis([0 uplim 0 uplim])
+                set(refline(1,0),'Color',[1 1 1]*.5)
+                fig.cleanup
+                fig.save(filename)
             end
         end
         
+        function binnedCorr
+            helper(8,9,false,.7,.3,'sig_corr','Signal corr','~/Google Drive/Pupil Paper/Figure3/binned_sig_corrs-with-saccades-noblanks.eps')
+            helper(8,9,false,.5,.2,'noise_corr','Noise corr','~/Google Drive/Pupil Paper/Figure3/binned_noise_corrs-with-saccades-noblanks.eps')
+            helper(8,9,true, .2,.1,'noise_corr','Noise corr','~/Google Drive/Pupil Paper/Figure3/binned_noise_corrs-with-saccades.eps')
+            helper(6,7,false,.5,.1,'noise_corr','Noise corr','~/Google Drive/Pupil Paper/Figure3/binned_noise_corrs-sans-saccades-noblanks.eps')
+            helper(6,7,true, .2,.1,'noise_corr','Noise corr','~/Google Drive/Pupil Paper/Figure3/binned_noise_corrs-sans-saccades.eps')
+            
+            helper(8,9,true, .7,.3,'sig_corr','Signal corr','~/Google Drive/Pupil Paper/Figure3/binned_sig_corrs-with-saccades.eps')
+            helper(6,7,false,.7,.3,'sig_corr','Signal corr','~/Google Drive/Pupil Paper/Figure3/binned_sig_corrs-sans-saccades-noblanks.eps')
+            helper(6,7,true, .7,.3,'sig_corr','Signal corr','~/Google Drive/Pupil Paper/Figure3/binned_sig_corrs-sans-saccades.eps')
+
+            
+            
+            function helper(epoch1,epoch2,includeBlanks,uplim,tickStep,attr,titl,filename)
+                
+                r = pupil.BinnedNoiseCorr & struct('include_blanks',includeBlanks) & sprintf('%s is not null',attr) & 'animal_id in (2380,2381,2382,2660,2662)';
+                c1 = [];  c2 = [];
+                for key = fetch(reso.Sync & (r & struct('epoch_opt',epoch1)) & (r & struct('epoch_opt',epoch2)))'
+                    tunedIdx = find(fetchn(pupil.EpochVonMises & key & 'epoch_opt=1','(von_amp1>0.1 && von_p<0.01)->p','ORDER BY trace_id'));
+                    disp(key)
+                    [c,epoch] = fetchn(pupil.BinnedNoiseCorr & key & struct('include_blanks',includeBlanks) & struct('epoch_opt',{epoch1,epoch2}),...
+                        attr,'epoch_opt','ORDER BY epoch_opt');
+                    assert(length(epoch)==2 && all(epoch==[epoch1 epoch2]'))
+                    c = cellfun(@(c) c(tunedIdx,tunedIdx), c, 'uni', false);
+                    p = size(c{1});
+                    [i,j] = meshgrid(1:p,1:p);
+                    cc = corrcov(c{1}); c1(end+1) = mean(cc(i<j)); %#ok<AGROW>
+                    cc = corrcov(c{2}); c2(end+1) = mean(cc(i<j)); %#ok<AGROW>
+                end
+                
+                fig = Figure(1,'size',[45 45]);
+                scatter(c2,c1,4,'k','filled')
+                set(gca,'XTick', 0:tickStep:1, 'YTick', 0:tickStep:1)
+                ylabel 'Quiet dilating'
+                xlabel 'Quiet constricting'
+                title(titl)
+                axis image
+                axis([0 uplim 0 uplim])
+                set(refline(1,0),'Color',[1 1 1]*.5)
+                fig.cleanup
+                fig.save(filename)
+            end
+        end
         
-        function pooledNoiseCorrs
-            clf
-            k = 'animal_id in (2380,2381,2382)';
-            k = 'animal_id in (2660)';
-            r = pupil.BinnedNoiseCorr;
-            r = r.pro('noise_cov->n1','sig_cov->s1','phase_id->p1')* ...
-                r.pro('noise_cov->n2','sig_cov->s2','phase_id->p2') & k & 'p1=1' & 'p2=2';
-            [n1,n2,s1,s2,keys] = r.fetchn('n1','n2','s1','s2');
+        function traceFigure
+            fig = Figure(1,'size',[120 60]);
+            key = struct('animal_id',2660,'scan_idx',3);
+            caTimes = fetch1(reso.Sync & key, 'frame_times');
+            dt = median(diff(caTimes));
+            [X,keys] = fetchn(reso.Trace & key & 'trace_id in (27,38,51,66,80,85)', 'ca_trace');
+            X = double([X{:}]);
+            X = bsxfun(@rdivide, X, mean(X))-1;
             
-            tunedIdx = arrayfun(@(key) logical(...
-                fetchn(pupil.VonMises & key & 'phase_id=1', 'von_amp1>0.1 && von_p<0.05 -> is_tuned', 'ORDER BY trace_id')), ...
-                keys, 'uni',false);
-            numTuned = cellfun(@sum, tunedIdx);
+            %            highPass = 0.1;
+            %            k = hamming(ceil(1/dt/highPass)*2/1);
+            %            k = k/sum(k);
+            %            X = X - ne7.dsp.convmirr(X,k);
             
-            sel = numTuned>10;           
-            n1 = n1(sel);
-            n2 = n2(sel);
-            s1 = s1(sel);
-            s2 = s2(sel);
-            keys = keys(sel);
-            tunedIdx = tunedIdx(sel);
+            lambda = 0.3;
+            Y = arrayfun(@(i) fast_oopsi(double(X(:,i))',struct('dt',dt),struct('lam',lambda)), 1:size(X,2), 'uni', false);
+            Y = [Y{:}];
+            Y(max(Y, max(circshift(Y,[1 0]),circshift(Y,[-1 0])))<1e-3)=nan;
             
+            X = bsxfun(@plus, X, 1:size(X,2));
+            Y = bsxfun(@plus, Y*3, 1:size(Y,2))-0.40;
             
-            c1 = cellfun(@avgCorr, n1, tunedIdx);
-            c2 = cellfun(@avgCorr, n2, tunedIdx);
-            scatter(c2,c1,'filled')
-            box on
-            axis equal
-            xlim([.05 0.45])
-            ylim([.05 0.45])
-            grid on
-            xlim([.0 0.12])
-            ylim([.0 0.12])
-            set(refline(1,0),'Color','k')
-            set(gca,'XTick', 0:.05:.1, 'YTick', 0:.05:.1)
-            set(gcf,'PaperSize',[2.5 2.5],'PaperPosition',[0 0 2.5 2.5])
-            ylabel dilation
-            xlabel constriction
-            title 'average noise correlation'
-            print -dpdf ~/noiseCorrs
-            
-            x = -.03:.01:.03;
-            hist(c1-c2,x)
-            set(gca,'XTick',(-1:1)*.02,'YTick',0:4)
-            grid on
-            ylabel '# sites'
-            xlabel '\Delta avg noise corr'
-            box off
+            plot(caTimes-caTimes(1), X, 'k')
             hold on
-            plot([0 0],ylim,'r','LineWidth',3)
+            plot(caTimes-caTimes(1), Y, 'Color', [.5 .5 .5])
+            
+            % add stimulus
+            [onsets,offsets,directions] = fetchn(reso.Trial*psy.Trial*psy.Grating & key, ...
+                'onset', 'offset', 'direction');
+            cmap = hsv(180);
+            onsets = onsets - caTimes(1);
+            offsets = offsets - caTimes(1);
+            for i=1:length(onsets)
+                h = rectangle('Position',[onsets(i) -0.5 offsets(i)-onsets(i) 0.25]);
+                c = cmap(mod(floor(directions(i)),180)+1,:);
+                set(h,'FaceColor', c, 'EdgeColor', c)
+            end
+            
+            % add pupilRadius trace
+            [pupilRadius, pupilTimes] = fetchn(patch.EyeFrame*reso.Sync & key, ...
+                'pupil_r','frame_time','ORDER BY frame_time');
+            vTimes = fetch1(patch.Sync*reso.Sync & key, 'vis_time');
+            eTimes = fetch1(patch.Ephys*reso.Sync & key, 'ephys_time');
+            pupilTimes = interp1(eTimes,vTimes,pupilTimes);
+            plot(pupilTimes-caTimes(1), pupilRadius/20+5, 'Color', [1 0.5 0.4], 'LineWidth',1)
+            
             hold off
-            colormap(gray/2+.5)
-            set(gcf,'PaperSize',[2.5 1.5],'PaperPosition',[0 0 2.5 1.5])
-            print -dpdf ~/noiseCorrDiffs
+            xlim([0 60]+90)
+            ylim([-1 12])
+            axis off
+            set(gca,'Position',[0.01 0.01 0.98 0.98])
             
-            cs1 = cellfun(@avgCorr, s1, tunedIdx);
-            cs2 = cellfun(@avgCorr, s2, tunedIdx);
+            fig.cleanup
+            fig.save('~/Desktop/traces3.eps')
             
-            scatter(cs2,cs1,'filled')
-            box on
-            axis equal
-            xlim([0 .4])
-            ylim([0 .4])
-            set(refline(1),'Color','k')
-            grid on
-            xlim([0 .4])
-            ylim([0 .4])
-            set(gca,'XTick', 0:.2:.4, 'YTick', 0:.2:.4)
-            set(gcf,'PaperSize',[2.5 2.5],'PaperPosition',[0 0 2.5 2.5])
-            ylabel dilation
-            xlabel constriction
-            title 'average signal corrs'
-            print -dpdf ~/sigCorrs.pdf
-            
-            
-            x = -.1:.01:.1;
-            hist(cs1-cs2,x)
-            set(gca,'XTick',(-1:1)*.1,'YTick',0:4)
-            xlim([-1 1]*0.11)
-            grid on
-            ylabel '# sites'
-            xlabel '\Delta avg signal corr'
-            box off
-            hold on
-            plot([0 0],ylim,'r','LineWidth',3)
-            hold off
-            colormap(gray/2+0.5)
-            set(gcf,'PaperSize',[2.5 1.5],'PaperPosition',[0 0 2.5 1.5])
-            print -dpdf ~/sigCorrDiffs
-            
-            rr1 = cellfun(@avgR2,s1,n1,tunedIdx);
-            rr2 = cellfun(@avgR2,s2,n2,tunedIdx);
-            scatter(rr2,rr1,'filled')
-            xlim([.0 0.25])
-            ylim([.0 0.25])
-            axis equal
-            xlim([.0 0.2])
-            ylim([.0 0.2])
-            set(refline(1),'Color','k')
-            grid on
-            set(gca,'XTick',0:0.05:1,'YTick',0:0.05:1)
-            xlabel constriction
-            ylabel dilation
-            title R^2
-            set(gcf,'PaperSize',[2.5 2.5],'PaperPosition',[0 0 2.5 2.5])
-            box on
-            print -dpdf ~/r-squared
-            
-            disp done
-
-
-            
-            function c = avgCorr(n,id)
-                n = corrcov(n(id,id));
-                p = size(n,1);
-                [i,j] = meshgrid(1:p,1:p);
-                c = mean(n(i<j));                
-            end
-            
-            function r2 = avgR2(s,n,id)
-                r2 = mean(diag(s(id,id))./(diag(s(id,id))+diag(n(id,id))));
-            end
-        end
-        
-        function averageTuningCurve
-            k = 'animal_id in (2380,2381,2382)';
-            k = 'animal_id in (2660)';
-            r = pupil.VonMises & k;
-            g1 = r & 'phase_id=1' & 'von_p < 0.05' & 'von_amp1 > 0.1';
-            g2 = r & 'phase_id=2';
-            
-            % the cells must be tuned under both conditions
-            g1 = g1 & g2.pro('phase_id->p2');
-            g2 = g2 & g1.pro('phase_id->p1');
-            
-            [r1, pref1] = g1.fetchn('responses','(von_pref*180/3.1416)->pref');
-            [r2, pref2]= g2.fetchn('responses','(von_pref*180/3.1416)->pref');
-            
-            angles1 = getAngles(r1,pref1);
-            angles2 = getAngles(r2,pref2);
-            
-            clf
-            makePlot(angles1, r1, 'r')
-            hold on
-            makePlot(angles2, r2, 'k')
-            set(gcf,'PaperSize',[3 2],'PaperPosition',[0 0 3 2])
-            print -dpdf ~/tuningCurve3
-
-            
-            function makePlot(angles, responses, color)
-                % avearge responses
-                responses = cellfun(@(r) nanmean(squeeze(r),2), responses, 'uni', false);
-                % normalize by mean signal
-                responses = cellfun(@(r) r/mean(r), responses, 'uni', false);
-                
-                % covert to arrays
-                angles = reshape([angles{:}],1,[]);
-                responses = reshape([responses{:}],1,[]);
-                
-                % accumulate averages
-                step = 1 ; % bin size in degrees
-                xx = step/2:1:360;   % bins
-                binIdx = ceil(angles'/step);
-                support = accumarray(binIdx,1,size(xx'))';
-                accum   = accumarray(binIdx,responses,size(xx'))';
-                accum2  = accumarray(binIdx,responses.^2,size(xx'))';
-                
-                % smoothen average response
-                sigma = 30;  % degrees
-                kk = hamming(ceil(sigma/step)*2+1)';
-                support = circshift(cconv(support,kk,length(support)),[0 -(length(kk)-1)/2]);
-                accum = circshift(cconv(accum,kk,length(accum)), [0 -(length(kk)-1)/2]);
-                accum2= circshift(cconv(accum2,kk,length(accum2)), [0 -(length(kk)-1)/2]);
-                meanResponses = accum./support;
-                stdErrors = sqrt(accum2./support-meanResponses.^2)/sqrt(support);
-                
-                % plot mean
-                boundedline(xx-180, meanResponses, stdErrors, color, 'transparency', 0.4)
-                hold off
-                
-                % make plot nice
-                set(gca,'YColor',[1 1 1]*.99)
-                set(gca,'XTick',-180:180:180)
-                xlim([-1 1]*180)
-                ylim([.7 1.9])
-            end
-            
-            
-            
-            function angles = getAngles(r,pref)
-                angles = cellfun(@(r,pref) mod((0:360/size(r,2):359) - pref+180,360), r, num2cell(pref), 'uni', false);
-            end
-            
+            %            set(gcf, 'PaperSize', [12 6]/2.54, 'PaperPosition', [0 0 12 6]/2.54)
+            %            print -dpdf ~/Desktop/traces2
         end
         
         
         
-        function OriMap(varargin)
-            for key = fetch(pupil.Cos2Map & varargin)'
-                g = fetch1(reso.Align & key, 'green_img');
-                [amp, r2, ori, p] = fetchn(pupil.Cos2Map & key, ...
-                    'cos2_amp', 'cos2_r2', 'pref_ori', 'cos2_fp');
-                
-                % add a black line at the bottom of each figure
-                p = cellfun(@(x) cat(1,x,nan(3,size(x,2))), p, 'uni',false);
-                amp = cellfun(@(x) cat(1,x,nan(3,size(x,2))), amp, 'uni',false);
-                ori = cellfun(@(x) cat(1,x,nan(3,size(x,2))), ori, 'uni',false);
-                r2 = cellfun(@(x) cat(1,x,nan(3,size(x,2))), r2, 'uni',false);
-                
-                % make composite image
-                p = cat(1,p{:});
-                amp = cat(1,amp{:});
-                r2 = cat(1,r2{:});
-                ori = cat(1,ori{:});
-                
-                h = mod(ori,pi)/pi;   % orientation is represented as hue
-                s = p<0.01;   % only significantly tuned pixels are shown in color
-                v = ones(size(p));  % brightness is proportional to variance explained, scaled between 0 and 10 %
-                img = hsv2rgb(cat(3, h, s, v));
-                image(img)
-                axis image
-                
-                title(sprintf('Mouse %d scan %d caOpt=%u', key.animal_id, key.scan_idx, key.ca_opt))
-                
-                f = sprintf('~/dev/figures/reso/pupil_cos2map_%05d_%03d_%02d-phase%02d', ...
-                    key.animal_id, key.scan_idx, key.ca_opt, key.phase_id);
-                set(gcf, 'PaperSize', [8 8], 'PaperPosition', [0 0 8 8])
-                print('-dpng', f, '-r150')
-            end
-        end
+        function OSI
+            k = 'animal_id in (2380,2381,2382,2660,2662)';
+            helper(k,[3 2 9 8],'osi-bar-running-with-saccades',...
+                {'  Quiet','  Active','  Quiet constricting','  Quiet dilating'})
         
-        
-        function modulation(varargin)
-            for key = fetch(pupil.OriDesign & varargin)'
-                [modulation,frameTimes] = fetch1(pupil.OriDesign*reso.Sync & key, 'modulation', 'frame_times');
-                plot(frameTimes-frameTimes(1), modulation)
-                [pupilTime, radius] = fetchn(patch.EyeFrame*reso.Sync & key, 'frame_time', 'pupil_r');
-                [vtime, etime] = fetch1(reso.Sync*patch.Sync*patch.Ephys & key,'vis_time','ephys_time');
-                pupilTime = interp1(etime,vtime,pupilTime,'linear');
+            function helper(k,epochs,filename,labels)
+                % join the tuned cells from 'all' with the cells in
+                % conditions defined by epochs.
+                rel = pupil.EpochVonMises;
+                g0 = rel & k & 'epoch_opt=1' & 'von_p<0.01' & 'von_amp1>0.1';
+                g0 = g0.pro('responses->r0','epoch_opt->e0','(von_pref*180/3.1416)->pref');
+                g = arrayfun(@(i,epoch) ...
+                    pro(rel & struct('epoch_opt',epoch), sprintf('responses->r%d',i),sprintf('epoch_opt->e%d',i)), ...
+                    1:length(epochs), epochs, 'uni', false);
+                rel = g0;
+                for i=1:length(g)
+                    rel = rel*g{i};
+                end
                 
+                % fetch tuning curves for each condition
+                fprintf('%d cells\n',rel.count)
+                pref = rel.fetchn('pref');
+                r = arrayfun(@(i) rel.fetchn(sprintf('r%d',i)), 1:length(epochs), 'uni',false);
+                angles = cellfun(@(r,pref) mod((0:360/size(r,2):359) - pref+180,360), r{1}, num2cell(pref), 'uni', false);
+                
+                [prefR, orthoR] = cellfun(@(r) makeBars(angles,r), r, 'uni', false);
+                osis = cellfun(@(pref,ortho) (pref-ortho)./(pref+ortho)*2, ...
+                    prefR, orthoR, 'uni',false);
+                
+%                 fig = Figure(1,'size',[50 40]);
+%                 scatter(osis{1},osis{2},1,'filled','k')
+%                 set(gca,'XTick', 0:0.5:1.5, 'YTick', 0:0.5:1.5)
+%                 xlabel(labels{1})
+%                 ylabel(labels{2})
+%                 title 'OSI'
+%                 axis image
+%                 axis([.0 1.6 .0 1.6])
+%                 set(refline(1,0),'Color',[1 1 1]*.5)
+%                 fig.cleanup
+%                 fig.save(sprintf('~/Google Drive/Pupil Paper/Figure3/%s.eps',filename))
+                
+                fig = Figure(1,'size',[50 40]);
+                avgOSI = cellfun(@median, osis);
+                bar(avgOSI)
                 hold on
-                plot(pupilTime-frameTimes(1), radius/150, 'r')
+                [ci1,ci2] = cellfun(@(x) confInterval(x,0.95), osis);
+                errorbar(1:4,avgOSI,ci1-avgOSI,ci2-avgOSI, 'k', 'LineStyle', 'none')
                 hold off
-                disp ahh
-            end
-        end
-        
-        
-        function compareTuning
-            r = reso.Sync & (pupil.VonMisesSet & 'phase_id=1') & (pupil.VonMisesSet & 'phase_id=2');
-            for key = fetch(r)'
-                cla
-                n = fetchn(pupil.VonMisesSet & key, pupil.VonMises, 'count(*)->n');
-                assert(length(n)==2 && all(n==n(1)))
-                
-                for key = fetch(pupil.VonMisesSet & key, 'ORDER BY phase_id')'
-                    amp = fetchn(pupil.VonMises & key,'von_amp1','ORDER BY trace_id');
-                    plot(cumsum(amp))
-                    hold all
-                end
-                hold off
-                legend dilating constricting
-            end
-        end
-        
-        
-        function compareDiversity
-            r = reso.Sync & (pupil.VonMisesSet & 'phase_id=1') & (pupil.VonMisesSet & 'phase_id=2');
-            v = nan(0,2);
-            for key = fetch(r)'
-                cla
-                n = fetchn(pupil.VonMisesSet & key, pupil.VonMises, 'count(*)->n');
-                assert(length(n)==2 && all(n==n(1)))
-                
-                i = 0;
-                for key = fetch(pupil.VonMisesSet & key, 'ORDER BY phase_id')'
-                    i=i+1;
-                    pref{i} = fetchn(pupil.VonMises & key & 'von_p<0.01','von_pref');
-                    vv(i) = mean(exp(2i*pi*pref{i}));
-                end
-                v(end+1,:) = vv;
-                bins = 15:30:360;
-                c = cellfun(@(pref) hist(pref/pi*180,bins), pref, 'uni', false);
-                bar(bins,cat(1,c{:})')
-                set(gca,'XTick',bins)
-                legend dilating constricting
-            end
-        end
-        
-        
-        
-        function compareCorrs
-            r = reso.Sync & (pupil.BinnedNoiseCorr & 'phase_id=1') & (pupil.BinnedNoiseCorr & 'phase_id=2');
-            for key = fetch(r)'
-                tunedIdx = ...
-                    fetchn(pupil.VonMises & key & 'phase_id=1','(von_amp1>0.1 && von_p<0.1)->p','ORDER BY trace_id') & ...
-                    fetchn(pupil.VonMises & key & 'phase_id=2','(von_amp1>0.1 && von_p<0.1)->p','ORDER BY trace_id');
-                if sum(tunedIdx)<10
-                    continue
-                end
-                disp(key)
-                clf
-                fig = Figure(1,'size',[200 160]);
-                
-                [c,s,phase_id] = fetchn(pupil.BinnedNoiseCorr & key,'noise_cov','sig_cov','phase_id','ORDER BY phase_id');
-                c = cellfun(@(c) c(tunedIdx,tunedIdx), c, 'uni', false);
-                s = cellfun(@(c) c(tunedIdx,tunedIdx), s, 'uni', false);
-                assert(length(phase_id)==2 && all(phase_id==[1 2]'))
-                %                 subplot 121, imagesc(corrcov(c{1}),[-1 1]), axis image
-                %                 subplot 122, imagesc(corrcov(c{2}),[-1 1]), axis image
-                subplot 231
-                p = size(c{1},1);
-                [i,j] = meshgrid(1:p,1:p);
-                c1 = corrcov(c{1});
-                c2 = corrcov(c{2});
-                scatter(c2(i(:)<j(:)),c2(i(:)<j(:)))
-                xlabel dilating
-                ylabel constricting
-                title 'noise correlations'
-                axis image
-                axis([-.0 .4 -.0 .4])
-                refline
-                refline(1,0)
-                grid on
-                
-                subplot 232
-                bins = -0.1:0.01:0.1;
-                ix = i(:)<j(:);
-                hist(c1(ix)-c2(ix),bins)
-                hold on
-                plot([1 1]*median(c1(ix)-c2(ix)),ylim,'r')
-                hold off
-                xlim(bins([1 end]))
-                grid on
-                xlabel 'noise corr difference'
-                
-                subplot 234
-                r1 = diag(s{1})./(diag(c{1})+diag(s{1}));
-                r2 = diag(s{2})./(diag(c{2})+diag(s{2}));
-                scatter(r1,r2)
-                xlabel dilating
-                ylabel constricting
-                title 'R^2'
-                axis image
-                refline
-                refline(1,0)
-                grid on
-                
-                subplot 235
-                p = size(c{1},1);
-                [i,j] = meshgrid(1:p,1:p);
-                
-                c1 = corrcov(c{1});
-                c2 = corrcov(c{2});
-                s1 = corrcov(s{1});
-                s2 = corrcov(s{2});
-                ss = cat(1, s1(i(:)<j(:)), s2(i(:)<j(:)));
-                cc = cat(1, c1(i(:)<j(:)), c2(i(:)<j(:)));
-                colr = cat(1,ones(sum(i(:)<j(:)),1), zeros(sum(i(:)<j(:)),1));
-                ix = randperm(length(colr));
-                scatter(ss(ix),cc(ix),4,colr(ix));
-                colormap(winter)
-                h = colorbar;
-                set(h,'YTick',[0 1],'YTickLabel',{'constricting','dilating'})
-                
-                xlabel 'signal corrs'
-                ylabel 'noise corrs'
-                axis image
-                axis([-.3 1 -.3 1])
-                refline
-                refline(1,0)
-                set(gca,'XTick',-.5:.5:1,'YTick',-.5:.5:1,'XTickLabel',-.5:.5:1,'YTickLabel',-.5:.5:1)
-                grid on
-                
-                subplot 233
-                pupil.plots.subplotOriMap(dj.struct.join(key,struct('phase_id',1,'ca_opt',11)))
-                title dilating
-                subplot 236
-                pupil.plots.subplotOriMap(dj.struct.join(key,struct('phase_id',2,'ca_opt',11)))
-                title constricting
+                colormap(gray/2+.5)
+                set(gca,'XTickLabel',labels)
+                rotateticklabel(gca,-30);
+                set(gca,'Position', [.25 .28 .70 .7], 'YTick', 0:.2:.6)
+                ylabel 'OSI'
+                ylim([0 .45])
                 
                 fig.cleanup
-                set(gcf,'PaperSize',[12 10], 'PaperPosition', [0 0 12 10])
-                f = sprintf('~/figures/pupil-%05d-%02d.pdf',key.animal_id, key.scan_idx);
-                fig.save(f)
+                fig.save(sprintf('~/Google Drive/Pupil Paper/Figure3/%s.eps',filename))
+                
+                
+                function [ci1,ci2] = confInterval(x,thresh)
+                    m = arrayfun(@(i) median(x(randi(length(x),size(x)))), 1:10000);
+                    ci1 = quantile(m,(1-thresh)/2);
+                    ci2 = quantile(m,1-(1-thresh)/2);
+                end
+
+                
+                function [prefR, orthoR] = makeBars(angles, responses)
+                    % avearge responses
+                    responses = cellfun(@(r) nanmedian(squeeze(r),2), responses, 'uni', false);
+                    prefR = cellfun(@(angles,r) mean(r(abs(angles-180)<22.5,:)), angles, responses);
+                    orthoR = cellfun(@(angles,r) mean(r(abs(abs(angles-180)-90)<22.5,:)), angles, responses);
+                end
+            end
+        
+        end
+        
+        
+        function averageTuningCurve
+            k = 'animal_id in (2380,2381,2382,2660,2662)';
+            helper(k,[7 6 2 5],'brgk','ori-all-sans-saccades')
+            helper(k,[9 8 2 3],'brgk','ori-all-with-saccades')
+            helper(k,[7 6 2],'brg','ori-dilation-sans-saccades')
+            helper(k,[9 8 2],'brg','ori-dilation-with-saccades')
+            helper(k,[3 2],'kg','ori-running-with-saccades',{'Quiet','Active'})
+            helper(k,[9 8],'br','ori-running-with-saccades',{'Quiet constricting','Quiet dilating'})
+            
+            function helper(k,epochs,colors,filename)
+                assert(length(epochs)==length(colors))
+                % join the tuned cells from 'all' with the cells in
+                % conditions defined by epochs.
+                rel = pupil.EpochVonMises;
+                g0 = rel & k & 'epoch_opt=1' & 'von_p<0.01' & 'von_amp1>0.1';
+                g0 = g0.pro('responses->r0','epoch_opt->e0','(von_pref*180/3.1416)->pref');
+                g = arrayfun(@(i,epoch) ...
+                    pro(rel & struct('epoch_opt',epoch), sprintf('responses->r%d',i),sprintf('epoch_opt->e%d',i)), ...
+                    1:length(epochs), epochs, 'uni', false);
+                rel = g0;
+                for i=1:length(g)
+                    rel = rel*g{i};
+                end
+                
+                % fetch tuning curves for each condition
+                fprintf('%d cells\n',rel.count)
+                pref = rel.fetchn('pref');
+                r = arrayfun(@(i) rel.fetchn(sprintf('r%d',i)), 1:length(epochs), 'uni',false);
+                angles = cellfun(@(r,pref) mod((0:360/size(r,2):359) - pref+180,360), r{1}, num2cell(pref), 'uni', false);
+                
+                % make tuning curve figure
+                fig = Figure(1,'size',[50 40]);
+                for i=1:length(epochs)
+                    makePlot(angles, r{i}, colors(i))
+                    hold on
+                end
+                hold off
+                fig.cleanup
+                fig.save(sprintf('~/Google Drive/Pupil Paper/Figure3/%s.eps',filename))
+                
+                % make legend
+                fig = Figure(1,'size',[20 20]);
+                for i=1:length(epochs)
+                      boundedline([-1 1], i*[1 1], 0.2, colors(i), 'transparency', 0.3)
+                      hold on
+                end
+                hold off
+                fig.cleanup
+                fig.save(sprintf('~/Google Drive/Pupil Paper/Figure3/%s-legend.eps',filename))
+                
+
+
+                %                 scatter(osi2,osi1,3,'filled','k')
+                %                 xlabel constriction
+                %                 ylabel dilation
+                %                 axis equal
+                %                 xlim([0 1.65])
+                %                 ylim([0 1.65])
+                %                 set(gca,'XTick',0:.5:1.5,'YTick',0:.5:1.5);
+                %                 set(refline(1),'Color',[.5 .5 .5])
+                %                 title OSI
+                %                 fig.cleanup
+                %                 fig.save('~/Google Drive/Pupil Paper/Figure3/pupilOSI.eps')
+                %                 p = signrank(osi2,osi1);
+                %                 fprintf('OSI increase due to dilation: %2.1f, p-value: %e\n', ...
+                %                     (median(osi1)/median(osi2)-1)*100,p)
+                
+                %             fig = Figure(1,'size',[50 40]);
+                %             hist((osi3-osi4)-(osi1-osi2),40)
+                %             xlabel 'difference in effects (running-dilation)'
+                %             fig.cleanup
+                %             fig.save('~/Google Drive/Pupil Paper/Figure3/OSI-effects.eps')
+                %
+                %             fig = Figure(1,'size',[50 40]);
+                %             scatter(osi4,osi3,3,'filled','k')
+                %             xlabel quiet
+                %             ylabel active
+                %             axis equal
+                %             xlim([0 1.65])
+                %             ylim([0 1.65])
+                %             set(gca,'XTick',0:.5:1.5,'YTick',0:.5:1.5);
+                %             set(refline(1),'Color',[.5 .5 .5])
+                %             title OSI
+                %             fig.cleanup
+                %             fig.save('~/Google Drive/Pupil Paper/Figure3/runningOSI.eps')
+                %             p = signrank(osi4,osi3);
+                %             fprintf('OSI increase due to running: %2.1f, p-value: %e\n', ...
+                %                 (median(osi3)/median(osi4)-1)*100, p)
+                %
+                %
+                %
+                %             fig = Figure(1,'size',[50 40]);
+                %             osis = {osi1 osi2 osi3 osi4};
+                %             avgOSI = cellfun(@median, osis);
+                %             bar(avgOSI)
+                %             hold on
+                %             [ci1,ci2] = cellfun(@(x) confInterval(x,0.95), osis);
+                %             errorbar(1:4,avgOSI,ci1-avgOSI,ci2-avgOSI, 'k', 'LineStyle', 'none')
+                %             hold off
+                %             colormap(gray/2+.5)
+                %             set(gca,'XTickLabel',{'  dilation','  constriction','  active','  quiet'})
+                %             rotateticklabel(gca,-30);
+                %             set(gca,'Position', [.25 .28 .70 .7], 'YTick', 0:.2:.6)
+                %             ylabel 'OSI'
+                %             ylim([0 .75])
+                %
+                %             fig.cleanup
+                %             fig.save('~/Google Drive/Pupil Paper/Figure3/meanOSI.eps')
+                %
+                
+%                 function [ci1,ci2] = confInterval(x,thresh)
+%                     m = arrayfun(@(i) median(x(randi(length(x),size(x)))), 1:10000);
+%                     ci1 = quantile(m,(1-thresh)/2);
+%                     ci2 = quantile(m,1-(1-thresh)/2);
+%                 end
+                
+                
+                function makePlot(angles, responses, color)
+                    % avearge responses
+                    responses = cellfun(@(r) nanmedian(squeeze(r),2), responses, 'uni', false);
+                    % normalize by mean signal
+                    responses = cellfun(@(r) r, responses, 'uni', false);
+                    
+                    % covert to arrays
+                    angles = reshape([angles{:}],1,[]);
+                    responses = reshape([responses{:}],1,[]);
+                    
+                    % accumulate averages
+                    step = 2 ; % bin size in degrees
+                    xx = step/2:step:360;   % bins
+                    binIdx = ceil(angles'/step+eps);
+                    support = accumarray(binIdx,1,size(xx'))';
+                    accum   = accumarray(binIdx,responses,size(xx'))';
+                    accum2  = accumarray(binIdx,responses.^2,size(xx'))';
+                    
+                    % smoothen average response
+                    sigma = 30;  % degrees
+                    kk = hamming(ceil(sigma/step)*2+1)';
+                    support = circshift(cconv(support,kk,length(support)),[0 -(length(kk)-1)/2]);
+                    accum = circshift(cconv(accum,kk,length(accum)), [0 -(length(kk)-1)/2]);
+                    accum2= circshift(cconv(accum2,kk,length(accum2)), [0 -(length(kk)-1)/2]);
+                    meanResponses = accum./support;
+                    stdErrors = sqrt(accum2./support-meanResponses.^2)/sqrt(support);
+                    
+                    % plot mean
+                    boundedline(xx-180, meanResponses, stdErrors, color, 'transparency', 0.3)
+                    hold off
+                    
+                    % make plot nice
+                    set(gca,'XTick',-180:180:180)
+                    xlim([-1 1]*180)
+                    ylim([.15 .42])
+                    xlabel 'Degrees from preferred direction'
+                    ylabel 'Calcium signal'
+                end
+                
                 
             end
-            
         end
+        
+        
+        
+        function trialCorr
+            helper(8,9,'noise_cov','noise corr','/Users/dimitri/Google Drive/Pupil Paper/Figure3/trial_noise_corrs-with-saccades.eps')
+            helper(6,7,'noise_cov','noise corr','/Users/dimitri/Google Drive/Pupil Paper/Figure3/trial_noise_corrs-sans-saccades.eps')
+            
+            helper(8,9,'sig_cov','signal corr','/Users/dimitri/Google Drive/Pupil Paper/Figure3/trial_sig_corrs-with-saccades.eps')
+            helper(6,7,'sig_cov','signal corr','/Users/dimitri/Google Drive/Pupil Paper/Figure3/trial_sig_corrs-sans-saccades.eps')
+            
+            function helper(epoch1,epoch2,attr,titl,filename)
+                
+                r = pupil.EpochR2 & sprintf('%s is not null',attr) & 'animal_id in (2380,2381,2382,2660,2662)';
+                c1 = [];  c2 = [];
+                for key = fetch(reso.Sync & (r & struct('epoch_opt',epoch1)) & (r & struct('epoch_opt',epoch2)))'
+                    tunedIdx = find(fetchn(pupil.EpochVonMises & key & 'epoch_opt=1','(von_amp1>0.1 && von_p<0.01)->p','ORDER BY trace_id'));
+                    disp(key)
+                    [c,epoch] = fetchn(pupil.EpochR2 & key & struct('epoch_opt',{epoch1,epoch2}),...
+                        attr,'epoch_opt','ORDER BY epoch_opt');
+                    assert(length(epoch)==2 && all(epoch==[epoch1 epoch2]'))
+                    c = cellfun(@(c) c(tunedIdx,tunedIdx), c, 'uni', false);
+                    p = size(c{1});
+                    [i,j] = meshgrid(1:p,1:p);
+                    cc = corrcov(c{1}); c1(end+1) = mean(cc(i<j)); %#ok<AGROW>
+                    cc = corrcov(c{2}); c2(end+1) = mean(cc(i<j)); %#ok<AGROW>
+                end
+                
+                fig = Figure(1,'size',[45 45]);
+                scatter(c2,c1,1,'k','filled')
+                set(gca,'XTick', 0:0.5:1, 'YTick', 0:0.5:1)
+                ylabel 'Quiet dilating'
+                xlabel 'Quiet constricting'
+                title(titl)
+                axis image
+                axis([.0 .6 .0 .6])
+                set(refline(1,0),'Color',[1 1 1]*.5)
+                fig.cleanup
+                fig.save(filename)
+            end
+        end
+        
+        
+        
+        function trialR2
+            helper(8,9,'/Users/dimitri/Google Drive/Pupil Paper/Figure3/trial-r2-with-saccades.eps')
+            helper(6,7,'/Users/dimitri/Google Drive/Pupil Paper/Figure3/trial-r2-sans-saccades.eps')
+            
+            function helper(epoch1,epoch2,filename)
+                r = pupil.EpochR2 & 'sig_cov is not null' & 'animal_id in (2380,2381,2382,2660,2662)';
+                ars1 = [];
+                ars2 = [];
+                for key = fetch(reso.Sync & (r & struct('epoch_opt',epoch1)) & (r & struct('epoch_opt',epoch2)))'
+                    tunedIdx = find(fetchn(pupil.EpochVonMises & key & 'epoch_opt=1','(von_amp1>0.1 && von_p<0.01)->p','ORDER BY trace_id'));
+                    disp(key)
+                    [c,s,epoch] = fetchn(pupil.EpochR2 & key & struct('epoch_opt',{epoch1,epoch2}),...
+                        'noise_cov','sig_cov','epoch_opt','ORDER BY epoch_opt');
+                    c = cellfun(@(c) c(tunedIdx,tunedIdx), c, 'uni', false);
+                    s = cellfun(@(c) c(tunedIdx,tunedIdx), s, 'uni', false);
+                    assert(length(epoch)==2 && all(epoch==[epoch1 epoch2]'))
+                    
+                    rs1 = 1-diag(c{1})./(diag(s{1})+diag(c{1}));
+                    rs2 = 1-diag(c{2})./(diag(s{2})+diag(c{2}));
+                    ars1 = [ars1; rs1]; %#ok<AGROW>
+                    ars2 = [ars2; rs2]; %#ok<AGROW>
+                end
+                
+                fig = Figure(1,'size',[45 45]);
+                scatter(ars2,ars1,1,'k','filled')
+                set(gca,'XTick', 0:0.5:1, 'YTick', 0:0.5:1)
+                ylabel 'Quiet dilating'
+                xlabel 'Queit constricting'
+                title 'Reliability'
+                
+                axis image
+                axis([.0 .9 .0 .9])
+                set(refline(1,0),'Color',[1 1 1]*.5)
+                fig.cleanup
+                fig.save(filename)
+                
+                fprintf('Median R^2 increase %2.1f%%, p=%1.1e\n', (median(ars1./ars2)-1)*100, signrank(ars1./ars2-1))
+            end
+        end
+        
+        
+        %             % compare noise corrs
+        %             fig = Figure(1,'size',[45 45]);
+        %             n = 0;
+        %             ac1 = [];
+        %             ac2 = [];
+        %             for key = fetch(r)'
+        %                 tunedIdx = find(fetchn(pupil.EpochVonMises & key & 'epoch_opt=1','(von_amp1>0.1 && von_p<0.01)->p','ORDER BY trace_id'));
+        %                 disp(key)
+        %                 [c,s,epoch] = fetchn(pupil.BinnedNoiseCorr & key & 'epoch_opt in (4,5)',...
+        %                     'noise_cov','sig_cov','epoch_opt','ORDER BY epoch_opt');
+        %                 n = n+length(tunedIdx);
+        %                 c = cellfun(@(c) c(tunedIdx,tunedIdx), c, 'uni', false);
+        %                 s = cellfun(@(c) c(tunedIdx,tunedIdx), s, 'uni', false);
+        %                 assert(length(epoch)==2 && all(epoch==[4 5]'))
+        %
+        %                 c1 = corrcov(c{1});
+        %                 c2 = corrcov(c{2});
+        %                 p = size(c1);
+        %                 [i,j] = meshgrid(1:p,1:p);
+        %                 ac1(end+1) = mean(c1(i<j));
+        %                 ac2(end+1) = mean(c2(i<j));
+        %             end
+        %             fprintf('Cells used for r-squared %d\n', n)
+        %             scatter(ac2,ac1,8,'k','filled')
+        %             set(gca,'XTick',0:.2:.4, 'YTick', 0:.2:.4)
+        %             xlabel constricting
+        %             ylabel dilating
+        %             title 'mean noise corr'
+        %             axis image
+        %             axis([.0 .4 .0 .4])
+        %             set(refline(1,0),'Color',[1 1 1]*.5)
+        %             fig.cleanup
+        %             fig.save('~/Desktop/noise-corr.eps')
+        %
+        %         end
+        
         
         
         function subplotOriMap(key)
@@ -436,19 +526,65 @@ classdef plots
         end
         
         
-        function compareR2
-            r = pupil.Cos2Map & 'ca_opt=11';
-            r1 = r.pro('phase_id->p1','cos2_amp->r1');
-            r2 = r.pro('phase_id->p2','cos2_amp->r2');
-            
-            [R1,R2] = fetchn(r1*r2 & 'p1=1 and p2=2','r1','r2');
-            
-            for i=1:length(R1)
-                imagesc(R1{i}-R2{i},[-1 1]*0.10)
-                colorbar
-                axis image
-                colormap(covest.doppler)
-            end
-        end
     end
+end
+
+
+function th=rotateticklabel(h,rot,demo)
+%ROTATETICKLABEL rotates tick labels
+%   TH=ROTATETICKLABEL(H,ROT) is the calling form where H is a handle to
+%   the axis that contains the XTickLabels that are to be rotated. ROT is
+%   an optional parameter that specifies the angle of rotation. The default
+%   angle is 90. TH is a handle to the text objects created. For long
+%   strings such as those produced by datetick, you may have to adjust the
+%   position of the axes so the labels don't get cut off.
+%
+%   Of course, GCA can be substituted for H if desired.
+%
+%   TH=ROTATETICKLABEL([],[],'demo') shows a demo figure.
+%
+%   Known deficiencies: if tick labels are raised to a power, the power
+%   will be lost after rotation.
+%
+%   See also datetick.
+
+%   Written Oct 14, 2005 by Andy Bliss
+%   Copyright 2005 by Andy Bliss
+
+%DEMO:
+if nargin==3
+    x=[now-.7 now-.3 now];
+    y=[20 35 15];
+    figure
+    plot(x,y,'.-')
+    datetick('x',0,'keepticks')
+    h=gca;
+    set(h,'position',[0.13 0.35 0.775 0.55])
+    rot=90;
+end
+
+%set the default rotation if user doesn't specify
+if nargin==1
+    rot=90;
+end
+%make sure the rotation is in the range 0:360 (brute force method)
+while rot>360
+    rot=rot-360;
+end
+while rot<0
+    rot=rot+360;
+end
+%get current tick labels
+a=get(h,'XTickLabel');
+%erase current tick labels from figure
+set(h,'XTickLabel',[]);
+%get tick label positions
+b=get(h,'XTick');
+c=get(h,'YTick');
+%make new tick labels
+if rot<180
+    th=text(b,repmat(c(1)-.1*(c(2)-c(1)),length(b),1),a,'HorizontalAlignment','right','rotation',rot);
+else
+    th=text(b,repmat(c(1)-.1*(c(2)-c(1)),length(b),1),a,'HorizontalAlignment','left','rotation',rot);
+end
 end

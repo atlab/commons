@@ -1,5 +1,3 @@
-% pupil.Jobs -- job reservation table
-
 %{
 pupil.Jobs (job)    # the job reservation table
 table_name : varchar(255) # className of the table
@@ -15,7 +13,4 @@ timestamp=CURRENT_TIMESTAMP : timestamp       # automatic timestamp
 %}
 
 classdef Jobs < dj.Relvar
-    properties(Constant)
-        table = dj.Table('pupil.Jobs')
-    end
 end

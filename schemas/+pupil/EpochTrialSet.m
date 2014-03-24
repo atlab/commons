@@ -1,19 +1,19 @@
 %{
 pupil.EpochTrialSet (computed) # trial traces for phase conditions
 -> reso.TrialSet
--> patch.Epochs
+-> patch.Eye
+-> patch.Ball
+-> pupil.EpochOpt
 -----
-# add additional attributes
 %}
 
 classdef EpochTrialSet < dj.Relvar & dj.AutoPopulate
 
 	properties
-		popRel = reso.TrialSet * reso.Sync * patch.Epochs
+		popRel = reso.TrialSet * reso.Sync * patch.Eye * pupil.EpochOpt & patch.Running & patch.EyeFrame
 	end
 
 	methods(Access=protected)
-
 		function makeTuples(self, key)
 			self.insert(key)
             makeTuples(pupil.EpochTrial, key)

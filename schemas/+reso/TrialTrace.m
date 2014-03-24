@@ -19,14 +19,14 @@ classdef TrialTrace < dj.Relvar
             times = times(1:length(trace));
             trace = trace/mean(trace)-1;
             dt = median(diff(times));
-            trace = fast_oopsi(double(trace'),struct('dt',dt));
+            trace = fast_oopsi(double(trace'),struct('dt',dt),struct('lambda',0.3));
          
             trialTimes = fetch1(reso.TrialTraceSet & key, 'trial_times');
             
             % extract snippets around trials
             for key = fetch(reso.Trace*reso.Trial & key)'
                 onset = fetch1(reso.Trial & key, 'onset');
-                key.trial_trace = single(pchip(times-onset,trace,trialTimes));
+                key.trial_trace = single(interp1(times-onset,trace,trialTimes));
                 self.insert(key)
             end
         end
