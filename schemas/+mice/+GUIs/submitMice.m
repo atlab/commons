@@ -79,7 +79,7 @@ mouse_id = m.new_mice(:,1);
 
 if ~(length(unique(mouse_id)) == length(mouse_id))
     errorCount = errorCount + 1;
-    errorString{errorCount} = ['A Mouse ID was entered twice.'];
+    errorString{errorCount} = 'A Mouse ID was entered twice.';
 end
 
 parents = {};

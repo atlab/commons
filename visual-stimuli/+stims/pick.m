@@ -4,6 +4,37 @@ reload(psy.getSchema)  % preload to speed up the initialization
 parentTable = common.Animal;
 
 
+movingBar = struct(...
+    'prompt', 'moving bar: 0.1 Hz (300 s)', ...
+    'logger', stims.core.Logger(psy.Session, psy.Condition, psy.Trial, psy.MovingBar), ...
+    'constants', ...
+    struct(...
+    'stimulus', 'moving bar', ...  % stimulus name recorded in the session table
+    'monitor_distance', 10, ... (cm)
+    'monitor_size', 7, ...      (inches) diagonal
+    'monitor_aspect', 1.7, ...  (physical aspect ratio W/H)
+    'resolution_x', 1024, ...   (pixels)
+    'resolution_y',  600 ...    (pixels)
+    ), ...
+    'blocks', 30, ...
+    'stim', {{
+    setParams(stims.MovingBar,...
+    'pre_blank', 0, ...   (s) blank period preceding trials
+    'luminance', 30, ...    cd/m^2 mid-value luminance"
+    'contrast', 0.99, ...  Michelson contrast
+    'bg_color', 30, ...   0-254
+    'bar_color', 254, ... 0-254
+    'direction', 0, ... (degrees) 0=north, 90=east
+    'bar_length', 1, ... in units of half-diagonal
+    'bar_width', 0.01, ... in units of half-diagonal
+    'bar_offset', 0, ... offset to the right (when facing in direction of motion) in units of half-diagonal
+    'start_pos', -1, ... the starting position of the bar moviement. 1 is the distance from the center to corner"
+    'end_pos', 1, ... (-1 1) the ending position of the bar movement
+    'trial_duration', 10) ... (s) movement duration
+    }});
+    
+
+
 
 simpleGrating = struct(...
     'prompt', 'grating: 1s ON/1s OFF (384 s)', ...
@@ -42,7 +73,7 @@ jakeGrating = struct(...
     'resolution_x', 1024, ...   (pixels)
     'resolution_y',  600 ...    (pixels)
     ), ...
-    'blocks', 30, ...
+    'blocks', 5, ...
     'stim', {{    
     setParams(stims.Grating, ...
     'grating','sqr', ...
@@ -225,6 +256,7 @@ menu = [
     quadrantGrating
     jakeGrating
     gammaGrating
+    movingBar
     ];
 
 clc, disp 'Welcome to stims.pick'

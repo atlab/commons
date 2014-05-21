@@ -2,26 +2,8 @@ classdef MovingBar < stims.core.Visual
         
     properties
         
-        nBlocks = 12
-        
-        % DataJoint tables for data logging
-        logger = stims.core.Logger(psy.Session, psy.Condition, psy.Trial, psy.MovingBar)
-
-        tables = struct(...
-            'session',    psy.Session, ...
-            'condition',  psy.Condition, ...
-            'parameters', psy.MovingBar, ...
-            'trial',      psy.Trial)
-        
+       
         % stimulus settings
-        constants = struct(...
-            'stimulus', 'moving bar', ...
-            'monitor_distance', nan, ...  (cm)
-            'monitor_size', 19, ...       (inches) diagonal
-            'monitor_aspect', 1.25, ...
-            'resolution_x', 1280, ...     (pixels)
-            'resolution_y', 1024 ...      (pixels)
-            )
         
         params = struct(...
             'pre_blank', 0, ...   (s) blank period preceding trials
@@ -78,7 +60,7 @@ classdef MovingBar < stims.core.Visual
             self.flip(true, false, true)
             WaitSecs(cond.pre_blank);
             
-            nFrames = floor(cond.trial_duration*self.fps);
+            nFrames = floor(cond.trial_duration*self.screen.fps);
             theta = (cond.direction-90)/180*pi;   % 0 = north, 90 = east
             
             scale = norm(self.rect(3:4))/2;
