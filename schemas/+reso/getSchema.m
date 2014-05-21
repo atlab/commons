@@ -6,7 +6,6 @@ if isempty(schemaObject)
     psy.getSchema;
     patch.getSchema;
     schemaObject = dj.Schema(dj.conn, 'reso', 'common_resonant');
-    bs.getSchema;
 end
 
 obj = schemaObject;

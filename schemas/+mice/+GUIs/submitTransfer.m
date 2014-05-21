@@ -178,6 +178,8 @@ if isempty(errorString)
     set(h.range_start,'string','');
     set(h.range_end,'string','');
     set(h.dot,'string','');
+    url = 'http://www.ccmbioinfo.bcm.tmc.edu/transfer/Login.asp';
+    web(url,'-new','-browser')
 end
 
 end
