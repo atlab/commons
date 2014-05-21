@@ -1,5 +1,6 @@
 %{
-reso.Align (imported) # motion correction
+reso.Align (imported) # motion correction$
+-> reso.ScanInfo
 -> reso.ScanInfo
 ---
 nframes                     : smallint                      # actual number of recorded frames
@@ -20,7 +21,6 @@ test="two"                  : enum('one','two','three','four')# testing
 classdef Align < dj.Relvar & dj.AutoPopulate
     
     properties(Constant)
-        table = dj.Table('reso.Align')
         popRel = reso.ScanInfo
     end
     

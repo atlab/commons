@@ -1,12 +1,12 @@
 %{
-reso.Sync (imported) # one-to-one mapping to patch recordings
+reso.Sync (imported) # one-to-one mapping to patch recordings$
 -> reso.Align
 ---
 -> patch.Sync
 -> psy.Session
-first_trial          : int                   # first trial in recording
-last_trial           : int                   # last trial in recording
-frame_times          : longblob              # times of frames and slices
+first_trial                 : int                           # first trial in recording
+last_trial                  : int                           # last trial in recording
+frame_times                 : longblob                      # times of frames and slices
 %}
 
 classdef Sync < dj.Relvar & dj.AutoPopulate

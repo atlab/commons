@@ -8,13 +8,8 @@ tp.Extract2 (imported) # refines segmentation and extract traces
 
 classdef Extract2 < dj.Relvar & dj.AutoPopulate
     
-    properties(Constant)
-        table = dj.Table('tp.Extract2')
-<<<<<<< HEAD
-        popRel = tp.SegmentManual * tp.ExtractOpt & (tp.ExtractOpt & 'pixel_averaging in ("NNMF","median","mean")')
-=======
+    properties
         popRel = tp.SegmentManual * tp.ExtractOpt & 'pixel_averaging in ("NNMF","median","mean")'
->>>>>>> ea874b355df4d921937cd2ce249fcc1457d641ca
     end
     
     methods(Access=protected)
