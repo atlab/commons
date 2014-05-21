@@ -58,8 +58,7 @@ else schema = mc.getSchema;
         tuple.doe = m.doe;
         tuple.age = str2num(m.age);
         tuple.exp_notes = m.exp_notes;
-        tuple
-        %makeTuples(mc.Experiments,tuple);
+        makeTuples(mc.Experiments,tuple);
         clear tuple a
     end
     a = fetch(mc.Slices & ['animal_id=' m.animal_id] & ['slice_id="' m.slice_id '"']);
@@ -67,8 +66,7 @@ else schema = mc.getSchema;
         tuple.animal_id = str2num(m.animal_id);
         tuple.slice_id = m.slice_id;
         tuple.slice_notes = m.slice_notes;
-        tuple
-        %makeTuples(mc.Slices,tuple);
+        makeTuples(mc.Slices,tuple);
         clear tuple a
     end
     a = fetch(mc.PatchColumns & ['animal_id=' m.animal_id] & ['slice_id="' m.slice_id '"'] & ['p_column_id=' m.p_column_id]);
@@ -82,8 +80,7 @@ else schema = mc.getSchema;
        tuple.surface1_y = str2num(m.surface1_y);
        tuple.surface2_x = str2num(m.surface2_x);
        tuple.surface2_y = str2num(m.surface2_y);
-       tuple
-       %makeTuples(mc.PatchColumns,tuple);
+       makeTuples(mc.PatchColumns,tuple);
        clear tuple a 
     end
     for i = 1:20
@@ -101,8 +98,7 @@ else schema = mc.getSchema;
             tuple.cell_y = m.cells{i,8};
             tuple.cell_z = m.cells{i,9};
             tuple.cell_notes = m.cells{i,10};
-            tuple
-            %makeTuples(mc.PatchCells,tuple)
+            makeTuples(mc.PatchCells,tuple)
             clear tuple
         end
     end

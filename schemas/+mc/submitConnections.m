@@ -34,18 +34,25 @@ else schema = mc.getSchema;
             tuple.p_column_id = str2num(m.p_column_id);
             tuple.cell_pre = m.connections{i,1};
             tuple.cell_post = m.connections{i,2};
-            tuple.conn = 'not connected';
+            if m.connections{i,4} == true
+                tuple.conn = 'connected';
+            elseif m.connections{i,4} == false
+                tuple.conn = 'not connected';
+            end
             tuple.conn_notes = m.connections{i,5};
-            tuple
-            %makeTuples(mc,Connections,tuple)
-        else if ~isempty(a) && ~isempty(m.connections{i,5})
+            makeTuples(mc,Connections,tuple)
+            clear tuple
+        else if ~isempty(a) 
+                if m.connections{i,4} == true
+                    update(mc.Connections & a, 'conn','connected');
+                elseif m.connections{i,4} == false
+                    update(mc.Connections & a, 'conn','not connected');
+                end
                 update(mc.Connections & a, 'conn_notes',m.connections{i,5});
             end
         end
-        if m.connections(i,3) == true && m.connections(i,4) == true
-            update(mc.Connections & a,'conn','connected');
-        end
     end     
+    schema.conn.commitTransaction
 end
 
 end
