@@ -19,9 +19,9 @@ conn = fetch(mc.Connections,'*');
 
 for i=1:size(conn,1)
     skip=0;
-    if fetchn(mc.Distances & conn(i),'tang_dist') > max_tang
-        skip=1;
-    end
+    %if fetchn(mc.Distances & conn(i),'tang_dist') > max_tang
+        %skip=1;
+    %end
     for j = 1:size(inh,1)
         a=fetch(mc.Connections & conn(i) & inh(j));
         if ~isempty(a) && ((strcmp(conn(i).cell_pre,inh(j).p_cell_id)) || (strcmp(conn(i).cell_post,inh(j).p_cell_id)))
@@ -46,8 +46,8 @@ for i = 1:size(connections,2)
             ss_yes = ss_yes + 1;
         else ss_no = ss_no +1;
         end
-        ss_tang(ss_count) = fetchn(mc.Distances & connections(i),'tang_dist');
-        ss_euc(ss_count) = fetchn(mc.Distances & connections(i),'euc_dist');
+        %ss_tang(ss_count) = fetchn(mc.Distances & connections(i),'tang_dist');
+        %ss_euc(ss_count) = fetchn(mc.Distances & connections(i),'euc_dist');
     elseif strcmp(pre_cell,'positive') && strcmp(post_cell,'negative')
         sn_count = sn_count +1;
         sn_conn{sn_count} = connections(i);
@@ -55,8 +55,8 @@ for i = 1:size(connections,2)
             sn_yes = sn_yes + 1;
         else sn_no = sn_no +1;
         end
-        sn_tang(sn_count) = fetchn(mc.Distances & connections(i),'tang_dist');
-        sn_euc(sn_count) = fetchn(mc.Distances & connections(i),'euc_dist');
+        %sn_tang(sn_count) = fetchn(mc.Distances & connections(i),'tang_dist');
+        %sn_euc(sn_count) = fetchn(mc.Distances & connections(i),'euc_dist');
     elseif strcmp(pre_cell,'negative') && strcmp(post_cell,'positive')
         ns_count = ns_count +1;
         ns_conn{ns_count} = connections(i);
@@ -64,8 +64,8 @@ for i = 1:size(connections,2)
             ns_yes = ns_yes + 1;
         else ns_no = ns_no +1;
         end
-        ns_tang(ns_count) = fetchn(mc.Distances & connections(i),'tang_dist');
-        ns_euc(ns_count) = fetchn(mc.Distances & connections(i),'euc_dist');
+        %ns_tang(ns_count) = fetchn(mc.Distances & connections(i),'tang_dist');
+        %ns_euc(ns_count) = fetchn(mc.Distances & connections(i),'euc_dist');
     elseif strcmp(pre_cell,'negative') && strcmp(post_cell,'negative')
         nn_count = nn_count +1;
         nn_conn{nn_count} = connections(i);
@@ -73,8 +73,8 @@ for i = 1:size(connections,2)
             nn_yes = nn_yes + 1;
         else nn_no = nn_no +1;
         end
-        nn_tang(nn_count) = fetchn(mc.Distances & connections(i),'tang_dist');
-        nn_euc(nn_count) = fetchn(mc.Distances & connections(i),'euc_dist');
+        %nn_tang(nn_count) = fetchn(mc.Distances & connections(i),'tang_dist');
+        %nn_euc(nn_count) = fetchn(mc.Distances & connections(i),'euc_dist');
     end
 end
 
@@ -83,7 +83,7 @@ sn_conn = [sn_conn{1,:}];
 ns_conn = [ns_conn{1,:}];
 nn_conn = [nn_conn{1,:}];
 ctl_conn = [sn_conn ns_conn nn_conn];
-ctl_tang = [sn_tang ns_tang nn_tang];
+%ctl_tang = [sn_tang ns_tang nn_tang];
 
 % Sort connections into layer-specific groups
 

@@ -40,7 +40,7 @@ else schema = mc.getSchema;
                 tuple.conn = 'not connected';
             end
             tuple.conn_notes = m.connections{i,5};
-            makeTuples(mc,Connections,tuple)
+            makeTuples(mc.Connections,tuple)
             clear tuple
         else if ~isempty(a) 
                 if m.connections{i,4} == true

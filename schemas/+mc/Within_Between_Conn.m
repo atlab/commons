@@ -21,7 +21,7 @@ labels = strcat(label);
 bar(x,y);
 text(x,y+0.0025,labels,'HorizontalAlignment','center','FontName','Arial','FontSize',12,'FontWeight','Bold');
 text(x(end), 0.1333,['n=' num2str(sum(total_count))],'HorizontalAlignment','center','FontName','Arial','FontSize',12,'FontWeight','Bold');
-ylim([0 0.14]);
+ylim([0 0.16]);
 ylabel('Connection Probability','FontName','Arial','FontSize',14,'FontWeight','Bold');
 title(Title,'FontName','Arial','FontSize',16,'FontWeight','Bold');
 set(gca,'XTick',1:size(groups,2),'XTickLabel',xticklabels,'Box','off');
