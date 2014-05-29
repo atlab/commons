@@ -7,7 +7,7 @@ real_id                     : varchar(20)                   # real-world unique 
 date_of_birth=null          : date                          # animal's date of birth
 sex="unknown"               : enum('M','F','unknown')       # sex
 owner="Unknown"             :enum('Jake','Shan','Dimitri','Cathryn','Manolis','Unknown') # owner's name
-line="Unknown"              :enum('Unknown','SST-Cre','PV-Cre','Wfs1-Ai9','Viaat-Ai9','PV-Ai9','SST-Ai9','PV-ChR2-tdTomato','SST-ChR2-tdTomato','C57/BK6(WT)') #  mouse line
+line="Unknown"              : enum('Unknown','SST-Cre','PV-Cre','Wfs1-Cre','Wfs1-Ai9','Viaat-Ai9','PV-Ai9','SST-Ai9','VIP-Ai9','PV-ChR2-tdTomato','SST-ChR2-tdTomato','TH-DREADD','FVB','C57/BK6 (WT)') # mouse line
 animal_notes=""             : varchar(4096)                 # strain, genetic manipulations
 animal_ts=CURRENT_TIMESTAMP : timestamp                     # automatic
 %}
