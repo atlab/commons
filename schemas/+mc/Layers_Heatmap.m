@@ -105,7 +105,7 @@ data = data1./data2;
 for i = 1:size(data,1)
     for j = 1:size(data,2)
         if isinf(data(i,j))
-            data(i,j) = 3;
+            data(i,j) = 6;
         elseif isnan(data(i,j))
             data(i,j) = 1;
         end
@@ -114,7 +114,7 @@ end
 
 xlabels = {'2/3' '4' '5'};
 ylabels = {'5' '4' '2/3'};
-clims = [0 3];
+clims = [0 5];
 imagesc(data,clims);
 colorbar
 title(Title,'FontName','Arial','FontSize',16,'FontWeight','Bold');
