@@ -70,7 +70,6 @@ classdef EpochTrial < dj.Relvar
                         trialOnsets, trialOffsets-trialOnsets);
                     select = select & runFrac == 0;
                     
-                    
                 otherwise
                     error 'invalid epoch condition'
             end

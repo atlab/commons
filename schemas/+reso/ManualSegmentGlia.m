@@ -1,5 +1,5 @@
 %{
-reso.ManualSegment (imported) # manual 2d cell segmentation$
+reso.ManualSegmentGlia (imported) # manual 2d cell segmentation$
 -> common.TpScan
 -> reso.VolumeSlice
 ---
@@ -9,7 +9,7 @@ segment_ts=CURRENT_TIMESTAMP: timestamp                     # automatic
 
 
 
-classdef ManualSegment < dj.Relvar & dj.AutoPopulate
+classdef ManualSegmentGlia < dj.Relvar & dj.AutoPopulate
     
     properties
         popRel  = reso.Align
@@ -33,7 +33,7 @@ classdef ManualSegment < dj.Relvar & dj.AutoPopulate
     end
     
     
-    methods(Static)
+    methods(Access=protected, Static)
         function bw = outlineCells(img,bw)
             f = figure;
             imshow(img)

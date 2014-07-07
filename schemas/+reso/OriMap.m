@@ -48,7 +48,7 @@ classdef OriMap < dj.Relvar & dj.AutoPopulate
                 end
                 
                 assert(~any(any(isnan(X))))
-                fps = fetch1(reso.ScanInfo & key, 'fps');                
+                fps = fetch1(reso.ScanInfo & key, 'fps');
                 G = fetch1(reso.OriDesign & key, 'design_matrix');
                 G = G(1:size(X,1),:);
                 

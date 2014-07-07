@@ -8,7 +8,8 @@ classdef plots
             
             function helper(epoch1,epoch2,includeBlanks,uplim,filename)
                 
-                r = pupil.BinnedNoiseCorr & struct('include_blanks',includeBlanks) & 'r2 is not null' & 'animal_id in (2380,2381,2382,2660,2662)';
+                r = pupil.BinnedNoiseCorr & struct('include_blanks',includeBlanks) ...
+                    & 'r2 is not null' & 'animal_id in (2380,2381,2382,2660,2662,2470)';
                 rr1 = [];  rr2 = [];
                 for key = fetch(reso.Sync & (r & struct('epoch_opt',epoch1)) & (r & struct('epoch_opt',epoch2)))'
                     tunedIdx = find(fetchn(pupil.EpochVonMises & key & 'epoch_opt=1','(von_amp1>0.1 && von_p<0.01)->p','ORDER BY trace_id'));
@@ -44,12 +45,11 @@ classdef plots
             helper(8,9,true, .7,.3,'sig_corr','Signal corr','~/Google Drive/Pupil Paper/Figure3/binned_sig_corrs-with-saccades.eps')
             helper(6,7,false,.7,.3,'sig_corr','Signal corr','~/Google Drive/Pupil Paper/Figure3/binned_sig_corrs-sans-saccades-noblanks.eps')
             helper(6,7,true, .7,.3,'sig_corr','Signal corr','~/Google Drive/Pupil Paper/Figure3/binned_sig_corrs-sans-saccades.eps')
-
             
             
             function helper(epoch1,epoch2,includeBlanks,uplim,tickStep,attr,titl,filename)
                 
-                r = pupil.BinnedNoiseCorr & struct('include_blanks',includeBlanks) & sprintf('%s is not null',attr) & 'animal_id in (2380,2381,2382,2660,2662)';
+                r = pupil.BinnedNoiseCorr & struct('include_blanks',includeBlanks) & sprintf('%s is not null',attr) & 'animal_id in (2380,2381,2382,2660,2662,2470)';
                 c1 = [];  c2 = [];
                 for key = fetch(reso.Sync & (r & struct('epoch_opt',epoch1)) & (r & struct('epoch_opt',epoch2)))'
                     tunedIdx = find(fetchn(pupil.EpochVonMises & key & 'epoch_opt=1','(von_amp1>0.1 && von_p<0.01)->p','ORDER BY trace_id'));
@@ -132,23 +132,22 @@ classdef plots
             
             fig.cleanup
             fig.save('~/Desktop/traces3.eps')
-            
-            %            set(gcf, 'PaperSize', [12 6]/2.54, 'PaperPosition', [0 0 12 6]/2.54)
-            %            print -dpdf ~/Desktop/traces2
         end
         
         
         
         function OSI
-            k = 'animal_id in (2380,2381,2382,2660,2662)';
-            helper(k,[3 2 9 8],'osi-bar-running-with-saccades',...
-                {'  Quiet','  Active','  Quiet constricting','  Quiet dilating'})
-        
+            k = 'animal_id in (2380,2381,2382,2660,2662,2470)';
+             helper(k,[7 6],'osi-dilating-sans-saccades',...
+                 {'Quiet constricting','Quiet dilating'})
+             helper(k,[9 8],'osi-dilating-with-saccades',...
+                 {'Quiet constricting','Quiet dilating'})
+             
             function helper(k,epochs,filename,labels)
                 % join the tuned cells from 'all' with the cells in
                 % conditions defined by epochs.
                 rel = pupil.EpochVonMises;
-                g0 = rel & k & 'epoch_opt=1' & 'von_p<0.01' & 'von_amp1>0.1';
+                g0 = rel & k & 'epoch_opt=5' & 'von_p<0.01' & 'von_amp1>0.1';
                 g0 = g0.pro('responses->r0','epoch_opt->e0','(von_pref*180/3.1416)->pref');
                 g = arrayfun(@(i,epoch) ...
                     pro(rel & struct('epoch_opt',epoch), sprintf('responses->r%d',i),sprintf('epoch_opt->e%d',i)), ...
@@ -168,31 +167,32 @@ classdef plots
                 osis = cellfun(@(pref,ortho) (pref-ortho)./(pref+ortho)*2, ...
                     prefR, orthoR, 'uni',false);
                 
-%                 fig = Figure(1,'size',[50 40]);
-%                 scatter(osis{1},osis{2},1,'filled','k')
-%                 set(gca,'XTick', 0:0.5:1.5, 'YTick', 0:0.5:1.5)
-%                 xlabel(labels{1})
-%                 ylabel(labels{2})
-%                 title 'OSI'
-%                 axis image
-%                 axis([.0 1.6 .0 1.6])
-%                 set(refline(1,0),'Color',[1 1 1]*.5)
-%                 fig.cleanup
-%                 fig.save(sprintf('~/Google Drive/Pupil Paper/Figure3/%s.eps',filename))
+                 fig = Figure(1,'size',[45 45]);
+                 scatter(osis{1},osis{2},1,'filled','k')
+                 set(gca,'XTick', 0:0.5:1.5, 'YTick', 0:0.5:1.5)
+                 xlabel(labels{1})
+                 ylabel(labels{2})
+                 title 'OSI'
+                 axis image
+                 mm = 1.03*min(min(osis{1},osis{2}));
+                 axis([mm 1.6 mm 1.6])
+                 set(refline(1,0),'Color',[1 1 1]*.5)
+                 fig.cleanup
+                 fig.save(sprintf('~/Google Drive/Pupil Paper/Figure3/%s.eps',filename))
                 
-                fig = Figure(1,'size',[50 40]);
-                avgOSI = cellfun(@median, osis);
-                bar(avgOSI)
-                hold on
-                [ci1,ci2] = cellfun(@(x) confInterval(x,0.95), osis);
-                errorbar(1:4,avgOSI,ci1-avgOSI,ci2-avgOSI, 'k', 'LineStyle', 'none')
-                hold off
-                colormap(gray/2+.5)
-                set(gca,'XTickLabel',labels)
-                rotateticklabel(gca,-30);
-                set(gca,'Position', [.25 .28 .70 .7], 'YTick', 0:.2:.6)
-                ylabel 'OSI'
-                ylim([0 .45])
+%                 fig = Figure(1,'size',[50 40]);
+%                 avgOSI = cellfun(@median, osis);
+%                 bar(avgOSI)
+%                 hold on
+%                 [ci1,ci2] = cellfun(@(x) confInterval(x,0.95), osis);
+%                 errorbar(1:4,avgOSI,ci1-avgOSI,ci2-avgOSI, 'k', 'LineStyle', 'none')
+%                 hold off
+%                 colormap(gray/2+.5)
+%                 set(gca,'XTickLabel',labels)
+%                 rotateticklabel(gca,-30);
+%                 set(gca,'Position', [.25 .28 .70 .7], 'YTick', 0:.2:.6)
+%                 ylabel 'OSI'
+%                 ylim([0 .45])
                 
                 fig.cleanup
                 fig.save(sprintf('~/Google Drive/Pupil Paper/Figure3/%s.eps',filename))
@@ -217,13 +217,14 @@ classdef plots
         
         
         function averageTuningCurve
-            k = 'animal_id in (2380,2381,2382,2660,2662)';
+            k = 'animal_id in (2380,2381,2382,2660,2662,2470)';
+            
             helper(k,[7 6 2 5],'brgk','ori-all-sans-saccades')
             helper(k,[9 8 2 3],'brgk','ori-all-with-saccades')
-            helper(k,[7 6 2],'brg','ori-dilation-sans-saccades')
-            helper(k,[9 8 2],'brg','ori-dilation-with-saccades')
-            helper(k,[3 2],'kg','ori-running-with-saccades',{'Quiet','Active'})
-            helper(k,[9 8],'br','ori-running-with-saccades',{'Quiet constricting','Quiet dilating'})
+            helper(k,[7 6],'br','ori-dilation-sans-saccades')
+            helper(k,[9 8],'br','ori-dilation-with-saccades')
+            helper(k,[3 2],'kg','ori-running-with-saccades')
+            helper(k,[7 6],'kg','ori-running-sans-saccades')
             
             function helper(k,epochs,colors,filename)
                 assert(length(epochs)==length(colors))
@@ -247,7 +248,7 @@ classdef plots
                 angles = cellfun(@(r,pref) mod((0:360/size(r,2):359) - pref+180,360), r{1}, num2cell(pref), 'uni', false);
                 
                 % make tuning curve figure
-                fig = Figure(1,'size',[50 40]);
+                fig = Figure(1,'size',[45 40]);
                 for i=1:length(epochs)
                     makePlot(angles, r{i}, colors(i))
                     hold on
@@ -259,8 +260,8 @@ classdef plots
                 % make legend
                 fig = Figure(1,'size',[20 20]);
                 for i=1:length(epochs)
-                      boundedline([-1 1], i*[1 1], 0.2, colors(i), 'transparency', 0.3)
-                      hold on
+                    boundedline([-1 1], i*[1 1], 0.2, colors(i), 'transparency', 0.3)
+                    hold on
                 end
                 hold off
                 fig.cleanup
@@ -368,7 +369,7 @@ classdef plots
                     set(gca,'XTick',-180:180:180)
                     xlim([-1 1]*180)
                     ylim([.15 .42])
-                    xlabel 'Degrees from preferred direction'
+                    xlabel 'Degrees from preferred direction    '
                     ylabel 'Calcium signal'
                 end
                 
@@ -387,7 +388,7 @@ classdef plots
             
             function helper(epoch1,epoch2,attr,titl,filename)
                 
-                r = pupil.EpochR2 & sprintf('%s is not null',attr) & 'animal_id in (2380,2381,2382,2660,2662)';
+                r = pupil.EpochR2 & sprintf('%s is not null',attr) & 'animal_id in (2380,2381,2382,2660,2662,2470)';
                 c1 = [];  c2 = [];
                 for key = fetch(reso.Sync & (r & struct('epoch_opt',epoch1)) & (r & struct('epoch_opt',epoch2)))'
                     tunedIdx = find(fetchn(pupil.EpochVonMises & key & 'epoch_opt=1','(von_amp1>0.1 && von_p<0.01)->p','ORDER BY trace_id'));
@@ -423,7 +424,7 @@ classdef plots
             helper(6,7,'/Users/dimitri/Google Drive/Pupil Paper/Figure3/trial-r2-sans-saccades.eps')
             
             function helper(epoch1,epoch2,filename)
-                r = pupil.EpochR2 & 'sig_cov is not null' & 'animal_id in (2380,2381,2382,2660,2662)';
+                r = pupil.EpochR2 & 'sig_cov is not null' & 'animal_id in (2380,2381,2382,2660,2662,2470)';
                 ars1 = [];
                 ars2 = [];
                 for key = fetch(reso.Sync & (r & struct('epoch_opt',epoch1)) & (r & struct('epoch_opt',epoch2)))'
