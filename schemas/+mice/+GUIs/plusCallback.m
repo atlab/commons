@@ -184,9 +184,11 @@ end
 if iscell(m.parent1)
     m.parent1 = char(m.parent1);
 end
+
 if iscell(m.parent2)
     m.parent2 = char(m.parent2);
 end
+
 if iscell(m.parent3)
     m.parent3 = char(m.parent3);
 end

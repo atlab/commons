@@ -1,4 +1,4 @@
-function submitGenotypes(src,~)
+function submitUpdateMice(src,~)
 
 figHand = get(src,'parent');
 
@@ -38,7 +38,7 @@ errorString = {};
 % if line 1 is C57Bl/6 or FVB the genotype miust be wild type
 
 for i = 1:size(m.table,1)
-    if (strcmp('C57Bl/6',m.table(i,2)) || strcmp('Fvb',m.table(i,2))) && ~strcmp('wild type',m.table(i,3))
+    if (strcmp('C57Bl/6',m.table(i,7)) || strcmp('Fvb',m.table(i,7))) && ~strcmp('wild type',m.table(i,8))
         errorCount = errorCount + 1;
         errorString{errorCount} = 'Lines C57Bl/6 and Fvb should only be used to designate pure wild type mice.';
     end
@@ -47,15 +47,15 @@ end
 % wild type genotype can only be used for C57Bl/6 or Fvb lines
 
 for i = 1:size(m.table,1)
-    if strcmp('wild type',m.table(i,3)) && ~(strcmp('C57Bl/6',m.table(i,2)) || strcmp('Fvb',m.table(i,2)))
+    if strcmp('wild type',m.table(i,8)) && ~(strcmp('C57Bl/6',m.table(i,7)) || strcmp('Fvb',m.table(i,7)))
         errorCount = errorCount + 1;
         errorString{errorCount} = 'The wild type genotype should only be used to describe pure C57Bl/6 or Fvb lines.';
     end
-    if strcmp('wild type',m.table(i,5)) && ~(strcmp('C57Bl/6',m.table(i,4)) || strcmp('Fvb',m.table(i,4)))
+    if strcmp('wild type',m.table(i,10)) && ~(strcmp('C57Bl/6',m.table(i,9)) || strcmp('Fvb',m.table(i,9)))
         errorCount = errorCount + 1;
         errorString{errorCount} = 'The wild type genotype should only be used to describe pure C57Bl/6 or Fvb lines.';
     end
-    if strcmp('wild type',m.table(i,7)) && ~(strcmp('C57Bl/6',m.table(i,6)) || strcmp('Fvb',m.table(i,6)))
+    if strcmp('wild type',m.table(i,12)) && ~(strcmp('C57Bl/6',m.table(i,11)) || strcmp('Fvb',m.table(i,11)))
         errorCount = errorCount + 1;
         errorString{errorCount} = 'The wild type genotype should only be used to describe pure C57Bl/6 or Fvb lines.';
     end
@@ -75,19 +75,51 @@ for i = 1:size(m.table,1)
         if ~isempty(parents(j).parent_id)
         homo_lines = fetch(mice.Genotypes & ['animal_id=' parents(j).parent_id] & 'genotype="homozygous"','line');
         for k = 1:size(homo_lines,1)
-            if strcmp(m.table(i,2),homo_lines(k).line) && strcmp('negative',m.table(i,3))
+            if strcmp(m.table(i,7),homo_lines(k).line) && strcmp('negative',m.table(i,8))
                 errorCount = errorCount + 1;
                 errorString{errorCount} = ['Animal ' m.table{i,1} ' cannot be negative for ' homo_lines(k).line ' because parent ' parents(j).parent_id ' is homozygous.'];
             end
-            if strcmp(m.table(i,4),homo_lines(k).line) && strcmp('negative',m.table(i,5))
+            if strcmp(m.table(i,9),homo_lines(k).line) && strcmp('negative',m.table(i,10))
                 errorCount = errorCount + 1;
                 errorString{errorCount} = ['Animal ' m.table{i,1} ' cannot be negative for ' homo_lines(k).line ' because parent ' parents(j).parent_id ' is homozygous.'];
             end
-            if strcmp(m.table(i,6),homo_lines(k).line) && strcmp('negative',m.table(i,7))
+            if strcmp(m.table(i,11),homo_lines(k).line) && strcmp('negative',m.table(i,12))
                 errorCount = errorCount + 1;
                 errorString{errorCount} = ['Animal ' m.table{i,1} ' cannot be negative for ' homo_lines(k).line ' because parent ' parents(j).parent_id ' is homozygous.'];
             end
         end
+        end
+    end
+end
+
+% Format dates
+
+formatOut = 'yyyy-mm-dd';
+for i = 1:size(m.table,1)
+    dob = m.table{i,2};
+    dow = m.table{i,3};
+    if ~ischar(dob)
+        dob = char(dob);
+    end
+    if ~ischar(dow)
+        dow = char(dow);
+    end
+    if ~isempty(dob)
+        try 
+            dob = datestr(dob,formatOut);
+            m.table{i,2} = dob;
+        catch
+            errorCount = errorCount + 1;
+            errorString{errorCount} = ['Date of birth for ' m.table{i,1} ' cannot be interpreted.'];
+        end
+    end
+    if ~isempty(dow) 
+        try 
+            dow = datestr(dow,formatOut);
+            m.table{i,3} = dow;
+        catch
+            errorCount = errorCount + 1;
+            errorString{errorCount} = ['Date of weaning for ' m.table{i,1} ' cannot be interpreted.'];
         end
     end
 end
@@ -106,18 +138,24 @@ if isempty(errorString)
     schema = mice.getSchema;
     schema.conn.startTransaction
     for i = 1:size(m.table,1)
-        if ~isempty(m.table{i,2})
-            update(mice.Genotypes & ['animal_id=' m.table{i,1}] & ['line="' m.table{i,2} '"'],'genotype',m.table{i,3})
+        update(mice.Mice & ['animal_id=' m.table{i,1}],'dob',m.table{i,2})
+        update(mice.Mice & ['animal_id=' m.table{i,1}],'dow',m.table{i,3})
+        update(mice.Mice & ['animal_id=' m.table{i,1}],'sex',m.table{i,4})
+        update(mice.Mice & ['animal_id=' m.table{i,1}],'color',m.table{i,5})
+        update(mice.Mice & ['animal_id=' m.table{i,1}],'ear_punch',m.table{i,6})
+        update(mice.Mice & ['animal_id=' m.table{i,1}],'mouse_notes',m.table{i,13})
+        if ~isempty(m.table{i,7})
+            update(mice.Genotypes & ['animal_id=' m.table{i,1}] & ['line="' m.table{i,7} '"'],'genotype',m.table{i,8})
         end
-        if ~isempty(m.table{i,4})
-            update(mice.Genotypes & ['animal_id=' m.table{i,1}] & ['line="' m.table{i,4} '"'],'genotype',m.table{i,5})
+        if ~isempty(m.table{i,9})
+            update(mice.Genotypes & ['animal_id=' m.table{i,1}] & ['line="' m.table{i,9} '"'],'genotype',m.table{i,10})
         end
-        if ~isempty(m.table{i,6})
-            update(mice.Genotypes & ['animal_id=' m.table{i,1}] & ['line="' m.table{i,6} '"'],'genotype',m.table{i,7})
+        if ~isempty(m.table{i,11})
+            update(mice.Genotypes & ['animal_id=' m.table{i,1}] & ['line="' m.table{i,11} '"'],'genotype',m.table{i,12})
         end
     end
     schema.conn.commitTransaction
-    set(h.table,'Data',{},'RowName','');
+    set(h.table,'Data',{},'RowName',' ');
     set(h.animal_id1,'string','');
     set(h.animal_id2,'string','');
     set(h.animal_id3,'string','');

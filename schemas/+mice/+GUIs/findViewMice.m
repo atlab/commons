@@ -51,12 +51,6 @@ m.genotype3 = s{v};
 m.mouse_notes = get(h.mouse_notes,'string');
 m.used = get(h.used,'Value');
 
-h.errorMessage = findobj(figHand,'tag','errorMessage');
-h.errorBox = findobj(figHand,'tag','errorBox');
-
-delete(h.errorMessage);
-delete(h.errorBox);
-
 % error checking
 
 errorCount = 0;
@@ -76,7 +70,7 @@ kk=1;
 if ~isempty(m.range_start) && ~isempty(m.range_end)
     idx = str2num(m.range_start):str2num(m.range_end);
     for i = 1:length(idx)
-        fetchedMouse = fetch(mice.Mice & ['animal_id=' num2str(idx(i)) '']);
+        fetchedMouse = fetch(mice.Mice & ['animal_id=' num2str(idx(i)) '' ]);
         if ~isempty(fetchedMouse)
             id(kk) = fetchedMouse;
             rangeID{kk} = id(kk).animal_id;
@@ -289,13 +283,6 @@ if ~isempty(m.ear_punch)
         errorString{errorCount} = 'There are no mice matching these search criteria.';
     end
     end
-end
-
-if ~isempty(errorString)
-    h.errorMessage = uicontrol('style','text','String',['Cannot find mice due to the following errors: '], 'position', [50 750 300 29],'fontsize',14,'tag','errorMessage');
-    h.errorBox = uicontrol('style','listbox','string',errorString,'tag','errorBox','position',[350 750 300 29]);
-    set(h.table,'data',{},'rowname','');
-    return
 end
 
 % restrict to mice of specified owner
@@ -547,8 +534,8 @@ end
 % if there are errors, display them to the user
 
 if ~isempty(errorString)
-    h.errorMessage = uicontrol('style','text','String',['Cannot find mice due to the following errors: '], 'position', [400 617 300 29],'fontsize',14,'tag','errorMessage');
-    h.errorBox = uicontrol('style','listbox','string',errorString,'tag','errorBox','position',[400 587 300 29]);
+    h.errorMessage = uicontrol('style','text','String',['Cannot find mice due to the following errors: '], 'position', [400 580 300 29],'fontsize',14,'tag','errorMessage');
+    h.errorBox = uicontrol('style','listbox','string',errorString,'tag','errorBox','position',[400 550 300 29]);
     set(h.table,'data',{},'rowname','');
     return
 end
