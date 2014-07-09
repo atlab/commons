@@ -27,7 +27,11 @@ classdef Sync < dj.Relvar & dj.AutoPopulate
             [p,f] = fetch1(patch.Session*patch.Recording & key,'path','filename');
             filename = getLocalPath(fullfile(p,f));
             dat = patch.utils.readPatchStimHD5(filename);
-            datT = patch.utils.ts2sec(dat.ts);
+            packetLen = 2000;
+            if isfield(dat,'analogPacketLen')
+                packetLen = dat.analogPacketLen;
+            end
+            datT = patch.utils.ts2sec(dat.ts, packetLen);
             dt = median(diff(datT));
             n = ceil(0.0002/dt);
             k = hamming(2*n);

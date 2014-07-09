@@ -1,9 +1,8 @@
 %{
 reso.Align (imported) # motion correction$
 -> reso.ScanInfo
--> reso.ScanInfo
 ---
-nframes                     : smallint                      # actual number of recorded frames
+nframes                     : int                           # actual number of recorded frames
 fill_fraction               : float                         # scan fill fraction (see scanimage)
 raster_phase                : float                         # shift of odd vs even raster lines
 motion_xy                   : longblob                      # (pixels) y,x motion correction offsets
@@ -15,7 +14,6 @@ raw_red_img=null            : longblob                      # unaligned mean red
 green_img=null              : longblob                      # aligned mean green image
 red_img=null                : longblob                      # aligned mean red image
 align_ts=CURRENT_TIMESTAMP  : timestamp                     # automatic
-test="two"                  : enum('one','two','three','four')# testing
 %}
 
 classdef Align < dj.Relvar & dj.AutoPopulate

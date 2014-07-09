@@ -31,7 +31,7 @@ classdef ScanInfo < dj.Relvar & dj.AutoPopulate
                 common.TpSession*common.TpScan & key, ...
                 'data_path', 'basename', 'scan_idx');
             try
-                reader = reso.reader(path,basename,scanIdx);
+                reader = reso.reader(getLocalPath(path),basename,scanIdx);
             catch
                 basename = fetch1(pro(patch.Recording * patch.Patch, 'file_num->scan_idx','filebase') & key, 'filebase');
                 reader = reso.reader(path,basename,scanIdx);
