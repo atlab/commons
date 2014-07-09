@@ -27,15 +27,7 @@ classdef ScanInfo < dj.Relvar & dj.AutoPopulate
     methods(Access=protected)
         
         function makeTuples(self, key)
-            [path, basename, scanIdx] = fetch1(...
-                common.TpSession*common.TpScan & key, ...
-                'data_path', 'basename', 'scan_idx');
-            try
-                reader = reso.reader(path,basename,scanIdx);
-            catch
-                basename = fetch1(pro(patch.Recording * patch.Patch, 'file_num->scan_idx','filebase') & key, 'filebase');
-                reader = reso.reader(path,basename,scanIdx);
-            end
+            reader = reso.getReader(key);
             
             assert(reader.hdr.acqNumAveragedFrames == 1, 'averaging should be off')
             assert(strcmp(reader.hdr.fastZImageType,'XY-Z'),'we assume XY-Z scanning')

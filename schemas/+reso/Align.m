@@ -26,15 +26,7 @@ classdef Align < dj.Relvar & dj.AutoPopulate
     
     methods(Access=protected)
         function makeTuples(self, key)
-            [path, basename, scanIdx] = fetch1(...
-                common.TpSession*common.TpScan & key, ...
-                'data_path', 'basename', 'scan_idx');
-            try
-                reader = reso.reader(path,basename,scanIdx);
-            catch
-                basename = fetch1(pro(patch.Recording * patch.Patch, 'file_num->scan_idx','filebase') & key, 'filebase');
-                reader = reso.reader(path,basename,scanIdx);
-            end
+            reader = getReader(key);
             
             info = fetch(reso.ScanInfo & key, '*');
             minFrames = 300;
@@ -140,28 +132,6 @@ classdef Align < dj.Relvar & dj.AutoPopulate
             self.insert(key)
         end
     end
-    
-    
-    methods
-        function obj = getReader(self)
-            assert(self.count == 1, 'one scan at a time please')
-            
-            [path, basename, scanIdx] = fetch1(...
-                common.TpSession*common.TpScan & self, ...
-                'data_path', 'basename', 'scan_idx');
-            
-            try
-                obj = reso.reader(path,basename,scanIdx);
-            catch
-                basename = fetch1(pro(patch.Recording * patch.Patch, ...
-                    'file_num->scan_idx','filebase') & self, 'filebase');
-                obj = reso.reader(path,basename,scanIdx);
-            end
-            
-        end
-        
-    end
-    
     
     methods(Static)
         
