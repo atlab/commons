@@ -9,8 +9,7 @@ ephys_time_ts = CURRENT_TIMESTAMP  : timestamp         # automatic
 
 classdef EphysTime < dj.Relvar & dj.AutoPopulate
     
-    properties(Constant)
-        table = dj.Table('reso.EphysTime')
+    properties
         popRel = reso.Align * pro(patch.Ephys,'(file_num)->scan_idx')
     end
     
@@ -23,12 +22,7 @@ classdef EphysTime < dj.Relvar & dj.AutoPopulate
             p = fetch1(patch.Session & key,'path');
             [~,hostname] = system('hostname'); hostname = hostname(1:end-1);
             
-            if strcmp(computer,'GLNXA64')
-                F = ['/mnt' p '/' f]
-            elseif strcmp(hostname,'JakesLaptop')
-                F = regexprep(['D:' p '/' f],{'/scratch01/','\/'},'\\');
-            end
-            
+            F = getLocalPath(fullfile(p,f));             
             if ~exist(F,'file')
                 error(['Can''t find ' F])
             end
