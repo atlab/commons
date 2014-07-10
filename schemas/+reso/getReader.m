@@ -2,7 +2,7 @@ function reader = getReader(key)
 % Returns reader object for key. Key can be a key struture or 
 % any relvar where fetch(reso.Align & key) returns a single tuple.
 
-if ~istruct(key)
+if ~isstruct(key)
     key = fetch(reso.Align & key);
 end
 

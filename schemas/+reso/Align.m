@@ -24,7 +24,7 @@ classdef Align < dj.Relvar & dj.AutoPopulate
     
     methods(Access=protected)
         function makeTuples(self, key)
-            reader = getReader(key);
+            reader = reso.getReader(key);
             
             info = fetch(reso.ScanInfo & key, '*');
             minFrames = 300;

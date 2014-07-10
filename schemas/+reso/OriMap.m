@@ -22,7 +22,7 @@ classdef OriMap < dj.Relvar & dj.AutoPopulate
     methods(Access=protected)
         
         function makeTuples(self, key)
-            reader = getReader(reso.Align & key);
+            reader = reso.getReader(reso.Align & key);
             [fillFraction, rasterPhase] = fetch1(reso.Align & key, 'fill_fraction', 'raster_phase');
             for iSlice=1:reader.nSlices
                 fprintf('loading slice %d: \n', iSlice);
