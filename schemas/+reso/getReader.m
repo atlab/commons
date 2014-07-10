@@ -17,7 +17,7 @@ assert(length(key) == 1, 'one scan at a time please')
 [~,hostname] = system('hostname'); 
 hostname = hostname(1:end-1);
 if strcmp(hostname,'JakesLaptop')
-    path = ['E:\TwoPhoton\Jake\' path(end-5:end)];
+    path = ['C:\Two-Photon\Jake\' path(end-5:end) '\'];
 end
 
 
