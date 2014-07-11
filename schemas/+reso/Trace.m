@@ -12,11 +12,11 @@ classdef Trace < dj.Relvar
         
         function makeTuples(self, key)
             
-            reader = getReader(reso.Align & key);
-            [masks,slices] = fetchn(reso.Segment & key, 'mask');
+            reader = reso.getReader(key);
+            [masks,sliceKeys] = fetchn(reso.Segment & key, 'mask');
             xymotion = fetch1(reso.Align & key, 'motion_xy');
             
-            nSlices = length(slices);
+            nSlices = length(sliceKeys);
             assert(reader.nSlices == nSlices)
             
             % extract pixels for each trace
@@ -37,7 +37,7 @@ classdef Trace < dj.Relvar
                 block = reso.Align.correctRaster(block, rasterPhase, fillFraction);
                 block = reso.Align.correctMotion(block, xy);
                 sz = size(block);
-                for iSlice = 1:length(slices)
+                for iSlice = 1:length(sliceKeys)
                     t = reshape(block(:,:,iSlice,:), [], sz(4));
                     t = cellfun(@(ix) mean(t(ix,:),1)', pixels{iSlice}, 'uni', false);
                     traces{iSlice} = cat(1,traces{iSlice},cat(2,t{:}));
@@ -47,7 +47,7 @@ classdef Trace < dj.Relvar
             
             disp 'saving traces...'
             for iSlice = 1:nSlices
-                tuple = slices(iSlice);
+                tuple = sliceKeys(iSlice);
                 for iTrace=1:size(traces{iSlice},2)
                     tuple.trace_id = iTrace;
                     tuple.ca_trace = single(traces{iSlice}(:,iTrace));

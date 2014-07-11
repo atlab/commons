@@ -44,8 +44,8 @@ classdef EphysTime < dj.Relvar & dj.AutoPopulate
             
             % Limit to length(frameInd) in case patch recording stopped before scan
             % Limit to recordedFrames in case a second scan or stack was started without stopping the patch recording
-            [requestedFrames, recordedFrames] = ...
-               fetch1(reso.ScanInfo * reso.Align & key, 'nframes_requested*nslices->n1', 'nframes*nslices->n2');
+            [recordedFrames] = ...
+               fetch1(reso.ScanInfo * reso.Align & key, 'nframes*nslices->n2');
             frameInd = frameInd(1:min(length(frameInd),recordedFrames));
             
             % Plot detection
