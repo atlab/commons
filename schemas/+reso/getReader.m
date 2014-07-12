@@ -25,6 +25,6 @@ try % try to use TpScan basename (usually 'scan')
     reader = reso.reader(path,basename,scanIdx);
 catch % if that doesn't work, try to use basename from associated patch Recording (i.e. 'm2394A')
     basename = fetch1(pro(patch.Recording * patch.Patch, ...
-        'file_num->scan_idx','filebase') & key, 'filebase');
+        'file_num->scan_idx', 'session->tp_session','filebase') & key, 'filebase');
     reader = reso.reader(path,basename,scanIdx);
 end
