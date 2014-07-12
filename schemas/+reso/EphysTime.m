@@ -10,7 +10,7 @@ ephys_time_ts = CURRENT_TIMESTAMP  : timestamp         # automatic
 classdef EphysTime < dj.Relvar & dj.AutoPopulate
     
     properties
-        popRel = reso.Align * pro(patch.Ephys,'(file_num)->scan_idx')
+        popRel = reso.Align * pro(patch.Ephys,'(file_num)->scan_idx','(session)->tp_session')
     end
     
     methods(Access=protected)
