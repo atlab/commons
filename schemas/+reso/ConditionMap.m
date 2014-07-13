@@ -58,19 +58,19 @@ classdef ConditionMap < dj.Relvar & dj.AutoPopulate
                     tuple.mean_map = squeeze(mean(X(indicator,:,:)));
                     tuple.std_map = squeeze(std(X(indicator,:,:)));
 
-                    figure(1)
-                    subplot(1,length(key),i)
-                    imagesc(tuple.mean_map);
-                    title(fetch1(reso.Conditions & key(i),'condition_name'));
-                    axis image off
-                    drawnow
-                    
-                    figure(2)
-                    subplot(1,length(key),i)
-                    imagesc(tuple.std_map);
-                    title(fetch1(reso.Conditions & key(i),'condition_name'));
-                    axis image off
-                    drawnow
+%                     figure(1)
+%                     subplot(1,length(key),i)
+%                     imagesc(tuple.mean_map);
+%                     title(fetch1(reso.Conditions & key(i),'condition_name'));
+%                     axis image off
+%                     drawnow
+%                     
+%                     figure(2)
+%                     subplot(1,length(key),i)
+%                     imagesc(tuple.std_map);
+%                     title(fetch1(reso.Conditions & key(i),'condition_name'));
+%                     axis image off
+%                     drawnow
                     self.insert(tuple);
                 end
             end
