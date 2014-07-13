@@ -9,7 +9,7 @@ axon_mask   :  longblob  # binary image of axons
 classdef Axons < dj.Relvar & dj.AutoPopulate
     
     properties
-        popRel = reso.Align
+        popRel = reso.Align * common.TpSession & 'compartment="axons"'
     end
     
     methods(Access=protected)
