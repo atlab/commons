@@ -1,63 +1,57 @@
 %{
 reso.Indicator (computed) # indicator functions for different reso.Conditions
--> reso.Align
--> reso.EphysTime
+-> reso.IndicatorSet
 -> reso.Conditions
------
-indicator       : longblob      # nframes logical vector
+---
+indicator                   : longblob                      # nframes logical vector for condition
 %}
 
 classdef Indicator < dj.Relvar & dj.AutoPopulate
     
     properties
-        popRel = reso.Align * reso.Conditions * reso.EphysTime
+        popRel = reso.IndicatorSet
     end
     
     methods(Access=protected)
         
         function makeTuples(self, key)
-            if isempty(fetch(reso.Align & key & eval(fetch1(reso.Conditions & key,'condition_pop_str'))))
-                return
+            for cond = fetch(reso.Conditions,'*')'
+                if exists(reso.Align & key & eval(cond.condition_pop_str))
+                    ft = fetch1(reso.EphysTime & key,'frame_ephys_time');
+                    tuple = key;
+                    switch cond.condition_name
+                        case 'quiet dilating'
+                            [vt,fs]=fetch1(patch.Ephys & key,'ephys_time','ephys_fs');
+                            isActive = self.getActive(key,vt,fs);
+                            pupilR = self.getPupil(key,vt,fs);
+                            indicator = gradient(pupilR) > quantile(abs(gradient(pupilR)),.33) & ~isActive;
+                            tuple.indicator = logical(interp1(vt,single(indicator),ft,'nearest'));
+                            
+                        case 'quiet constricting'
+                            [vt,fs]=fetch1(patch.Ephys & key,'ephys_time','ephys_fs');
+                            isActive = self.getActive(key,vt,fs);
+                            pupilR = self.getPupil(key,vt,fs);
+                            indicator = gradient(pupilR) < -1 * quantile(abs(gradient(pupilR)),.33) & ~isActive;
+                            tuple.indicator = logical(interp1(vt,single(indicator),ft,'nearest'));
+                            
+                        case 'quiet'
+                            [vt,fs]=fetch1(patch.Ephys & key,'ephys_time','ephys_fs');
+                            isActive = self.getActive(key,vt,fs);
+                            indicator = ~isActive;
+                            tuple.indicator = logical(interp1(vt,single(indicator),ft,'nearest'));
+                            
+                        case 'active'
+                            [vt,fs]=fetch1(patch.Ephys & key,'ephys_time','ephys_fs');
+                            isActive = self.getActive(key,vt,fs);
+                            indicator = isActive;
+                            tuple.indicator = logical(interp1(vt,single(indicator),ft,'nearest'));
+                            
+                        otherwise
+                            error('unkown condition name ''%s''', cond.condition_name)
+                    end
+                    self.insert(tuple);
+                end
             end
-            
-            ft = fetch1(reso.EphysTime & key,'frame_ephys_time');
-            
-            switch fetch1(reso.Conditions & key, 'condition_name')
-                case 'quiet dilating'
-                    [vt,fs]=fetch1(patch.Ephys & key,'ephys_time','ephys_fs');
-                    isActive = self.getActive(key,vt,fs);
-                    pupilR = self.getPupil(key,vt,fs);
-                    indicator = gradient(pupilR) > quantile(abs(gradient(pupilR)),.33) & ~isActive;
-                    tuple = key;
-                    tuple.indicator = logical(interp1(vt,single(indicator),ft,'nearest'));
-                    self.insert(tuple);
-                    
-                case 'quiet constricting'
-                    [vt,fs]=fetch1(patch.Ephys & key,'ephys_time','ephys_fs');
-                    isActive = self.getActive(key,vt,fs);
-                    pupilR = self.getPupil(key,vt,fs);
-                    indicator = gradient(pupilR) < -1 * quantile(abs(gradient(pupilR)),.33) & ~isActive;
-                    tuple = key;
-                    tuple.indicator = logical(interp1(vt,single(indicator),ft,'nearest'));
-                    self.insert(tuple);
-                    
-                case 'quiet'
-                    [vt,fs]=fetch1(patch.Ephys & key,'ephys_time','ephys_fs');
-                    isActive = self.getActive(key,vt,fs);
-                    indicator = ~isActive;
-                    tuple = key;
-                    tuple.indicator = logical(interp1(vt,single(indicator),ft,'nearest'));
-                    self.insert(tuple);
-                    
-                case 'active'
-                    [vt,fs]=fetch1(patch.Ephys & key,'ephys_time','ephys_fs');
-                    isActive = self.getActive(key,vt,fs);
-                    indicator = isActive;
-                    tuple = key;
-                    tuple.indicator = logical(interp1(vt,single(indicator),ft,'nearest'));
-                    self.insert(tuple);
-            end
-            
         end
     end
     methods(Static)
