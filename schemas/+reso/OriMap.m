@@ -22,7 +22,7 @@ classdef OriMap < dj.Relvar & dj.AutoPopulate
     methods(Access=protected)
         
         function makeTuples(self, key)
-            reader = getReader(reso.Align & key);
+            reader = reso.getReader(reso.Align & key);
             [fillFraction, rasterPhase] = fetch1(reso.Align & key, 'fill_fraction', 'raster_phase');
             for iSlice=1:reader.nSlices
                 fprintf('loading slice %d: \n', iSlice);
@@ -46,22 +46,33 @@ classdef OriMap < dj.Relvar & dj.AutoPopulate
                     lastPos = lastPos + sz(4);
                     fprintf('frame %4d\n',lastPos);
                 end
+                clear block
                 
                 assert(~any(any(isnan(X))))
-                fps = fetch1(reso.ScanInfo & key, 'fps');                
+                fps = fetch1(reso.ScanInfo & key, 'fps');
                 G = fetch1(reso.OriDesign & key, 'design_matrix');
                 G = G(1:size(X,1),:);
-                
-                % high-pass filtration
-                X = bsxfun(@rdivide, X, mean(X))-1;  %use dF/F
                 opt = fetch(reso.CaOpt & key, '*');
-                if opt.highpass_cutoff>0
-                    k = hamming(round(fps/opt.highpass_cutoff)*2+1);
-                    X = X - ne7.dsp.convmirr(X,k);
-                end
                 
+                B = zeros(size(G,2),size(X,2));
+                R2 = zeros(1,size(X,2));
+                DoF = zeros(1,size(X,2));
+                chunkSize = 4096;
                 disp 'computing responses...'
-                [B,R2,~,DoF] = ne7.stats.regress(X, G, 0);
+                for i=1:chunkSize:size(X,2)-1
+                    ix = i:min(size(X,2),i+chunkSize-1);
+                    X_ = X(:,ix);
+                    
+                    % high-pass filtration
+                    X_ = bsxfun(@rdivide, X_, mean(X_))-1;  %use dF/F
+                    if opt.highpass_cutoff>0
+                        k = hamming(round(fps/opt.highpass_cutoff)*2+1);
+                        X_ = X_ - ne7.dsp.convmirr(X_,k);
+                    end
+                    fprintf .
+                    [B(:,ix),R2(ix),~,DoF(ix)] = ne7.stats.regress(X_, G, 0);
+                end
+                fprintf \n
                 
                 % insert results
                 tuple = key;

@@ -22,19 +22,23 @@ classdef Sync < dj.Relvar & dj.AutoPopulate
             % borrow synchronization from matching patch.Session
             key = fetch(pro(reso.Align & key,'(scan_idx)->file_num')*patch.Sync);
             assert(numel(key)==1)
-                
+            
             % find frame pulses
             [p,f] = fetch1(patch.Session*patch.Recording & key,'path','filename');
             filename = getLocalPath(fullfile(p,f));
             dat = patch.utils.readPatchStimHD5(filename);
-            datT = patch.utils.ts2sec(dat.ts);
+            packetLen = 2000;
+            if isfield(dat,'analogPacketLen')
+                packetLen = dat.analogPacketLen;
+            end
+            datT = patch.utils.ts2sec(dat.ts, packetLen);
             dt = median(diff(datT));
             n = ceil(0.0002/dt);
             k = hamming(2*n);
             k = -k/sum(k);
             k(1:n) = -k(1:n);
             
-            pulses = conv(dat.stimPd,k,'same');
+            pulses = conv(dat.scanImage,k,'same');
             peaks = ne7.dsp.spaced_max(pulses, 0.005/dt);
             peaks = peaks(pulses(peaks) > 0.1*quantile(pulses(peaks),0.9));
             peaks = longestContiguousBlock(peaks);

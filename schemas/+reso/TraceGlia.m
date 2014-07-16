@@ -1,22 +1,22 @@
 %{
-reso.Trace (imported) # calcium trace
--> reso.Segment
+reso.TraceGlia (imported) # calcium trace
+-> reso.SegmentGlia
 trace_id   : smallint   #  mask number in segmentation
 -----
 ca_trace   : longblob   # raw calcium trace
 %}
 
-classdef Trace < dj.Relvar 
+classdef TraceGlia < dj.Relvar 
 
     methods
         
         function makeTuples(self, key)
             
-            reader = reso.getReader(key);
-            [masks,sliceKeys] = fetchn(reso.Segment & key, 'mask');
+            reader = getReader(reso.Align & key);
+            [masks,slices] = fetchn(reso.SegmentGlia & key, 'mask');
             xymotion = fetch1(reso.Align & key, 'motion_xy');
             
-            nSlices = length(sliceKeys);
+            nSlices = length(slices);
             assert(reader.nSlices == nSlices)
             
             % extract pixels for each trace
@@ -37,7 +37,7 @@ classdef Trace < dj.Relvar
                 block = reso.Align.correctRaster(block, rasterPhase, fillFraction);
                 block = reso.Align.correctMotion(block, xy);
                 sz = size(block);
-                for iSlice = 1:length(sliceKeys)
+                for iSlice = 1:length(slices)
                     t = reshape(block(:,:,iSlice,:), [], sz(4));
                     t = cellfun(@(ix) mean(t(ix,:),1)', pixels{iSlice}, 'uni', false);
                     traces{iSlice} = cat(1,traces{iSlice},cat(2,t{:}));
@@ -47,7 +47,7 @@ classdef Trace < dj.Relvar
             
             disp 'saving traces...'
             for iSlice = 1:nSlices
-                tuple = sliceKeys(iSlice);
+                tuple = slices(iSlice);
                 for iTrace=1:size(traces{iSlice},2)
                     tuple.trace_id = iTrace;
                     tuple.ca_trace = single(traces{iSlice}(:,iTrace));

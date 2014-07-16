@@ -2,13 +2,99 @@ classdef plots
     
     methods(Static)
         
+        function astroPupil
+            k = hamming(17);
+            k = k/sum(k);  % smoothing kernel
+            for key = fetch(reso.Sync*patch.Sync*reso.SegmentGlia & patch.EyeFrame)'
+                filename = sprintf('~/dev/figures/astro_%04u_%02u.eps',key.animal_id,key.scan_idx);
+                fig = Figure(1, 'size', [160 120]);
+                caTimes = fetch1(reso.Sync & key, 'frame_times');
+                X = fetchn(reso.TraceGlia&key,'ca_trace'); 
+                X = [X{:}];
+                ticks = 1:size(X,2);
+                X = bsxfun(@plus,bsxfun(@rdivide,X,mean(X)),ticks)-1;
+                
+                % show running epochs
+                [runOn,runDur]=fetchn(patch.Running & key, 'run_on', 'run_dur');
+                [faceOn,faceDur]=fetchn(patch.Facing & key, 'face_on', 'face_dur');
+                [runOn, runDur] = mergeIntervals([runOn; faceOn], [runDur; faceDur]);
+                
+                for i=1:length(runOn)
+                    patch([runOn(i) runOn(i)+runDur(i) runOn(i)+runDur(i) runOn(i)], [-2 -2 length(ticks)*[1 1]+1],[0.7 0.7 1.0], 'LineStyle', 'none')
+                end
+
+                hold on
+                plot(caTimes-caTimes(1), ne7.dsp.convmirr(double(X),k),'k');
+                hold off
+                set(gca,'YTick',ticks,'YGrid','on')
+                
+                % time conversion to ephys time
+                [eTime,vTime] = fetch1(patch.Ephys*patch.Sync & key, 'ephys_time','vis_time');
+                caTimes = interp1(vTime, eTime, caTimes);
+
+
+                
+                % get pupil radius and speed, convert to microns
+                [pupilRadius, pupilX, pupilY, pupilTimes] = fetchn(patch.EyeFrame & key, ...
+                    'pupil_r','pupil_x','pupil_y','frame_time','ORDER BY frame_time');
+                pupilFPS = 1/median(diff(pupilTimes));
+                saccadeSpeed = sqrt(gradient(pupilX).^2 + gradient(pupilY).^2)*pupilFPS;
+                pixelPitch = 5;  % um / pixel
+                saccadeSpeed = saccadeSpeed * pixelPitch;     % convert to microns
+                pupilRadius = pupilRadius * pixelPitch;   % convert to microns
+                % interpolate over nans
+                notnans = ~isnan(pupilRadius);
+                pupilRadius = interp1(pupilTimes(notnans),pupilRadius(notnans), pupilTimes, 'linear', 'extrap');
+                saccadeSpeed  = interp1(pupilTimes(notnans),saccadeSpeed(notnans), pupilTimes, 'linear', 'extrap');
+                
+                hold on
+                plot(pupilTimes,2*(pupilRadius-min(pupilRadius))/(max(pupilRadius)-min(pupilRadius))-2,'Color',[0 0.4 0.2],'LineWidth',3)
+                xlabel 'time (s)'
+                hold off
+                
+                fig.cleanup
+                fig.save(filename)
+                
+                
+                % save the image of the site
+                clf
+                f = figure;
+                set(f,'Visible','off')
+                filename = sprintf('~/dev/figures/astro_%04u_%02u-map.png',key.animal_id,key.scan_idx);
+                g = fetch1(reso.Align & key, 'green_img');
+                g = g - quantile(g(:),0.02);
+                g = g / quantile(g(:),0.999);
+                imshow(g);
+               
+                
+                bw = fetch1(reso.SegmentGlia & key, 'mask');                
+                bounds = bwboundaries(bw,4);
+                hold on
+                
+                for i=1:length(bounds)
+                    bound = bounds{i};
+                    plot(bound(:,2), bound(:,1), 'r');
+                    xy = mean(bound);
+                    text(xy(2),xy(1),sprintf('   %d',i),'Color','y','FontSize',12);                 
+                end
+                hold off
+                
+                im = getframe(gca);
+                imwrite(im.cdata, filename)
+
+                close(f)
+
+            end
+        end
+        
         function binnedR2
             helper(8,9,false,.78,'~/Google Drive/Pupil Paper/Figure3/binned_r2-with-saccades-noblanks.eps')
             helper(6,7,false,.78,'~/Google Drive/Pupil Paper/Figure3/binned_r2-sans-saccades-noblanks.eps')
             
             function helper(epoch1,epoch2,includeBlanks,uplim,filename)
                 
-                r = pupil.BinnedNoiseCorr & struct('include_blanks',includeBlanks) & 'r2 is not null' & 'animal_id in (2380,2381,2382,2660,2662)';
+                r = pupil.BinnedNoiseCorr & struct('include_blanks',includeBlanks) ...
+                    & 'r2 is not null' & 'animal_id in (2380,2381,2382,2660,2662,2470)';
                 rr1 = [];  rr2 = [];
                 for key = fetch(reso.Sync & (r & struct('epoch_opt',epoch1)) & (r & struct('epoch_opt',epoch2)))'
                     tunedIdx = find(fetchn(pupil.EpochVonMises & key & 'epoch_opt=1','(von_amp1>0.1 && von_p<0.01)->p','ORDER BY trace_id'));
@@ -44,12 +130,11 @@ classdef plots
             helper(8,9,true, .7,.3,'sig_corr','Signal corr','~/Google Drive/Pupil Paper/Figure3/binned_sig_corrs-with-saccades.eps')
             helper(6,7,false,.7,.3,'sig_corr','Signal corr','~/Google Drive/Pupil Paper/Figure3/binned_sig_corrs-sans-saccades-noblanks.eps')
             helper(6,7,true, .7,.3,'sig_corr','Signal corr','~/Google Drive/Pupil Paper/Figure3/binned_sig_corrs-sans-saccades.eps')
-
             
             
             function helper(epoch1,epoch2,includeBlanks,uplim,tickStep,attr,titl,filename)
                 
-                r = pupil.BinnedNoiseCorr & struct('include_blanks',includeBlanks) & sprintf('%s is not null',attr) & 'animal_id in (2380,2381,2382,2660,2662)';
+                r = pupil.BinnedNoiseCorr & struct('include_blanks',includeBlanks) & sprintf('%s is not null',attr) & 'animal_id in (2380,2381,2382,2660,2662,2470)';
                 c1 = [];  c2 = [];
                 for key = fetch(reso.Sync & (r & struct('epoch_opt',epoch1)) & (r & struct('epoch_opt',epoch2)))'
                     tunedIdx = find(fetchn(pupil.EpochVonMises & key & 'epoch_opt=1','(von_amp1>0.1 && von_p<0.01)->p','ORDER BY trace_id'));
@@ -132,23 +217,22 @@ classdef plots
             
             fig.cleanup
             fig.save('~/Desktop/traces3.eps')
-            
-            %            set(gcf, 'PaperSize', [12 6]/2.54, 'PaperPosition', [0 0 12 6]/2.54)
-            %            print -dpdf ~/Desktop/traces2
         end
         
         
         
         function OSI
-            k = 'animal_id in (2380,2381,2382,2660,2662)';
-            helper(k,[3 2 9 8],'osi-bar-running-with-saccades',...
-                {'  Quiet','  Active','  Quiet constricting','  Quiet dilating'})
-        
+            k = 'animal_id in (2380,2381,2382,2660,2662,2470)';
+            helper(k,[7 6],'osi-dilating-sans-saccades',...
+                {'Quiet constricting','Quiet dilating'})
+            helper(k,[9 8],'osi-dilating-with-saccades',...
+                {'Quiet constricting','Quiet dilating'})
+            
             function helper(k,epochs,filename,labels)
                 % join the tuned cells from 'all' with the cells in
                 % conditions defined by epochs.
                 rel = pupil.EpochVonMises;
-                g0 = rel & k & 'epoch_opt=1' & 'von_p<0.01' & 'von_amp1>0.1';
+                g0 = rel & k & 'epoch_opt=5' & 'von_p<0.01' & 'von_amp1>0.1';
                 g0 = g0.pro('responses->r0','epoch_opt->e0','(von_pref*180/3.1416)->pref');
                 g = arrayfun(@(i,epoch) ...
                     pro(rel & struct('epoch_opt',epoch), sprintf('responses->r%d',i),sprintf('epoch_opt->e%d',i)), ...
@@ -168,31 +252,32 @@ classdef plots
                 osis = cellfun(@(pref,ortho) (pref-ortho)./(pref+ortho)*2, ...
                     prefR, orthoR, 'uni',false);
                 
-%                 fig = Figure(1,'size',[50 40]);
-%                 scatter(osis{1},osis{2},1,'filled','k')
-%                 set(gca,'XTick', 0:0.5:1.5, 'YTick', 0:0.5:1.5)
-%                 xlabel(labels{1})
-%                 ylabel(labels{2})
-%                 title 'OSI'
-%                 axis image
-%                 axis([.0 1.6 .0 1.6])
-%                 set(refline(1,0),'Color',[1 1 1]*.5)
-%                 fig.cleanup
-%                 fig.save(sprintf('~/Google Drive/Pupil Paper/Figure3/%s.eps',filename))
+                fig = Figure(1,'size',[45 45]);
+                scatter(osis{1},osis{2},1,'filled','k')
+                set(gca,'XTick', 0:0.5:1.5, 'YTick', 0:0.5:1.5)
+                xlabel(labels{1})
+                ylabel(labels{2})
+                title 'OSI'
+                axis image
+                mm = 1.03*min(min(osis{1},osis{2}));
+                axis([mm 1.6 mm 1.6])
+                set(refline(1,0),'Color',[1 1 1]*.5)
+                fig.cleanup
+                fig.save(sprintf('~/Google Drive/Pupil Paper/Figure3/%s.eps',filename))
                 
-                fig = Figure(1,'size',[50 40]);
-                avgOSI = cellfun(@median, osis);
-                bar(avgOSI)
-                hold on
-                [ci1,ci2] = cellfun(@(x) confInterval(x,0.95), osis);
-                errorbar(1:4,avgOSI,ci1-avgOSI,ci2-avgOSI, 'k', 'LineStyle', 'none')
-                hold off
-                colormap(gray/2+.5)
-                set(gca,'XTickLabel',labels)
-                rotateticklabel(gca,-30);
-                set(gca,'Position', [.25 .28 .70 .7], 'YTick', 0:.2:.6)
-                ylabel 'OSI'
-                ylim([0 .45])
+                %                 fig = Figure(1,'size',[50 40]);
+                %                 avgOSI = cellfun(@median, osis);
+                %                 bar(avgOSI)
+                %                 hold on
+                %                 [ci1,ci2] = cellfun(@(x) confInterval(x,0.95), osis);
+                %                 errorbar(1:4,avgOSI,ci1-avgOSI,ci2-avgOSI, 'k', 'LineStyle', 'none')
+                %                 hold off
+                %                 colormap(gray/2+.5)
+                %                 set(gca,'XTickLabel',labels)
+                %                 rotateticklabel(gca,-30);
+                %                 set(gca,'Position', [.25 .28 .70 .7], 'YTick', 0:.2:.6)
+                %                 ylabel 'OSI'
+                %                 ylim([0 .45])
                 
                 fig.cleanup
                 fig.save(sprintf('~/Google Drive/Pupil Paper/Figure3/%s.eps',filename))
@@ -203,7 +288,7 @@ classdef plots
                     ci1 = quantile(m,(1-thresh)/2);
                     ci2 = quantile(m,1-(1-thresh)/2);
                 end
-
+                
                 
                 function [prefR, orthoR] = makeBars(angles, responses)
                     % avearge responses
@@ -212,18 +297,19 @@ classdef plots
                     orthoR = cellfun(@(angles,r) mean(r(abs(abs(angles-180)-90)<22.5,:)), angles, responses);
                 end
             end
-        
+            
         end
         
         
         function averageTuningCurve
-            k = 'animal_id in (2380,2381,2382,2660,2662)';
+            k = 'animal_id in (2380,2381,2382,2660,2662,2470)';
+            
             helper(k,[7 6 2 5],'brgk','ori-all-sans-saccades')
             helper(k,[9 8 2 3],'brgk','ori-all-with-saccades')
-            helper(k,[7 6 2],'brg','ori-dilation-sans-saccades')
-            helper(k,[9 8 2],'brg','ori-dilation-with-saccades')
-            helper(k,[3 2],'kg','ori-running-with-saccades',{'Quiet','Active'})
-            helper(k,[9 8],'br','ori-running-with-saccades',{'Quiet constricting','Quiet dilating'})
+            helper(k,[7 6],'br','ori-dilation-sans-saccades')
+            helper(k,[9 8],'br','ori-dilation-with-saccades')
+            helper(k,[3 2],'kg','ori-running-with-saccades')
+            helper(k,[7 6],'kg','ori-running-sans-saccades')
             
             function helper(k,epochs,colors,filename)
                 assert(length(epochs)==length(colors))
@@ -247,7 +333,7 @@ classdef plots
                 angles = cellfun(@(r,pref) mod((0:360/size(r,2):359) - pref+180,360), r{1}, num2cell(pref), 'uni', false);
                 
                 % make tuning curve figure
-                fig = Figure(1,'size',[50 40]);
+                fig = Figure(1,'size',[45 40]);
                 for i=1:length(epochs)
                     makePlot(angles, r{i}, colors(i))
                     hold on
@@ -259,15 +345,15 @@ classdef plots
                 % make legend
                 fig = Figure(1,'size',[20 20]);
                 for i=1:length(epochs)
-                      boundedline([-1 1], i*[1 1], 0.2, colors(i), 'transparency', 0.3)
-                      hold on
+                    boundedline([-1 1], i*[1 1], 0.2, colors(i), 'transparency', 0.3)
+                    hold on
                 end
                 hold off
                 fig.cleanup
                 fig.save(sprintf('~/Google Drive/Pupil Paper/Figure3/%s-legend.eps',filename))
                 
-
-
+                
+                
                 %                 scatter(osi2,osi1,3,'filled','k')
                 %                 xlabel constriction
                 %                 ylabel dilation
@@ -326,11 +412,11 @@ classdef plots
                 %             fig.save('~/Google Drive/Pupil Paper/Figure3/meanOSI.eps')
                 %
                 
-%                 function [ci1,ci2] = confInterval(x,thresh)
-%                     m = arrayfun(@(i) median(x(randi(length(x),size(x)))), 1:10000);
-%                     ci1 = quantile(m,(1-thresh)/2);
-%                     ci2 = quantile(m,1-(1-thresh)/2);
-%                 end
+                %                 function [ci1,ci2] = confInterval(x,thresh)
+                %                     m = arrayfun(@(i) median(x(randi(length(x),size(x)))), 1:10000);
+                %                     ci1 = quantile(m,(1-thresh)/2);
+                %                     ci2 = quantile(m,1-(1-thresh)/2);
+                %                 end
                 
                 
                 function makePlot(angles, responses, color)
@@ -368,7 +454,7 @@ classdef plots
                     set(gca,'XTick',-180:180:180)
                     xlim([-1 1]*180)
                     ylim([.15 .42])
-                    xlabel 'Degrees from preferred direction'
+                    xlabel 'Degrees from preferred direction    '
                     ylabel 'Calcium signal'
                 end
                 
@@ -387,7 +473,7 @@ classdef plots
             
             function helper(epoch1,epoch2,attr,titl,filename)
                 
-                r = pupil.EpochR2 & sprintf('%s is not null',attr) & 'animal_id in (2380,2381,2382,2660,2662)';
+                r = pupil.EpochR2 & sprintf('%s is not null',attr) & 'animal_id in (2380,2381,2382,2660,2662,2470)';
                 c1 = [];  c2 = [];
                 for key = fetch(reso.Sync & (r & struct('epoch_opt',epoch1)) & (r & struct('epoch_opt',epoch2)))'
                     tunedIdx = find(fetchn(pupil.EpochVonMises & key & 'epoch_opt=1','(von_amp1>0.1 && von_p<0.01)->p','ORDER BY trace_id'));
@@ -423,7 +509,7 @@ classdef plots
             helper(6,7,'/Users/dimitri/Google Drive/Pupil Paper/Figure3/trial-r2-sans-saccades.eps')
             
             function helper(epoch1,epoch2,filename)
-                r = pupil.EpochR2 & 'sig_cov is not null' & 'animal_id in (2380,2381,2382,2660,2662)';
+                r = pupil.EpochR2 & 'sig_cov is not null' & 'animal_id in (2380,2381,2382,2660,2662,2470)';
                 ars1 = [];
                 ars2 = [];
                 for key = fetch(reso.Sync & (r & struct('epoch_opt',epoch1)) & (r & struct('epoch_opt',epoch2)))'
@@ -530,61 +616,43 @@ classdef plots
 end
 
 
-function th=rotateticklabel(h,rot,demo)
-%ROTATETICKLABEL rotates tick labels
-%   TH=ROTATETICKLABEL(H,ROT) is the calling form where H is a handle to
-%   the axis that contains the XTickLabels that are to be rotated. ROT is
-%   an optional parameter that specifies the angle of rotation. The default
-%   angle is 90. TH is a handle to the text objects created. For long
-%   strings such as those produced by datetick, you may have to adjust the
-%   position of the axes so the labels don't get cut off.
-%
-%   Of course, GCA can be substituted for H if desired.
-%
-%   TH=ROTATETICKLABEL([],[],'demo') shows a demo figure.
-%
-%   Known deficiencies: if tick labels are raised to a power, the power
-%   will be lost after rotation.
-%
-%   See also datetick.
 
-%   Written Oct 14, 2005 by Andy Bliss
-%   Copyright 2005 by Andy Bliss
-
-%DEMO:
-if nargin==3
-    x=[now-.7 now-.3 now];
-    y=[20 35 15];
-    figure
-    plot(x,y,'.-')
-    datetick('x',0,'keepticks')
-    h=gca;
-    set(h,'position',[0.13 0.35 0.775 0.55])
-    rot=90;
+function overlap = doOverlap(on,dur)
+% compute overlap length between intervals defined by onsets on and
+% durations dur.
+overlap = max(0, min(on+dur)-max(on));
 end
 
-%set the default rotation if user doesn't specify
-if nargin==1
-    rot=90;
+
+function frac = fracOverlap(on, dur, onArray, durArray)
+% compute fraction overlap between the interval defined by on and dur with
+% intervals defined by onArray and durArray. Intervals in array may not overlap.
+assert(isscalar(on) && isscalar(dur) && length(onArray)==length(durArray))
+frac = sum(arrayfun(@(on2,dur2) doOverlap([on on2], [dur dur2]), onArray, durArray))/dur;
 end
-%make sure the rotation is in the range 0:360 (brute force method)
-while rot>360
-    rot=rot-360;
+
+
+
+function [on,dur] = mergeIntervals(on, dur)
+% some intervals defined by onsets on and durations dur may overlap.  Such
+% overlapping intervals are merged.
+
+assert(length(on)==length(dur))
+
+[on,ix] = sort(on);
+dur = dur(ix);
+
+% merge overlapping intervals
+for i=1:length(on-1)
+    for j=i+1:length(on)
+        if ~doOverlap(on([i j]),dur([i j]))
+            break
+        else
+            dur(i) = max(dur(i), on(j)+dur(j)-on(i));
+            dur(j) = 0;
+        end
+    end
 end
-while rot<0
-    rot=rot+360;
-end
-%get current tick labels
-a=get(h,'XTickLabel');
-%erase current tick labels from figure
-set(h,'XTickLabel',[]);
-%get tick label positions
-b=get(h,'XTick');
-c=get(h,'YTick');
-%make new tick labels
-if rot<180
-    th=text(b,repmat(c(1)-.1*(c(2)-c(1)),length(b),1),a,'HorizontalAlignment','right','rotation',rot);
-else
-    th=text(b,repmat(c(1)-.1*(c(2)-c(1)),length(b),1),a,'HorizontalAlignment','left','rotation',rot);
-end
+on(~dur)=[];
+dur(~dur)=[];
 end

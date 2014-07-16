@@ -9,10 +9,6 @@ offset :  double     # (s) trial offset time on stimulus time
 
 classdef Trial < dj.Relvar
     
-    properties(Constant)
-        table = dj.Table('reso.Trial')
-    end
-    
     methods
         function makeTuples(self, key)
             times = fetch1(reso.Sync & key, 'frame_times');

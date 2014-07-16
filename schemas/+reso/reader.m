@@ -42,7 +42,7 @@ classdef reader < handle
             % r = reso.reader('path', 'basename', scanNumer)
             
             self.multifile = false;
-            if exist(path,'file')
+            if exist(path,'file')==2
                 self.fullfile = path;
             else
                 self.path = path;
