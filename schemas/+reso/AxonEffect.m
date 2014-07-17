@@ -4,11 +4,9 @@ reso.AxonEffect (computed) # effect of indicator on axon activity
 -> reso.Axons
 -> reso.Effect
 -----
-effect_size = null : longblob   #  effect size
-effect_p    = null : longblob   #  statistical significance per cell
-nshuffles          : smallint   # number of shuffles in the permutation test
-effect_sign        : boolean    #
-signrank_p         : double     #  p-value of signrank test (not quite valid because traces aren't independent
+effect_size         : float     #  effect size
+effect_p            : float     #  statistical significance per cell
+nshuffles           : smallint  # number of shuffles in the permutation test
 %}
 
 classdef AxonEffect < dj.Relvar & dj.AutoPopulate
@@ -21,7 +19,7 @@ classdef AxonEffect < dj.Relvar & dj.AutoPopulate
         
         function makeTuples(self, key)
             effect = fetch(reso.Effect & key, '*');
-            X = fetch1(reso.AxonTraces & key, 'axon_traces');
+            trace = fetch1(reso.Axons & key, 'axon_trace');
             
             switch effect.analysis
                 case 'active * quiet'
@@ -34,12 +32,10 @@ classdef AxonEffect < dj.Relvar & dj.AutoPopulate
                     error('Unknown effect name "%s"', effect.analysis)
             end
             
-            a1 = mean(double(X(ind1,:)));
-            a2 = mean(double(X(ind2,:)));
+            a1 = mean(double(trace(ind1)));
+            a2 = mean(double(trace(ind2)));
             
             key.effect_size = single(a1-a2);
-            key.effect_sign = sign(median(key.effect_size));
-            key.signrank_p = signrank(key.effect_size);
             
             % shuffle test
             key.nshuffles = 10000;
@@ -54,8 +50,8 @@ classdef AxonEffect < dj.Relvar & dj.AutoPopulate
                     ind2_ = [ind2_(split+1:end); ind2_(1:split)];
                 end
                 
-                a1 = mean(double(X(ind1_,:)));
-                a2 = mean(double(X(ind2_,:)));
+                a1 = mean(double(trace(ind1_)));
+                a2 = mean(double(trace(ind2_)));
                 effectSize = single(a1-a2);
                 key.effect_p = key.effect_p + (abs(effectSize)>=abs(key.effect_size))/key.nshuffles;
             end
