@@ -3,6 +3,9 @@ pupil.EpochTrial (computed) # trials included in each trace
 -> pupil.EpochTrialSet
 -> reso.Trial
 -----
+radius  :  float  # (um)  average radius during the trial
+delta   :  float  # (um) change in radius during trial
+saccade_speed = null : float # (um/s) average saccade speed during trial
 %}
 
 classdef EpochTrial < dj.Relvar
@@ -42,6 +45,13 @@ classdef EpochTrial < dj.Relvar
             [faceOn,faceDur]=fetchn(patch.Facing & key, 'face_on', 'face_dur');
             [runOn, runDur] = mergeIntervals([runOn; faceOn], [runDur; faceDur]);
             
+            onRad = interp1(pupilTimes, pupilRadius, trialOnsets, 'nearest', 'extrap');
+            offRad = interp1(pupilTimes, pupilRadius, trialOffsets, 'nearest', 'extrap');
+            
+            deltas = offRad - onRad;
+            between = @(x,a,b) x>=a & x<=b;
+            avgRadius = arrayfun(@(on,off) mean(pupilRadius(between(pupilTimes,on,off))), trialOnsets, trialOffsets);
+            
             % select trials that meet condition
             switch opt.condition
                 case 'all'
@@ -60,15 +70,16 @@ classdef EpochTrial < dj.Relvar
                 case {'dilating', 'constricting'}
                     % a trial is considered dilating if the pupil is bigger
                     % at the end than at the beginning
-                    onRad = interp1(pupilTimes, pupilRadius, trialOnsets, 'nearest', 'extrap');
-                    offRad = interp1(pupilTimes, pupilRadius, trialOffsets, 'nearest', 'extrap');
-                    select = offRad > onRad;
-                    select = xor(select, strcmp(opt.condition,'constricting'));
+                    radiusChangeThreshold = 2.5; % um
+                    
+                    sgn = (-1)^strcmp(opt.condition,'constricting');
+                    select = sgn*(offRad - onRad) > radiusChangeThreshold;
                     
                     % exclude running periods
                     runFrac = arrayfun(@(on,dur) fracOverlap(on, dur, runOn, runDur),...
                         trialOnsets, trialOffsets-trialOnsets);
                     select = select & runFrac == 0;
+                    
                     
                 otherwise
                     error 'invalid epoch condition'
@@ -80,8 +91,12 @@ classdef EpochTrial < dj.Relvar
                 maxSaccadeSpeed = arrayfun(@(onIx,offIx) max(saccadeSpeed(onIx:offIx)), trialOnIx, trialOffIx);
                 select = select & maxSaccadeSpeed < opt.saccade_thresh;
             end
-            
             tuples = dj.struct.join(key, trialKeys(select));
+            tuples = arrayfun(@dj.struct.join, tuples, ...
+                struct(...
+                'radius',num2cell(avgRadius(select)),...
+                'delta',num2cell(deltas(select))));
+            
             self.insert(tuples)
         end
     end

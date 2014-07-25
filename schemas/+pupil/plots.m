@@ -2,6 +2,30 @@ classdef plots
     
     methods(Static)
         
+        function radius
+            k = 'animal_id in (2380,2381,2382,2660,2662,2470)';
+            s1 = pro(pupil.EpochTrialSet&pupil.EpochVonMisesSet, pupil.EpochTrial, 'epoch_opt->e1', '2*avg(radius)/1000->d1','count(*)->n1');
+            s2 = pro(pupil.EpochTrialSet&pupil.EpochVonMisesSet, pupil.EpochTrial, 'epoch_opt->e2', '2*avg(radius)/1000->d2','count(*)->n2');
+            [d1,d2] = fetchn(s1*s2 & k & 'e1=7' & 'e2=6' & 'n1>50' & 'n2>50','d1','d2');
+            
+            [~,p] = ttest(d1-d2)
+            
+            fig = Figure(1,'size',[45 45]);
+            scatter(d1,d2,'k.')
+            m = max(max(d1),max(d2));
+            axis([0 1.01 0 1.01]*m)
+            ticks = 0:.500:1.500;
+            set(gca,'XTick',ticks,'YTick',ticks)
+            title 'Average pupil diameter (mm)'
+            ylabel 'Dilation trials'
+            xlabel 'Constriction trials'
+            set(refline(1),'Color',[1 1 1]*.7)
+            fig.cleanup
+            fig.save('~/Google Drive/Pupil Paper/Figure3/pupil-diameter.eps')
+        end
+        
+        
+        
         function astroPupil
             k = hamming(17);
             k = k/sum(k);  % smoothing kernel
@@ -9,7 +33,7 @@ classdef plots
                 filename = sprintf('~/dev/figures/astro_%04u_%02u.eps',key.animal_id,key.scan_idx);
                 fig = Figure(1, 'size', [160 120]);
                 caTimes = fetch1(reso.Sync & key, 'frame_times');
-                X = fetchn(reso.TraceGlia&key,'ca_trace'); 
+                X = fetchn(reso.TraceGlia&key,'ca_trace');
                 X = [X{:}];
                 ticks = 1:size(X,2);
                 X = bsxfun(@plus,bsxfun(@rdivide,X,mean(X)),ticks)-1;
@@ -20,9 +44,10 @@ classdef plots
                 [runOn, runDur] = mergeIntervals([runOn; faceOn], [runDur; faceDur]);
                 
                 for i=1:length(runOn)
-                    patch([runOn(i) runOn(i)+runDur(i) runOn(i)+runDur(i) runOn(i)], [-2 -2 length(ticks)*[1 1]+1],[0.7 0.7 1.0], 'LineStyle', 'none')
+                    patch([runOn(i) runOn(i)+runDur(i) runOn(i)+runDur(i) runOn(i)], ...
+                        [-2 -2 length(ticks)*[1 1]+1],[0.7 0.7 1.0], 'LineStyle', 'none')
                 end
-
+                
                 hold on
                 plot(caTimes-caTimes(1), ne7.dsp.convmirr(double(X),k),'k');
                 hold off
@@ -31,8 +56,8 @@ classdef plots
                 % time conversion to ephys time
                 [eTime,vTime] = fetch1(patch.Ephys*patch.Sync & key, 'ephys_time','vis_time');
                 caTimes = interp1(vTime, eTime, caTimes);
-
-
+                
+                
                 
                 % get pupil radius and speed, convert to microns
                 [pupilRadius, pupilX, pupilY, pupilTimes] = fetchn(patch.EyeFrame & key, ...
@@ -65,9 +90,9 @@ classdef plots
                 g = g - quantile(g(:),0.02);
                 g = g / quantile(g(:),0.999);
                 imshow(g);
-               
                 
-                bw = fetch1(reso.SegmentGlia & key, 'mask');                
+                
+                bw = fetch1(reso.SegmentGlia & key, 'mask');
                 bounds = bwboundaries(bw,4);
                 hold on
                 
@@ -75,20 +100,19 @@ classdef plots
                     bound = bounds{i};
                     plot(bound(:,2), bound(:,1), 'r');
                     xy = mean(bound);
-                    text(xy(2),xy(1),sprintf('   %d',i),'Color','y','FontSize',12);                 
+                    text(xy(2),xy(1),sprintf('   %d',i),'Color','y','FontSize',12);
                 end
                 hold off
                 
                 im = getframe(gca);
                 imwrite(im.cdata, filename)
-
+                
                 close(f)
-
+                
             end
         end
         
         function binnedR2
-            helper(8,9,false,.78,'~/Google Drive/Pupil Paper/Figure3/binned_r2-with-saccades-noblanks.eps')
             helper(6,7,false,.78,'~/Google Drive/Pupil Paper/Figure3/binned_r2-sans-saccades-noblanks.eps')
             
             function helper(epoch1,epoch2,includeBlanks,uplim,filename)
@@ -114,22 +138,18 @@ classdef plots
                 title Reliability
                 axis image
                 axis([0 uplim 0 uplim])
-                set(refline(1,0),'Color',[1 1 1]*.5)
+                set(refline(1,0),'Color',[1 1 1]*.6)
                 fig.cleanup
                 fig.save(filename)
             end
         end
         
         function binnedCorr
-            helper(8,9,false,.7,.3,'sig_corr','Signal corr','~/Google Drive/Pupil Paper/Figure3/binned_sig_corrs-with-saccades-noblanks.eps')
             helper(8,9,false,.5,.2,'noise_corr','Noise corr','~/Google Drive/Pupil Paper/Figure3/binned_noise_corrs-with-saccades-noblanks.eps')
-            helper(8,9,true, .2,.1,'noise_corr','Noise corr','~/Google Drive/Pupil Paper/Figure3/binned_noise_corrs-with-saccades.eps')
             helper(6,7,false,.5,.1,'noise_corr','Noise corr','~/Google Drive/Pupil Paper/Figure3/binned_noise_corrs-sans-saccades-noblanks.eps')
-            helper(6,7,true, .2,.1,'noise_corr','Noise corr','~/Google Drive/Pupil Paper/Figure3/binned_noise_corrs-sans-saccades.eps')
             
-            helper(8,9,true, .7,.3,'sig_corr','Signal corr','~/Google Drive/Pupil Paper/Figure3/binned_sig_corrs-with-saccades.eps')
+            helper(8,9,false,.7,.3,'sig_corr','Signal corr','~/Google Drive/Pupil Paper/Figure3/binned_sig_corrs-with-saccades-noblanks.eps')
             helper(6,7,false,.7,.3,'sig_corr','Signal corr','~/Google Drive/Pupil Paper/Figure3/binned_sig_corrs-sans-saccades-noblanks.eps')
-            helper(6,7,true, .7,.3,'sig_corr','Signal corr','~/Google Drive/Pupil Paper/Figure3/binned_sig_corrs-sans-saccades.eps')
             
             
             function helper(epoch1,epoch2,includeBlanks,uplim,tickStep,attr,titl,filename)
@@ -223,16 +243,21 @@ classdef plots
         
         function OSI
             k = 'animal_id in (2380,2381,2382,2660,2662,2470)';
+            atLeastOneMinuteRunning = pro(patch.Recording,patch.Running,'sum(run_dur)->tot') & 'tot > 60';
+
+            helper(k,[3 2],'osi-running-with-saccades',...
+                {'Not running','Running'}, atLeastOneMinuteRunning)            
             helper(k,[7 6],'osi-dilating-sans-saccades',...
                 {'Quiet constricting','Quiet dilating'})
-            helper(k,[9 8],'osi-dilating-with-saccades',...
-                {'Quiet constricting','Quiet dilating'})
             
-            function helper(k,epochs,filename,labels)
+            function helper(k,epochs,filename,labels,restrictor)
                 % join the tuned cells from 'all' with the cells in
                 % conditions defined by epochs.
                 rel = pupil.EpochVonMises;
-                g0 = rel & k & 'epoch_opt=5' & 'von_p<0.01' & 'von_amp1>0.1';
+                g0 = rel & k & 'epoch_opt=1' & 'von_p<0.01' & 'von_amp1>0.1';
+                if nargin>=5
+                    g0 = g0 & restrictor;
+                end
                 g0 = g0.pro('responses->r0','epoch_opt->e0','(von_pref*180/3.1416)->pref');
                 g = arrayfun(@(i,epoch) ...
                     pro(rel & struct('epoch_opt',epoch), sprintf('responses->r%d',i),sprintf('epoch_opt->e%d',i)), ...
@@ -254,41 +279,16 @@ classdef plots
                 
                 fig = Figure(1,'size',[45 45]);
                 scatter(osis{1},osis{2},1,'filled','k')
-                set(gca,'XTick', 0:0.5:1.5, 'YTick', 0:0.5:1.5)
+                set(gca,'XTick', -1:0.5:1.5, 'YTick', -1:0.5:1.5)
                 xlabel(labels{1})
                 ylabel(labels{2})
                 title 'OSI'
                 axis image
                 mm = 1.03*min(min(osis{1},osis{2}));
                 axis([mm 1.6 mm 1.6])
-                set(refline(1,0),'Color',[1 1 1]*.5)
+                set(refline(1,0),'Color',[1 1 1]*.6)
                 fig.cleanup
                 fig.save(sprintf('~/Google Drive/Pupil Paper/Figure3/%s.eps',filename))
-                
-                %                 fig = Figure(1,'size',[50 40]);
-                %                 avgOSI = cellfun(@median, osis);
-                %                 bar(avgOSI)
-                %                 hold on
-                %                 [ci1,ci2] = cellfun(@(x) confInterval(x,0.95), osis);
-                %                 errorbar(1:4,avgOSI,ci1-avgOSI,ci2-avgOSI, 'k', 'LineStyle', 'none')
-                %                 hold off
-                %                 colormap(gray/2+.5)
-                %                 set(gca,'XTickLabel',labels)
-                %                 rotateticklabel(gca,-30);
-                %                 set(gca,'Position', [.25 .28 .70 .7], 'YTick', 0:.2:.6)
-                %                 ylabel 'OSI'
-                %                 ylim([0 .45])
-                
-                fig.cleanup
-                fig.save(sprintf('~/Google Drive/Pupil Paper/Figure3/%s.eps',filename))
-                
-                
-                function [ci1,ci2] = confInterval(x,thresh)
-                    m = arrayfun(@(i) median(x(randi(length(x),size(x)))), 1:10000);
-                    ci1 = quantile(m,(1-thresh)/2);
-                    ci2 = quantile(m,1-(1-thresh)/2);
-                end
-                
                 
                 function [prefR, orthoR] = makeBars(angles, responses)
                     % avearge responses
@@ -303,20 +303,20 @@ classdef plots
         
         function averageTuningCurve
             k = 'animal_id in (2380,2381,2382,2660,2662,2470)';
-            
-            helper(k,[7 6 2 5],'brgk','ori-all-sans-saccades')
-            helper(k,[9 8 2 3],'brgk','ori-all-with-saccades')
+            atLeastOneMinuteRunning = pro(patch.Recording,patch.Running,'sum(run_dur)->tot') & 'tot > 60';  
             helper(k,[7 6],'br','ori-dilation-sans-saccades')
-            helper(k,[9 8],'br','ori-dilation-with-saccades')
-            helper(k,[3 2],'kg','ori-running-with-saccades')
-            helper(k,[7 6],'kg','ori-running-sans-saccades')
+            helper(k,[3 2],'kg','ori-running-with-saccades',atLeastOneMinuteRunning)
+            %            helper(k,[5 4],'kg','ori-running-sans-saccades')
             
-            function helper(k,epochs,colors,filename)
+            function helper(k,epochs,colors,filename, restrictor)
                 assert(length(epochs)==length(colors))
                 % join the tuned cells from 'all' with the cells in
                 % conditions defined by epochs.
                 rel = pupil.EpochVonMises;
                 g0 = rel & k & 'epoch_opt=1' & 'von_p<0.01' & 'von_amp1>0.1';
+                if nargin>=5
+                    g0 = g0 & restrictor;
+                end
                 g0 = g0.pro('responses->r0','epoch_opt->e0','(von_pref*180/3.1416)->pref');
                 g = arrayfun(@(i,epoch) ...
                     pro(rel & struct('epoch_opt',epoch), sprintf('responses->r%d',i),sprintf('epoch_opt->e%d',i)), ...
@@ -354,70 +354,7 @@ classdef plots
                 
                 
                 
-                %                 scatter(osi2,osi1,3,'filled','k')
-                %                 xlabel constriction
-                %                 ylabel dilation
-                %                 axis equal
-                %                 xlim([0 1.65])
-                %                 ylim([0 1.65])
-                %                 set(gca,'XTick',0:.5:1.5,'YTick',0:.5:1.5);
-                %                 set(refline(1),'Color',[.5 .5 .5])
-                %                 title OSI
-                %                 fig.cleanup
-                %                 fig.save('~/Google Drive/Pupil Paper/Figure3/pupilOSI.eps')
-                %                 p = signrank(osi2,osi1);
-                %                 fprintf('OSI increase due to dilation: %2.1f, p-value: %e\n', ...
-                %                     (median(osi1)/median(osi2)-1)*100,p)
-                
-                %             fig = Figure(1,'size',[50 40]);
-                %             hist((osi3-osi4)-(osi1-osi2),40)
-                %             xlabel 'difference in effects (running-dilation)'
-                %             fig.cleanup
-                %             fig.save('~/Google Drive/Pupil Paper/Figure3/OSI-effects.eps')
-                %
-                %             fig = Figure(1,'size',[50 40]);
-                %             scatter(osi4,osi3,3,'filled','k')
-                %             xlabel quiet
-                %             ylabel active
-                %             axis equal
-                %             xlim([0 1.65])
-                %             ylim([0 1.65])
-                %             set(gca,'XTick',0:.5:1.5,'YTick',0:.5:1.5);
-                %             set(refline(1),'Color',[.5 .5 .5])
-                %             title OSI
-                %             fig.cleanup
-                %             fig.save('~/Google Drive/Pupil Paper/Figure3/runningOSI.eps')
-                %             p = signrank(osi4,osi3);
-                %             fprintf('OSI increase due to running: %2.1f, p-value: %e\n', ...
-                %                 (median(osi3)/median(osi4)-1)*100, p)
-                %
-                %
-                %
-                %             fig = Figure(1,'size',[50 40]);
-                %             osis = {osi1 osi2 osi3 osi4};
-                %             avgOSI = cellfun(@median, osis);
-                %             bar(avgOSI)
-                %             hold on
-                %             [ci1,ci2] = cellfun(@(x) confInterval(x,0.95), osis);
-                %             errorbar(1:4,avgOSI,ci1-avgOSI,ci2-avgOSI, 'k', 'LineStyle', 'none')
-                %             hold off
-                %             colormap(gray/2+.5)
-                %             set(gca,'XTickLabel',{'  dilation','  constriction','  active','  quiet'})
-                %             rotateticklabel(gca,-30);
-                %             set(gca,'Position', [.25 .28 .70 .7], 'YTick', 0:.2:.6)
-                %             ylabel 'OSI'
-                %             ylim([0 .75])
-                %
-                %             fig.cleanup
-                %             fig.save('~/Google Drive/Pupil Paper/Figure3/meanOSI.eps')
-                %
-                
-                %                 function [ci1,ci2] = confInterval(x,thresh)
-                %                     m = arrayfun(@(i) median(x(randi(length(x),size(x)))), 1:10000);
-                %                     ci1 = quantile(m,(1-thresh)/2);
-                %                     ci2 = quantile(m,1-(1-thresh)/2);
-                %                 end
-                
+      
                 
                 function makePlot(angles, responses, color)
                     % avearge responses
@@ -455,7 +392,7 @@ classdef plots
                     xlim([-1 1]*180)
                     ylim([.15 .42])
                     xlabel 'Degrees from preferred direction    '
-                    ylabel 'Calcium signal'
+                    ylabel 'Activity (a.u.)'
                 end
                 
                 
