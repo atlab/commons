@@ -2,6 +2,35 @@ classdef plots
     
     methods(Static)
         
+        function intervals
+            k = 'animal_id in (2380,2381,2382,2660,2662,2470)';
+            dil = fetchn(pupil.Intervals & 'epoch_opt=6','duration');
+            con = fetchn(pupil.Intervals & 'epoch_opt=7','duration');
+            
+            bins = 0:0.1:3.2;
+            
+            dil = hist(dil,bins);
+            con = hist(con,bins);
+            dil = dil/sum(dil);
+            con = con/sum(con);
+            
+            
+            fig = Figure(1,'size',[40 40]);
+            h = plot(bins,[con;dil],'LineWidth',1);
+            set(h(1),'Color',[.8 0 0])
+            set(h(2),'Color',[0 .5 0])
+            set(gca,'YColor',[1 1 1]*0.99)
+            legend constriction dilation
+            legend boxoff
+            
+            xlabel 'phase duration (s)'
+            
+            fig.cleanup
+            fig.save('~/Desktop/pupilPhases')
+            
+            
+        end
+        
         function radius
             k = 'animal_id in (2380,2381,2382,2660,2662,2470)';
             s1 = pro(pupil.EpochTrialSet&pupil.EpochVonMisesSet, pupil.EpochTrial, 'epoch_opt->e1', '2*avg(radius)/1000->d1','count(*)->n1');
