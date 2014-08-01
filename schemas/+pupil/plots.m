@@ -3,31 +3,34 @@ classdef plots
     methods(Static)
         
         function intervals
-            k = 'animal_id in (2380,2381,2382,2660,2662,2470)';
-            dil = fetchn(pupil.Intervals & 'epoch_opt=6','duration');
-            con = fetchn(pupil.Intervals & 'epoch_opt=7','duration');
-            
-            bins = 0:0.1:3.2;
-            
-            dil = hist(dil,bins);
-            con = hist(con,bins);
-            dil = dil/sum(dil);
-            con = con/sum(con);
-            
-            
-            fig = Figure(1,'size',[40 40]);
-            h = plot(bins,[con;dil],'LineWidth',1);
-            set(h(1),'Color',[.8 0 0])
-            set(h(2),'Color',[0 .5 0])
+            fig = Figure(1,'size',[80 80]);
+            for d = [10 20 50 100 200]
+                r = sprintf('abs(diam_delta)<%g',d);
+                dil = fetchn(pupil.Phases & r & 'epoch_opt=6','duration');
+                con = fetchn(pupil.Phases & r & 'epoch_opt=7','duration');
+                
+                bins = 0:0.1:3.2;
+                
+                dil = hist(dil,bins);
+                con = hist(con,bins);
+                dil = dil/sum(dil);
+                con = con/sum(con);
+                
+                
+                h = plot(bins,[dil;con],'LineWidth',1);
+                set(h(1),'Color',[0 .5 0])
+                set(h(2),'Color',[.5 0 0])
+                hold on
+                
+            end
+            hold off
             set(gca,'YColor',[1 1 1]*0.99)
-            legend constriction dilation
+            legend dilation constriction 
             legend boxoff
-            
             xlabel 'phase duration (s)'
             
             fig.cleanup
-            fig.save('~/Desktop/pupilPhases')
-            
+            fig.save('~/Desktop/pupilPhases-dil.eps')
             
         end
         

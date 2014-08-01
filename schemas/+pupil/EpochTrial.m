@@ -38,7 +38,7 @@ classdef EpochTrial < dj.Relvar
             % interpolate over nans
             notnans = ~isnan(pupilRadius);
             pupilRadius = interp1(pupilTimes(notnans),pupilRadius(notnans), pupilTimes, 'linear', 'extrap');
-            saccadeSpeed  = interp1(pupilTimes(notnans),saccadeSpeed(notnans), pupilTimes, 'linear', 'extrap');
+            saccadeSpeed = interp1(pupilTimes(notnans),saccadeSpeed(notnans), pupilTimes, 'linear', 'extrap');
             
             % establish running epochs
             [runOn,runDur]=fetchn(patch.Running & key, 'run_on', 'run_dur');
@@ -79,7 +79,6 @@ classdef EpochTrial < dj.Relvar
                     runFrac = arrayfun(@(on,dur) fracOverlap(on, dur, runOn, runDur),...
                         trialOnsets, trialOffsets-trialOnsets);
                     select = select & runFrac == 0;
-                    
                     
                 otherwise
                     error 'invalid epoch condition'

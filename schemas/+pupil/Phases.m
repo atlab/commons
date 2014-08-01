@@ -1,12 +1,10 @@
 %{
-pupil.Intervals (computed) # pupil phase intervals
+pupil.Phases (computed) # my newest table
 -> patch.Eye
--> patch.Ball
 -> pupil.EpochOpt
 interval  : int   # interval id
 -----
 is_active   : tinyint   # has running or facing
-is_spont    : tinyint   # 1=spontaneous activity, 0=all activity
 diam_delta  : float     # change in pupil diameter
 on_idx      : smallint  # onset index in pupil frames
 off_idx     : smallint  # offset index in pupil frames
@@ -14,17 +12,19 @@ onset       : double    # (s) onset time
 duration    : float     # (s) duration
 %}
 
-classdef Intervals < dj.Relvar & dj.AutoPopulate
+classdef Phases < dj.Relvar & dj.AutoPopulate
     
     properties
-        popRel = patch.Eye*patch.Ball*pupil.EpochOpt ...
+        popRel = patch.Eye*pupil.EpochOpt & patch.EyeFrame ...
             & '`condition` in ("dilating","constricting")' ...
-            & patch.EyeFrame & patch.Running & patch.Facing
+            & ephys.Spontaneous ...
+            & (cells.UnlabeledS1 | cells.UnlabeledV1 | cells.SOM)
     end
     
     methods(Access=protected)
         
         function makeTuples(self, key)
+            
             opt = fetch(pupil.EpochOpt & key, '*');
             assert(ismember(opt.condition, {'dilating','constricting'}), ...
                 'only dilating and restricting epochs are allowed')
@@ -68,21 +68,11 @@ classdef Intervals < dj.Relvar & dj.AutoPopulate
                 any(overlaps(pupilTimes(on),pupilTimes(off),runOn, runOn+runDur)) | ...
                 any(overlaps(pupilTimes(on),pupilTimes(off),faceOn, faceOn+faceDur)), ...
                 onIdx, offIdx);
-            
-            % mark spontaneous periods
-            [eTime,vTime] = fetch1(patch.Ephys*patch.Sync & key, 'ephys_time','vis_time');
-            [trialOnsets, trialOffsets] = fetchn(reso.Trial & key, 'onset', 'offset');
-            trialOnsets = interp1(vTime,eTime,trialOnsets,'linear','extrap');
-            trialOffsets = interp1(vTime,eTime,trialOffsets,'linear','extrap');
-            isSpont = ~arrayfun(@(on,off) ...
-                any(overlaps(on,off,trialOnsets-2,trialOffsets+2)), ...
-                onIdx, offIdx);
-            
+                        
             for i=1:length(onIdx)
                 tuple = key;
                 tuple.interval = i;
                 tuple.is_active = isActive(i);
-                tuple.is_spont = isSpont(i);
                 tuple.diam_delta = diamDelta(i);
                 tuple.on_idx = onIdx(i);
                 tuple.off_idx = offIdx(i);
@@ -104,7 +94,6 @@ yes = (onArray-on).*(offArray-on)<=0 ...
     | (onArray-on).*(onArray-off)<=0 ...
     | (offArray-on).*(offArray-off)<=0;
 end
-
 
 
 
