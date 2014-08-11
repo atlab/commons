@@ -50,7 +50,7 @@ classdef Motion3D < dj.Relvar & dj.AutoPopulate
                 fetch1(reso.ScanInfo*reso.Align & key, ...
                 'px_width', 'um_width', 'px_height', 'um_height', 'nframes');
             pixelPitch = (umWidth+umHeight)/(pxWidth + pxHeight);
-            reader = getReader(reso.Align & key);
+            reader = reso.getReader(key);
             [fillFraction, rasterPhase] = fetch1(reso.Align & key, 'fill_fraction', 'raster_phase');
             blockSize = 500;
             assert(reader.nSlices==1)

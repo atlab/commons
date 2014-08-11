@@ -20,7 +20,7 @@ classdef Sync < dj.Relvar & dj.AutoPopulate
         
         function makeTuples(self, key)
             % borrow synchronization from matching patch.Session
-            key = fetch(pro(reso.Align & key,'(scan_idx)->file_num')*patch.Sync);
+            key = fetch(pro(reso.Align & key,'(scan_idx)->file_num','(tp_session)->session')*patch.Sync);
             assert(numel(key)==1)
             
             % find frame pulses
