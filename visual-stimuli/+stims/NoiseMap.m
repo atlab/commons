@@ -12,7 +12,7 @@ classdef NoiseMap < stims.core.Visual
             'spatial_freq_half', 0.05,  ... (cy/deg) spatial frequency modulated to 50
             'spatial_freq_stop',0.2,    ... (cy/deg), spatial lowpass cutoff
             'temp_bandwidth',4,         ... (s) temporal decay
-            'contrast_mod_freq', 0.1, ... (Hz) raised cosine contrast modulation
+            'contrast_mod_freq', 0.1,   ... (Hz) raised cosine contrast modulation
             'frame_downsample', 2,      ... 1=60 fps, 2=30 fps, 3=20 fps, 4=15 fps, etc
             'duration', 10              ... (s) trial duration
             )
