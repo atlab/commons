@@ -2,17 +2,6 @@ classdef NoiseMap < stims.core.Visual
     
     properties
         nBlocks = 1
-        logger = stims.core.Logger(psy.Session, psy.Condition, psy.Trial, psy.NoiseMap)
-        
-        % stimulus settings
-        constants = struct(...
-            'stimulus', 'noise map', ...
-            'monitor_distance', nan, ...  (cm)
-            'monitor_size', 19, ...       (inches) diagonal
-            'monitor_aspect', 1.25, ...
-            'resolution_x', 1280, ...     (pixels)
-            'resolution_y', 1024 ...      (pixels)
-            )
         
         params = struct(...
             'rng_seed',    1:80,        ... RNG seed
@@ -105,7 +94,7 @@ classdef NoiseMap < stims.core.Visual
             %   fps   - frames per second
             
             % create gaussian movie
-            r = RandStream.create('mt19937ar','RandnAlg', 'Ziggurat', 'Seed', cond.rng_seed);
+            r = RandStream.create('mt19937ar','NormalTransform', 'Ziggurat', 'Seed', cond.rng_seed);
             nFrames = round(cond.duration*fps/2)*2;
             sz = [cond.tex_ydim, cond.tex_xdim, nFrames];
             assert(~any(bitand(sz,1)), 'all movie dimensions must be even')
@@ -130,7 +119,7 @@ classdef NoiseMap < stims.core.Visual
             m = ifftn(m);
             z = (0:sz(3)-1)/fps;
             z = cos(2*pi*z*cond.contrast_mod_freq);
-            z = 1./(1+exp(20*z));
+            z = 1./(1+exp(1*z));
             z = reshape(z, 1, 1, []);
             m = bsxfun(@times, m, z);
             
