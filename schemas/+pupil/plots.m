@@ -177,8 +177,8 @@ classdef plots
         end
         
         function binnedCorr
-            helper(8,9,false,.5,.2,'noise_corr','Noise corr','~/Google Drive/Pupil Paper/Figure3/binned_noise_corrs-with-saccades-noblanks.eps')
-            helper(6,7,false,.5,.1,'noise_corr','Noise corr','~/Google Drive/Pupil Paper/Figure3/binned_noise_corrs-sans-saccades-noblanks.eps')
+            helper(8,9,false,.57,.2,'noise_corr','Noise corr','~/Google Drive/Pupil Paper/Figure3/binned_noise_corrs-with-saccades-noblanks.eps')
+            helper(6,7,false,.57,.1,'noise_corr','Noise corr','~/Google Drive/Pupil Paper/Figure3/binned_noise_corrs-sans-saccades-noblanks.eps')
             
             helper(8,9,false,.7,.3,'sig_corr','Signal corr','~/Google Drive/Pupil Paper/Figure3/binned_sig_corrs-with-saccades-noblanks.eps')
             helper(6,7,false,.7,.3,'sig_corr','Signal corr','~/Google Drive/Pupil Paper/Figure3/binned_sig_corrs-sans-saccades-noblanks.eps')
@@ -188,7 +188,9 @@ classdef plots
                 
                 r = pupil.BinnedNoiseCorr & struct('include_blanks',includeBlanks) & sprintf('%s is not null',attr) & 'animal_id in (2380,2381,2382,2660,2662,2470)';
                 c1 = [];  c2 = [];
-                for key = fetch(reso.Sync & (r & struct('epoch_opt',epoch1)) & (r & struct('epoch_opt',epoch2)))'
+                keys = fetch(reso.Sync & (r & struct('epoch_opt',epoch1)) & (r & struct('epoch_opt',epoch2)))';
+                pp = nan;  % i need this variable
+                for key = keys
                     tunedIdx = find(fetchn(pupil.EpochVonMises & key & 'epoch_opt=1','(von_amp1>0.1 && von_p<0.01)->p','ORDER BY trace_id'));
                     disp(key)
                     [c,epoch] = fetchn(pupil.BinnedNoiseCorr & key & struct('include_blanks',includeBlanks) & struct('epoch_opt',{epoch1,epoch2}),...
@@ -209,7 +211,7 @@ classdef plots
                 title(titl)
                 axis image
                 axis([0 uplim 0 uplim])
-                set(refline(1,0),'Color',[1 1 1]*.5)
+                set(refline(1,0),'Color',[1 1 1]*.55)
                 fig.cleanup
                 fig.save(filename)
             end
