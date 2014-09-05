@@ -107,6 +107,8 @@ if m.modify_box == 0
     end
     str=[str ') # Mouse Line Abbreviation'];
     alterAttribute(mice.Lines.table,'line',str);
+    alterAttribute(mice.Genotypes.table,'line',str);
+    alterAttribute(mice.Founders.table,'line',str);
     makeTuples(mice.Lines,lineStruct);
     s = [' ' s];
     str = ['line1=null : enum(''' s{1} ''''];
