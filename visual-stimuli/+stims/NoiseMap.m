@@ -119,7 +119,8 @@ classdef NoiseMap < stims.core.Visual
             m = ifftn(m);
             z = (0:sz(3)-1)/fps;
             z = cos(2*pi*z*cond.contrast_mod_freq);
-            z = 1./(1+exp(1*z));
+            z = 1./(1+exp(5*z));
+            %z = 0.5-z/2;
             z = reshape(z, 1, 1, []);
             m = bsxfun(@times, m, z);
             
