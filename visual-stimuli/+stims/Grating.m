@@ -16,7 +16,8 @@ classdef Grating < stims.core.Visual
             'direction', 0:22.5:359, ... (degrees) 0=north, 90=east
             'phase2_fraction', 0,  ... between 0 and 1
             'phase2_temp_freq', 2, ...
-            'second_photodiode', 0 ... 1=paint white photodiode patch, -1=black, 0=none
+            'second_photodiode', 0, ... 1=paint white photodiode patch, -1=black, 0=none
+            'second_photodiode_time', 0 ... time delay of the second photodiode relative to the onset of the stimulus, in s 
         )
     end
     
@@ -58,7 +59,12 @@ classdef Grating < stims.core.Visual
                 'phase2_fraction'
                 'phase2_temp_freq'
                 'second_photodiode'
+                'second_photodiode_time'
                 }, fieldnames(cond))))
+            
+            % second_photodiode_time should be zero when second_photodiode is zero
+            assert(cond.second_photodiode || ~cond.second_photodiode_time)
+            assert(cond.second_photodiode_time<cond.trial_duration)
             
             % initialized grating
             if isempty(self.grating)
@@ -106,8 +112,12 @@ classdef Grating < stims.core.Visual
                 if cond.second_photodiode
                     rectSize = [0.05 0.06].*self.rect(3:4);  
                     rect = [self.rect(3)-rectSize(1), 0, self.rect(3), rectSize(2)];
-                    color = (cond.second_photodiode+1)/2*255;
-                    Screen('FillRect', self.win, color, rect);
+                    if frame/self.screen.fps >= cond.second_photodiode_time
+                        color = (cond.second_photodiode+1)/2*255;
+                        Screen('FillRect', self.win, color, rect);
+                    else
+                        Screen('FillRect', self.win, 0, rect);
+                    end
                 end
                 phase = phase + phaseIncrement1;
                 self.flip(false, false, frame==1)
