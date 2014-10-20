@@ -95,9 +95,6 @@ end
 fields = {'modify_box','nstring'};
 lineStruct = rmfield(m,fields);
 
-temp = dj.set('suppressPrompt',false);
-
-
 if m.modify_box == 0
     s = getEnumValues(mice.Lines.table,'line');
     s = [s m.line];
@@ -106,6 +103,8 @@ if m.modify_box == 0
         str = [str ', ''' s{i} ''''];
     end
     str=[str ') # Mouse Line Abbreviation'];
+    v = dj.set('suppressPrompt');
+    dj.set('suppressPrompt',true);
     alterAttribute(mice.Lines.table,'line',str);
     alterAttribute(mice.Genotypes.table,'line',str);
     alterAttribute(mice.Founders.table,'line',str);
@@ -129,9 +128,9 @@ if m.modify_box == 0
     end
     str = [str ') # Mouse Line 3 Abbreviation'];
     alterAttribute(mice.Requests.table,'line3',str);
+    dj.set('suppressPrompt',v);
 end
 schema.conn.commitTransaction
-dj.set('suppressPrompt',temp);
 set(h.line,'string','');
 set(h.line_full,'string','');
 set(h.rec_strain,'string','');
