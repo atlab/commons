@@ -4,9 +4,9 @@ mc.Distances (computed) # compute distances betwee cell pairs
 
 -----
 
-vert_dist       : float         # vertical distance between cell 1 and cell 2
-tang_dist       : float         # tangential distance between cell 1 and cell 2
-euc_dist        : float         # Euclidian distance between cell 1 and cell 2 
+vert_dist=NULL       : float         # vertical distance between cell 1 and cell 2
+tang_dist=NULL       : float         # tangential distance between cell 1 and cell 2
+euc_dist=NULL        : float         # Euclidian distance between cell 1 and cell 2 
 
 %}
 
