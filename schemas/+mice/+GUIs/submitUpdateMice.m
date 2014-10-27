@@ -138,8 +138,12 @@ if isempty(errorString)
     schema = mice.getSchema;
     schema.conn.startTransaction
     for i = 1:size(m.table,1)
-        update(mice.Mice & ['animal_id=' m.table{i,1}],'dob',m.table{i,2})
-        update(mice.Mice & ['animal_id=' m.table{i,1}],'dow',m.table{i,3})
+        if ~isempty(m.table{i,2})
+            update(mice.Mice & ['animal_id=' m.table{i,1}],'dob',m.table{i,2})
+        end
+        if ~isempty(m.table{i,3})
+            update(mice.Mice & ['animal_id=' m.table{i,1}],'dow',m.table{i,3})
+        end
         update(mice.Mice & ['animal_id=' m.table{i,1}],'sex',m.table{i,4})
         update(mice.Mice & ['animal_id=' m.table{i,1}],'color',m.table{i,5})
         update(mice.Mice & ['animal_id=' m.table{i,1}],'ear_punch',m.table{i,6})
