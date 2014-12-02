@@ -85,6 +85,25 @@ if length(m.parent3) > 20
     errorString{errorCount} = 'Mother 2 ID must be less than 20 characters.';
 end
 
+% Parent id's cannot be repeated
+
+p = {};
+
+if ~isempty(m.parent1)
+    p = [p m.parent1];
+end
+if ~isempty(m.parent2)
+    p = [p m.parent2];
+end
+if ~isempty(m.parent3)
+    p = [p m.parent3];
+end
+
+if length(p) ~= length(unique(p))
+    errorCount = errorCount + 1;
+    errorString{errorCount} = 'Same parent is entered twice.';
+end
+    
 % dob and dow must be dates
 
 formatOut = 'yyyy-mm-dd';
@@ -146,17 +165,17 @@ if (strcmp(m.line1,'C57Bl/6') || strcmp(m.line1,'Fvb')) && ~strcmp(m.genotype1, 
     errorString{errorCount} = 'Lines C57Bl/6 and Fvb should only be used to designate pure wild type mice.';
 end
 
-if (strcmp(m.line1, 'C57Bl/6') || strcmp(m.line1,'Fvb')) && (~isempty(m.line2) | ~isempty(m.line3))
+if (strcmp(m.line1, 'C57Bl/6') || strcmp(m.line1,'Fvb')) && (~isempty(m.line2) || ~isempty(m.line3))
     errorCount = errorCount + 1;
     errorString{errorCount} = 'Lines C57Bl/6 and Fvb should only be used to designate pure wild type mice.';
 end
 
-if (strcmp(m.line2, 'C57Bl/6') || strcmp(m.line2,'Fvb')) && (~isempty(m.line1) | ~isempty(m.line3))
+if (strcmp(m.line2, 'C57Bl/6') || strcmp(m.line2,'Fvb')) && (~isempty(m.line1) || ~isempty(m.line3))
     errorCount = errorCount + 1;
     errorString{errorCount} = 'Lines C57Bl/6 and Fvb should only be used to designate pure wild type mice.';
 end
 
-if (strcmp(m.line3, 'C57Bl/6') || strcmp(m.line3,'Fvb')) && (~isempty(m.line1) | ~isempty(m.line2))
+if (strcmp(m.line3, 'C57Bl/6') || strcmp(m.line3,'Fvb')) && (~isempty(m.line1) || ~isempty(m.line2))
     errorCount = errorCount + 1;
     errorString{errorCount} = 'Lines C57Bl/6 and Fvb should only be used to designate pure wild type mice.';
 end
