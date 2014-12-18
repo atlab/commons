@@ -19,10 +19,27 @@ slice_pitch                 : float                         # (um) distance betw
 
 classdef ScanInfo < dj.Relvar & dj.AutoPopulate
     
-    properties(Constant)
-        table = dj.Table('reso.ScanInfo')
+    properties
         popRel = common.TpScan * common.TpSession & 'tp_session_date > "2013-09"'
     end
+    
+    methods
+        function copySource(self, destFolder)
+            for key = self.fetch'
+                reader = reso.getReader(key);
+                src = fullfile(getLocalPath(reader.path),[reader.base '*']);
+                % create directory
+                [~,dname] =  fileparts(reader.path);
+                dname = fullfile(destFolder,dname);
+                if ~exist(dname,'dir')
+                    mkdir(dname)
+                end
+                copyfile(src,dname)
+            end
+        end
+    end
+    
+    
     
     methods(Access=protected)
         

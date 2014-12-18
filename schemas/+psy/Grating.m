@@ -1,6 +1,5 @@
 %{
-psy.Grating (manual) # Populated by the stim program
-
+psy.Grating (manual) # Populated by the stim program$
 -> psy.Condition
 ---
 direction                   : decimal(4,1)                  # 0-360 degrees
@@ -18,6 +17,10 @@ trial_duration              : float                         # s, does not includ
 phase2_fraction=0           : float                         # fraction of trial spent in phase 2
 phase2_temp_freq=0          : float                         # (Hz)
 second_photodiode=0         : tinyint                       # 1=paint a photodiode patch in the upper right corner
+second_photodiode_time=0.0  : decimal(4,1)                  # time delay of the second photodiode relative to the stimulus onset
+INDEX(direction)
+INDEX(spatial_freq)
+INDEX(temp_freq)
 %}
 
 
