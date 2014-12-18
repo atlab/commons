@@ -7,7 +7,7 @@ classdef NaturalMovie < stims.core.Visual
             'type',    'nat',        ... natural or phase scrambled
             'luminance',   5,           ... cd/m^2
             'contrast',    0.95,        ... Michelson's 0-1
-            'movie_path', '/Volumes/lab/users/Shan/', ...file path for the movies
+            'movie_path', '~/Desktop/', ...file path for the movies
             'movie_number',   7,           ... (int) the number of movie
             'aperture_radius', 0.63, ...  % in units of half-diagonal, 0=no aperture
             'aperture_x', 0, ... % 0=center, in units of half-diagonal
@@ -73,7 +73,7 @@ classdef NaturalMovie < stims.core.Visual
                 self.flip(false, false, true)
                 WaitSecs(cond.pre_blank);
             end
-            self.screen.setContrast(cond.luminance, cond.contrast)
+%             self.screen.setContrast(cond.luminance, cond.contrast)
             self.frameStep = cond.frame_downsample;
             self.saveAfterEachTrial = true;
             for i=1:size(cond.movie,3)

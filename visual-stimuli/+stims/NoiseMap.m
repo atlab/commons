@@ -4,17 +4,19 @@ classdef NoiseMap < stims.core.Visual
         nBlocks = 1
         
         params = struct(...
-            'rng_seed',    1:80,        ... RNG seed
-            'luminance',   5,           ... cd/m^2
+            'rng_seed',    1:150,         ... RNG seed
+            'luminance',   10,           ... cd/m^2
             'contrast',    0.95,        ... Michelson's 0-1
-            'tex_ydim',    64,          ... (pixels) texture dimension
-            'tex_xdim',    80,          ... (pixels) texture dimension
+            'tex_ydim',    150,          ... (pixels) texture dimension
+            'tex_xdim',    256,          ... (pixels) texture dimension
             'spatial_freq_half', 0.05,  ... (cy/deg) spatial frequency modulated to 50
             'spatial_freq_stop',0.2,    ... (cy/deg), spatial lowpass cutoff
-            'temp_bandwidth',4,         ... (s) temporal decay
-            'contrast_mod_freq', 0.1,   ... (Hz) raised cosine contrast modulation
-            'frame_downsample', 2,      ... 1=60 fps, 2=30 fps, 3=20 fps, 4=15 fps, etc
-            'duration', 10              ... (s) trial duration
+            'temp_bandwidth',12,        ... (Hz) temporal bandwidth
+            'contrast_mod_freq', 1/6, ... (Hz) raised cosine contrast modulation
+            'contrast_slope', 5,        ... onset slope
+            'modulation_shift', 0.2,      ... shift of the signamoid argument (cosine value)
+            'frame_downsample', 1,      ... 1=60 fps, 2=30 fps, 3=20 fps, 4=15 fps, etc
+            'duration', 6              ... (s) trial duration
             )
     end
     
@@ -117,10 +119,10 @@ classdef NoiseMap < stims.core.Visual
             
             % apply temporal modulation
             m = ifftn(m);
-            z = (0:sz(3)-1)/fps;
+            z = (-(sz(3)-1)/2:(sz(3)-1)/2)/fps;
             z = cos(2*pi*z*cond.contrast_mod_freq);
-            z = 1./(1+exp(5*z));
-            %z = 0.5-z/2;
+            z = 1./(1+exp(-cond.contrast_slope*(z+cond.modulation_shift)));
+            %z = z/2+.5;
             z = reshape(z, 1, 1, []);
             m = bsxfun(@times, m, z);
             
