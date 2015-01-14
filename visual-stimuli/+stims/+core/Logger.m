@@ -38,7 +38,7 @@ classdef Logger < handle
                 idname = setdiff(self.sessionTable.primaryKey, fieldnames(parentKey));
                 assert(length(idname)==1, 'invalid key')
                 idname = idname{1};
-                nextId = max(fetchn(self.sessionTable & parentKey, idname))+1;  %autoincrement
+                nextId = fetch1(self.sessionTable & parentKey, sprintf('max(%s)->m', idname))+1;  %autoincrement
                 if isempty(nextId)
                     nextId = 1;
                 end
@@ -58,7 +58,7 @@ classdef Logger < handle
         
         
         function lastFlip = getLastFlip(self)
-            lastFlip = max(fetchn(self.trialTable & self.parentKey, 'last_flip_count'));  % flip counts are unique per animal
+            lastFlip = fetch1(self.trialTable & self.parentKey, 'max(last_flip_count)->m');  % flip counts are unique per animal
             if isempty(lastFlip)
                 lastFlip = 0;
             end
@@ -66,7 +66,7 @@ classdef Logger < handle
         
         
         function conditions = logConditions(self, conditions)
-            lastCond = max(fetchn(self.condTable & self.sessionKey, 'cond_idx'));
+            lastCond = fetch1(self.condTable & self.sessionKey, 'max(cond_idx)->m');
             if isempty(lastCond)
                 lastCond = 0;
             end
