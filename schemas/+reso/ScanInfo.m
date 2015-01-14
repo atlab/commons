@@ -15,6 +15,7 @@ dwell_time                  : float                         # (us) microseconds 
 nchannels                   : tinyint                       # number of recorded channels
 nslices                     : tinyint                       # number of slices
 slice_pitch                 : float                         # (um) distance between slices
+nframe_avg                  : smallint                      # number of averaged frames
 %}
 
 classdef ScanInfo < dj.Relvar & dj.AutoPopulate
@@ -46,7 +47,8 @@ classdef ScanInfo < dj.Relvar & dj.AutoPopulate
         function makeTuples(self, key)
             reader = reso.getReader(key);
             
-            assert(reader.hdr.acqNumAveragedFrames == 1, 'averaging should be off')
+            %assert(reader.hdr.acqNumAveragedFrames == 1, 'averaging should be off')
+            key.nframe_avg = reader.hdr.acqNumAveragedFrames;
             assert(strcmp(reader.hdr.fastZImageType,'XY-Z'),'we assume XY-Z scanning')
             
             key.nframes_requested = ...
