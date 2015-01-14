@@ -15,21 +15,40 @@ dwell_time                  : float                         # (us) microseconds 
 nchannels                   : tinyint                       # number of recorded channels
 nslices                     : tinyint                       # number of slices
 slice_pitch                 : float                         # (um) distance between slices
+nframe_avg                  : smallint                      # number of averaged frames
 %}
 
 classdef ScanInfo < dj.Relvar & dj.AutoPopulate
     
-    properties(Constant)
-        table = dj.Table('reso.ScanInfo')
+    properties
         popRel = common.TpScan * common.TpSession & 'tp_session_date > "2013-09"'
     end
+    
+    methods
+        function copySource(self, destFolder)
+            for key = self.fetch'
+                reader = reso.getReader(key);
+                src = fullfile(getLocalPath(reader.path),[reader.base '*']);
+                % create directory
+                [~,dname] =  fileparts(reader.path);
+                dname = fullfile(destFolder,dname);
+                if ~exist(dname,'dir')
+                    mkdir(dname)
+                end
+                copyfile(src,dname)
+            end
+        end
+    end
+    
+    
     
     methods(Access=protected)
         
         function makeTuples(self, key)
             reader = reso.getReader(key);
             
-            assert(reader.hdr.acqNumAveragedFrames == 1, 'averaging should be off')
+            %assert(reader.hdr.acqNumAveragedFrames == 1, 'averaging should be off')
+            key.nframe_avg = reader.hdr.acqNumAveragedFrames;
             assert(strcmp(reader.hdr.fastZImageType,'XY-Z'),'we assume XY-Z scanning')
             
             key.nframes_requested = ...
