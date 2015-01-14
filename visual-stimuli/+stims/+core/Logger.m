@@ -38,7 +38,7 @@ classdef Logger < handle
                 idname = setdiff(self.sessionTable.primaryKey, fieldnames(parentKey));
                 assert(length(idname)==1, 'invalid key')
                 idname = idname{1};
-                nextId = fetch1(self.sessionTable & parentKey, sprintf('max(%s)->m', idname))+1;  %autoincrement
+                nextId = max(fetchn(self.sessionTable & parentKey, idname))+1;  %autoincrement
                 if isempty(nextId)
                     nextId = 1;
                 end
@@ -58,7 +58,8 @@ classdef Logger < handle
         
         
         function lastFlip = getLastFlip(self)
-            lastFlip = fetch1(self.trialTable & self.parentKey, 'max(last_flip_count)->m');  % flip counts are unique per animal
+            % flip counts are unique per animal
+            lastFlip = max(fetchn(self.trialTable & self.parentKey, 'last_flip_count'));
             if isempty(lastFlip)
                 lastFlip = 0;
             end
@@ -66,7 +67,7 @@ classdef Logger < handle
         
         
         function conditions = logConditions(self, conditions)
-            lastCond = fetch1(self.condTable & self.sessionKey, 'max(cond_idx)->m');
+            lastCond = max(fetchn(self.condTable & self.sessionKey, 'cond_idx'));
             if isempty(lastCond)
                 lastCond = 0;
             end
@@ -77,7 +78,8 @@ classdef Logger < handle
                 tuple = self.sessionKey;
                 tuple.cond_idx = condIdx;
                 self.condTable.insert(tuple);
-                self.paramTable.insert(dj.struct.join(tuple, conditions(iCond)))
+                attrs = [self.paramTable.primaryKey self.paramTable.nonKeyFields];
+                self.paramTable.insert(dj.struct.join(tuple, dj.struct.pro(conditions(iCond), attrs{:})))
             end
         end
         

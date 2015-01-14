@@ -4,7 +4,7 @@ classdef Visual < handle
     % trial conditions and calls the showTrial method for each trial.
     % The object optionally logs the data into datajoint tables.
     
-    % -- Dimitri Yatsenko, 2012
+    % -- Dimitri Yatsenko, 2012-2015
     
     properties(Constant)
         DEBUG = false
@@ -39,7 +39,7 @@ classdef Visual < handle
     
     methods(Access = protected)
         
-        function cacheConditions(self) %#ok<MANU>
+        function prepare(self) %#ok<MANU>
             % override this function to do extra work before logging conditions. 
             % For example this could compute a lookup table that the
             % condition table will then reference.
@@ -73,7 +73,7 @@ classdef Visual < handle
                 self.logger = logger;
                 self.constants = constants;
                 self.conditions = makeFactorialConditions(self.params);
-                self.cacheConditions()
+                self.prepare()
                 self.conditions = self.logger.logConditions(self.conditions);
             end
         end

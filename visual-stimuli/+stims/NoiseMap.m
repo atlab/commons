@@ -26,35 +26,29 @@ classdef NoiseMap < stims.core.Visual
             % assume isometric pixels
             d = 180/pi*self.constants.monitor_size*2.54/norm(self.rect(3:4))/self.constants.monitor_distance;
         end
-        
-        
-        function init(self, varargin)
-            init@stims.core.Visual(self, varargin{:});
-            if ~isfield(self.conditions, 'movie')
-                % pre-compute movies
-                disp 'making movies'
-                
-                movies = cell(size(self.conditions));
-                for iCond=1:length(self.conditions)
-                    fprintf .
-                    cond = self.conditions(iCond);
-                    if ~self.DEBUG
-                        assert(cond.tex_xdim/self.rect(3)==cond.tex_ydim/self.rect(4), ...
-                            'noise texture aspect ratio must match the monitor aspect ratio')
-                    end
-                    movies{iCond} = ...
-                        stims.NoiseMap.makeMovie(cond, self.degPerPix*self.rect(3:4), self.screen.fps/cond.frame_downsample);
-                end
-                fprintf \n
-                [self.conditions(:).movie] = deal(movies{:});
-            end
-        end
     end
     
     methods(Access=protected)
         
-        function cacheConditions(self)
-            psy
+        function prepare(self)
+            if ~isfield(self.conditions, 'movie')
+                % pre-compute movies
+                disp 'making movies'
+                newConditions = [];
+                for iCond=1:length(self.conditions)
+                    fprintf .
+                    cond = self.conditions(iCond);
+                    lookup = psy.NoiseMapLookup;
+                    [movie, key] = ...
+                        lookup.lookup(cond, self.degPerPix*self.rect(3:4), ...
+                        self.screen.fps/cond.frame_downsample);
+                    cond = dj.struct.join(self.conditions(iCond), key);
+                    cond.movie = movie;
+                    newConditions = [newConditions; cond]; %#ok<AGROW>
+                end
+                fprintf \n
+                self.conditions = newConditions;
+            end
         end
         
         function showTrial(self, cond)

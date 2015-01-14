@@ -335,19 +335,19 @@ noiseMap = struct(...
     'blocks', 1, ... % 100 for imaging @38000 frames
     'stim', {{    
     setParams(stims.NoiseMap, ...
-    'rng_seed',    1:5,         ... RNG seed 1:150
+    'rng_seed',    1:20,         ... RNG seed 1:150
     'luminance',   10,           ... cd/m^2
     'contrast',    0.95,        ... Michelson's 0-1
-    'tex_ydim',    150,          ... (pixels) texture dimension
-    'tex_xdim',    256,          ... (pixels) texture dimension
+    'tex_ydim',    76,          ... (pixels) texture dimension
+    'tex_xdim',    128,          ... (pixels) texture dimension
     'spatial_freq_half', 0.05,  ... (cy/deg) spatial frequency modulated to 50
     'spatial_freq_stop',0.2,    ... (cy/deg), spatial lowpass cutoff
-    'temp_bandwidth',12,        ... (Hz) temporal bandwidth
-    'contrast_mod_freq', 1/6, ... (Hz) raised cosine contrast modulation
+    'temp_bandwidth',20,        ... (Hz) temporal bandwidth
+    'contrast_mod_freq', 1/500, ... (Hz) raised cosine contrast modulation
     'contrast_slope', 5,        ... onset slope
     'modulation_shift', 0.2,      ... shift of the signamoid argument (cosine value)
-    'frame_downsample', 2,      ... 1=60 fps, 2=30 fps, 3=20 fps, 4=15 fps, etc
-    'duration', 6              ... (s) trial duration
+    'frame_downsample', 1,      ... 1=60 fps, 2=30 fps, 3=20 fps, 4=15 fps, etc
+    'duration', 45              ... (s) trial duration
     )              ... (s) trial duration
     }});
 
