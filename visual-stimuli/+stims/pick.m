@@ -332,10 +332,10 @@ noiseMap = struct(...
     'resolution_x', 1024, ...   (pixels)
     'resolution_y',  600 ...    (pixels)
     ), ...
-    'blocks', 6, ... % 100 for imaging @38000 frames
+    'blocks', 1, ... % 100 for imaging @38000 frames
     'stim', {{    
     setParams(stims.NoiseMap, ...
-    'rng_seed',    1:25,         ... RNG seed
+    'rng_seed',    1:5,         ... RNG seed 1:150
     'luminance',   10,           ... cd/m^2
     'contrast',    0.95,        ... Michelson's 0-1
     'tex_ydim',    150,          ... (pixels) texture dimension
