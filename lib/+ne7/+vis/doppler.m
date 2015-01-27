@@ -14,5 +14,5 @@ function g = doppler(m)
 if nargin < 1, m = size(get(gcf,'colormap'),1); end
 m  = floor(m/2)-1;
 ix = [-m:-1 0 0 1:m]'/m;
-g  = [1-max(0,ix) 1-max(0,-ix) 1-max(0,ix)];
+g  = [1-max(0,-ix) 1-max(ix,-ix) 1-max(0,ix)];
 end
