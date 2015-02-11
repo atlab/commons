@@ -5,7 +5,7 @@ classdef VonMises2 < handle
     
     properties(SetAccess = private)
         w  % nx5 matrix of coefs in equation
-        %  w1 + w2 * exp(c-1) + w3 * exp(-c-1)    with  c = w4 * cos(phi - w5)
+        %  w1 + w2 * exp(w4*(c-1)) + w3 * exp(w4*(-c-1))    with  c = cos(phi - w5)
         %  where  w1 >= w2 >= 0
         phi
         nDirs
