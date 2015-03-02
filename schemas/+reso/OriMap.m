@@ -40,8 +40,8 @@ classdef OriMap < dj.Relvar & dj.AutoPopulate
                     sz = size(block);
                     xy = xymotion(:,:,1:sz(4));
                     xymotion(:,:,1:size(block,4)) = [];
-                    block = reso.Align.correctRaster(block,rasterPhase,fillFraction);
-                    block = reso.Align.correctMotion(block, xy);
+                    block = ne7.ip.correctRaster(block,rasterPhase,fillFraction);
+                    block = ne7.ip.correctMotion(block, xy);
                     X(lastPos+(1:sz(4)),:) = reshape(block,[],sz(4))';
                     lastPos = lastPos + sz(4);
                     fprintf('frame %4d\n',lastPos);
@@ -67,6 +67,7 @@ classdef OriMap < dj.Relvar & dj.AutoPopulate
                     X_ = bsxfun(@rdivide, X_, mean(X_))-1;  %use dF/F
                     if opt.highpass_cutoff>0
                         k = hamming(round(fps/opt.highpass_cutoff)*2+1);
+                        k = k/sum(k);
                         X_ = X_ - ne7.dsp.convmirr(X_,k);
                     end
                     fprintf .
