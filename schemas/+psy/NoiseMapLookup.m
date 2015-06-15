@@ -12,7 +12,7 @@ classdef NoiseMapLookup < dj.Relvar
     properties(Constant)
         table = dj.Table('psy.NoiseMapLookup')
     end
-        
+    
     methods
         function [m, key] = lookup(self, cond, degxy, fps)
             % make noise stimulus movie  and update condition
@@ -67,7 +67,7 @@ classdef NoiseMapLookup < dj.Relvar
                 m = uint8((m+1)/2*254);
                 
                 tuple = key;
-                tuple.noise_map_params = params;                
+                tuple.noise_map_params = params;
                 tuple.cached_movie = m;
                 
                 self.insert(tuple)
