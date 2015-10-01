@@ -58,7 +58,8 @@ classdef Logger < handle
         
         
         function lastFlip = getLastFlip(self)
-            lastFlip = max(fetchn(self.trialTable & self.parentKey, 'last_flip_count'));  % flip counts are unique per animal
+            % flip counts are unique per animal
+            lastFlip = max(fetchn(self.trialTable & self.parentKey, 'last_flip_count'));
             if isempty(lastFlip)
                 lastFlip = 0;
             end
@@ -77,7 +78,8 @@ classdef Logger < handle
                 tuple = self.sessionKey;
                 tuple.cond_idx = condIdx;
                 self.condTable.insert(tuple);
-                self.paramTable.insert(dj.struct.join(tuple, conditions(iCond)))
+                attrs = [self.paramTable.primaryKey self.paramTable.nonKeyFields];
+                self.paramTable.insert(dj.struct.join(tuple, dj.struct.pro(conditions(iCond), attrs{:})))
             end
         end
         

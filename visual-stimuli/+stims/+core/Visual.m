@@ -4,7 +4,7 @@ classdef Visual < handle
     % trial conditions and calls the showTrial method for each trial.
     % The object optionally logs the data into datajoint tables.
     
-    % -- Dimitri Yatsenko, 2012
+    % -- Dimitri Yatsenko, 2012-2015
     
     properties(Constant)
         DEBUG = false
@@ -37,6 +37,22 @@ classdef Visual < handle
         showTrial(self, args)  % implement a trial block in the subclass
     end
     
+    methods(Access = protected)
+        
+        function prepare(self) %#ok<MANU>
+            % override this function to do extra work before logging conditions. 
+            % For example this could compute a lookup table that the
+            % condition table will then reference.
+            % This callback is called when self.conditions have been
+            % generated but not logged yet.
+            % Here, populate tables that psy.Condition (or similar) can
+            % refer to.
+            
+            % do nothing by default.
+        end
+        
+    end
+    
     methods
         
         function win = get.win(self)
@@ -57,6 +73,7 @@ classdef Visual < handle
                 self.logger = logger;
                 self.constants = constants;
                 self.conditions = makeFactorialConditions(self.params);
+                self.prepare()
                 self.conditions = self.logger.logConditions(self.conditions);
             end
         end

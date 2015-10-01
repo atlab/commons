@@ -5,7 +5,7 @@ classdef VonMises2 < handle
     
     properties(SetAccess = private)
         w  % nx5 matrix of coefs in equation
-        %  w1 + w2 * exp(c-1) + w3 * exp(-c-1)    with  c = w4 * cos(phi - w5)
+        %  w1 + w2 * exp(w4*(c-1)) + w3 * exp(w4*(-c-1))    with  c = cos(phi - w5)
         %  where  w1 >= w2 >= 0
         phi
         nDirs
@@ -56,17 +56,21 @@ classdef VonMises2 < handle
             % and it may contain NaNs
             [von,r2] = computeTuning(responses);
             
-            sz = size(responses);
-            responses = reshape(responses, sz(1),[]);
-            p = 0.5/nShuffles;
-            for i=1:nShuffles
-                if ~mod(i,250) || any(i==[1 nShuffles])
-                    fprintf('Shuffles [%4d/%4d]\n', i, nShuffles)
+            if isnan(r2)
+                r2 = 0;
+                p = 1;
+            else
+                sz = size(responses);
+                responses = reshape(responses, sz(1),[]);
+                p = 0.5/nShuffles;
+                for i=1:nShuffles
+                    if ~mod(i,250) || any(i==[1 nShuffles])
+                        fprintf('Shuffles [%4d/%4d]\n', i, nShuffles)
+                    end
+                    [~, r2_] = computeTuning(reshape(responses(:,randperm(end)),sz));
+                    p = p + (r2_>=r2)/(nShuffles+0.5);
                 end
-                [~, r2_] = computeTuning(reshape(responses(:,randperm(end)),sz));
-                p = p + (r2_>=r2)/nShuffles;
             end
-            
             function [von, r2] = computeTuning(x)
                 von = fit(ne7.rf.VonMises2, nanmean(x,3)');
                 y = bsxfun(@minus, x, von.compute);
