@@ -6,8 +6,9 @@ mc.Distances (computed) # compute distances betwee cell pairs
 
 vert_dist=NULL       : float         # vertical distance between cell 1 and cell 2
 tang_dist=NULL       : float         # tangential distance between cell 1 and cell 2
-euc_dist=NULL        : float         # Euclidian distance between cell 1 and cell 2 
-
+euc_dist=NULL        : float         # Euclidian distance between cell 1 and cell 2
+depth_pre=NULL        : float         # depth of presyanpatic neuron from pial surface
+depth_post=NULL        : float         # depth of postsyanpatic neuron from pial surface
 %}
 
 classdef Distances < dj.Relvar & dj.AutoPopulate
@@ -40,10 +41,16 @@ classdef Distances < dj.Relvar & dj.AutoPopulate
             y_dist =(abs(cell2_x*(par_b-cell1_y)+cell1_x*(cell2_y-par_b)))/(sqrt(cell2_x.^2 + (cell2_y-par_b).^2));
             x_dist =(abs((0-cell1_x)*(cell1_y-cell2_y)-(cell1_x-cell2_x)*(perp_b-cell1_y)))/(sqrt((0-cell1_x).^2 + (perp_b-cell1_y).^2));
             tang_dist = sqrt(x_dist.^2 + (cell1_z - cell2_z).^2);
+            depth_pre = abs((surface2_x-surface1_x)*(surface1_y-cell1_y) - (surface1_x-cell1_x)*(surface2_y-surface1_y))/...
+                sqrt((surface2_x-surface1_x)^2 + (surface2_y-surface1_y)^2);
+            depth_post = abs((surface2_x-surface1_x)*(surface1_y-cell2_y) - (surface1_x-cell2_x)*(surface2_y-surface1_y))/...
+                sqrt((surface2_x-surface1_x)^2 + (surface2_y-surface1_y)^2);
             tuple = key;
             tuple.vert_dist = y_dist;
             tuple.tang_dist = tang_dist;
             tuple.euc_dist = sqrt((tang_dist).^2 + y_dist.^2);
+            tuple.depth_pre = depth_pre;
+            tuple.depth_post = depth_post;
             self.insert(tuple)
         end
     end
