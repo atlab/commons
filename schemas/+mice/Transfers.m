@@ -4,8 +4,8 @@ mice.Transfers (manual) # completed transfers
 -> mice.Mice
 dot                 : date                       # date of transfer
 ---
-from_owner="none"   :enum('Jake','Manolis','Dimitri','Shan','Keith','Cathryn','Deumani','Matt','Megan','Other','Available','none') # previous owner
-to_owner="none"    :enum('Jake','Manolis','Dimitri','Shan','Keith','Cathryn','Deumani','Matt','Megan','Other','Available','none')   # new owner 
+from_owner="none"   :enum('Jake','Manolis','Dimitri','Shan','Keith','Cathryn','Deumani','Matt','Megan','Paul','Shuang','Other','Available','none') # previous owner
+to_owner="none"    :enum('Jake','Manolis','Dimitri','Shan','Keith','Cathryn','Deumani','Matt','Megan','Paul','Shuang','Other','Available','none')   # new owner 
 from_facility="unknown"  : enum('TMF','Taub','Other','unknown')           # animal's previous facility
 to_facility="unknown"  : enum('TMF','Taub','Other','unknown')           # animal's new facility
 from_room="unknown"      : enum('VD4','T014','T057','T086D','Other','unknown') # animal's previous room 
