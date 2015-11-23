@@ -1,5 +1,5 @@
 %{
-psy.MovingNoise (manual) # pink noise stimulus from Niell & Stryker
+psy.MovingNoise (manual) # pink noise with periods of motion and orientation
 
 -> psy.Condition
 ---

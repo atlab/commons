@@ -43,7 +43,7 @@ classdef MovingNoise < stims.core.Visual
                 for iCond=1:length(self.conditions)
                     fprintf .
                     cond = self.conditions(iCond);
-                    lookup = psy.NoiseMapLookup;
+                    lookup = psy.MovingNoiseLookup;
                     [movie, key] = ...
                         lookup.lookup(cond, self.degPerPix*self.rect(3:4), ...
                         self.screen.fps/cond.frame_downsample);
