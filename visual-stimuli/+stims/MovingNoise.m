@@ -4,19 +4,24 @@ classdef MovingNoise < stims.core.Visual
         nBlocks = 1
         
         params = struct(...
-            'rng_seed',    1:150,         ... RNG seed
+            'rng_seed',    1:60,         ... RNG seed 1:150
             'luminance',   10,           ... cd/m^2
             'contrast',    0.95,        ... Michelson's 0-1
             'tex_ydim',    150,          ... (pixels) texture dimension
             'tex_xdim',    256,          ... (pixels) texture dimension
-            'spatial_freq_half', 0.05,  ... (cy/deg) spatial frequency modulated to 50
-            'spatial_freq_stop',0.2,    ... (cy/deg), spatial lowpass cutoff
-            'temp_bandwidth', 4,        ... (Hz) temporal bandwidth
-            'contrast_mod_freq', 1/6, ... (Hz) raised cosine contrast modulation
+            'spatial_freq_half', 0.04,  ... (cy/deg) spatial frequency modulated to 50
+            'spatial_freq_stop',0.3,    ... (cy/deg), spatial lowpass cutoff
+            'temp_bandwidth',4,        ... (Hz) temporal bandwidth
+            'contrast_mod_freq', 1/500, ... (Hz) raised cosine contrast modulation
             'contrast_slope', 5,        ... onset slope
             'modulation_shift', 0.2,      ... shift of the signamoid argument (cosine value)
             'frame_downsample', 1,      ... 1=60 fps, 2=30 fps, 3=20 fps, 4=15 fps, etc
-            'duration', 6              ... (s) trial duration
+            'n_dirs', 16, ...  number of directions of motion 
+            'ori_bands', 2, ...  orientation width expressed in units of 2*pi/n_dirs.  Must be integer
+            'ori_modulation', 0.8, ...  mix-in proportion of oriented noise
+            'ori_on_secs', 1, ...  seconds of movement and orientation bias
+            'ori_off_secs', 1, ...  second with no movement or orientation bias
+            'speed', 40 ...  degrees per second
             )
     end
     
@@ -38,7 +43,7 @@ classdef MovingNoise < stims.core.Visual
                 for iCond=1:length(self.conditions)
                     fprintf .
                     cond = self.conditions(iCond);
-                    lookup = psy.NoiseMapLookup;
+                    lookup = psy.MovingNoiseLookup;
                     [movie, key] = ...
                         lookup.lookup(cond, self.degPerPix*self.rect(3:4), ...
                         self.screen.fps/cond.frame_downsample);
@@ -65,8 +70,6 @@ classdef MovingNoise < stims.core.Visual
                 'spatial_freq_half'
                 'spatial_freq_stop'
                 'temp_bandwidth'
-                'contrast_mod_freq'
-                'duration'
                 'frame_downsample'
                 'movie'
                 }, fieldnames(cond))))
