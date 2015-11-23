@@ -3,7 +3,7 @@ psy.MovingNoiseLookup (lookup) # cached noise maps to save computation time
 moving_noise_version           : smallint                      # algorithm version; increment when code changes
 moving_noise_paramhash         : char(10)                      # hash of the lookup parameters
 ---
-moving_noise_params            : blob   # cell array of params
+params            : blob   # cell array of params
 cached_movie                : longblob                      # [y,x,frames]
 moving_noise_lookup_ts=CURRENT_TIMESTAMP: timestamp            # automatic
 %}
@@ -108,7 +108,7 @@ classdef MovingNoiseLookup < dj.Relvar
                 stim.onsets = onsets;
                 stim.offsets = offsets;
                 
-                tuple.noise_map_params = [params {stim}];
+                tuple.params = [params {stim}];
                 tuple.cached_movie = m;
                 
                 self.insert(tuple)
