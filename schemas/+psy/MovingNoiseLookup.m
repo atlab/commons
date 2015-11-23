@@ -81,7 +81,7 @@ classdef MovingNoiseLookup < dj.Relvar
                     biased = sigma/std(biased(:))*biased;
                     mix = abs(frametimes - (i-0.5)*(period)) < cond.ori_on_secs/2;
                     onsets(i) = (i-0.5)*period - cond.ori_on_secs/2;
-                    offsets(i) = (i-0.5)*period + cond.ori_on_secs/2; 
+                    offsets(i) = (i-0.5)*period + cond.ori_on_secs/2;
                     speed = speed - mix*exp(-1i*directions(i));
                     result = result + bsxfun(@times, biased-result, permute(mix,[3 2 1]));
                 end
@@ -97,8 +97,8 @@ classdef MovingNoiseLookup < dj.Relvar
                     f = fft2(m(:,:,i)).*shift;
                     m(:,:,i) = real(ifft2(f));
                 end
-            
-                % save results 
+                
+                % save results
                 m = max(-1, min(1, m)).*(abs(m)>0.001);
                 m = uint8((m+1)/2*254);
                 
@@ -116,4 +116,10 @@ classdef MovingNoiseLookup < dj.Relvar
         end
     end
     
+end
+
+
+function y = hamm(q, width)
+q = (mod(q + pi/2,pi)-pi/2)/width;
+y = (0.54 + 0.46*cos(q*pi)).*(abs(q)<1);
 end
