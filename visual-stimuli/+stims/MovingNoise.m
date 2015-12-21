@@ -48,7 +48,7 @@ classdef MovingNoise < stims.core.Visual
                         lookup.lookup(cond, self.degPerPix*self.rect(3:4), ...
                         self.screen.fps/cond.frame_downsample);
                     cond = dj.struct.join(self.conditions(iCond), key);
-                    cond.movie = movie;
+                    cond.movie = max(1, min(254, movie));  % 0 and 255 are reserved for flips
                     newConditions = [newConditions; cond]; %#ok<AGROW>
                 end
                 fprintf \n
@@ -58,7 +58,6 @@ classdef MovingNoise < stims.core.Visual
         
         function showTrial(self, cond)
             % execute a single trial with a single cond
-            % See PsychToolbox DriftDemo4.m for API calls
             assert(~isnan(self.constants.monitor_distance), 'monitor distance is not set')
             
             assert(all(ismember({

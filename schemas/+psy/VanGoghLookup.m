@@ -24,7 +24,7 @@ classdef VanGoghLookup < dj.Relvar
             %   degxy - visual degrees across x and y
             %   fps   - frames per second
             
-            key.vangogh_version = 2;  % increment if you make any changes to the code below
+            key.vangogh_version = 3;  % increment if you make any changes to the code below
             
             params = {cond degxy fps};
             hash = dj.DataHash(params);

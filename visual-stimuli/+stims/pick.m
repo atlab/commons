@@ -424,7 +424,7 @@ movingNoise = struct(...
     'logger', stims.core.Logger(psy.Session, psy.Condition, psy.Trial, psy.MovingNoise), ...
     'constants', ...
     struct(...
-    'stimulus', 'noisemap', ...  % stimulus name recorded in the session table
+    'stimulus', 'movingNoise', ...  % stimulus name recorded in the session table
     'monitor_distance', 7, ... (cm)
     'monitor_size', 7, ...      (inches) diagonal
     'monitor_aspect', 1.7, ...  (physical aspect ratio W/H)
@@ -434,17 +434,18 @@ movingNoise = struct(...
     'blocks', 1, ... % 100 for imaging @38000 frames
     'stim', {{    
     setParams(stims.MovingNoise, ...
-    'rng_seed',    1:60,         ... RNG seed 1:60
+    'rng_seed',    1:3,         ... RNG seed 1:60
     'luminance',   10,           ... cd/m^2
     'contrast',    0.95,        ... Michelson's 0-1
     'tex_ydim',    76,          ... (pixels) texture dimension
     'tex_xdim',    128,          ... (pixels) texture dimension
-    'tex_ydim',    150,          ... (pixels) texture dimension
-    'tex_xdim',    256,          ... (pixels) texture dimension
-    'frame_downsample', 1,      ... 1=60 fps, 2=30 fps, 3=20 fps, 4=15 fps, etc
     'spatial_freq_half', 0.04,  ... (cy/deg) spatial frequency modulated to 50
     'spatial_freq_stop',0.2,    ... (cy/deg), spatial lowpass cutoff
     'temp_bandwidth',4,        ... (Hz) temporal bandwidth
+    'contrast_mod_freq', 1/500, ... (Hz) raised cosine contrast modulation
+    'contrast_slope', 5,        ... onset slope
+    'modulation_shift', 0.2,      ... shift of the signamoid argument (cosine value)
+    'frame_downsample', 1,      ... 1=60 fps, 2=30 fps, 3=20 fps, 4=15 fps, etc
     'n_dirs', 16, ...  number of directions of motion
     'ori_bands', 2, ...  orientation width expressed in units of 2*pi/n_dirs.  Must be integer
     'ori_modulation', 0.8, ...  mix-in proportion of oriented noise
@@ -459,7 +460,7 @@ vanGogh = struct(...
     'logger', stims.core.Logger(psy.Session, psy.Condition, psy.Trial, psy.VanGogh), ...
     'constants', ...
     struct(...
-    'stimulus', 'noisemap', ...  % stimulus name recorded in the session table
+    'stimulus', 'vangogh', ...  % stimulus name recorded in the session table
     'monitor_distance', 7, ... (cm)
     'monitor_size', 7, ...      (inches) diagonal
     'monitor_aspect', 1.7, ...  (physical aspect ratio W/H)
@@ -469,13 +470,13 @@ vanGogh = struct(...
     'blocks', 1, ... 
     'stim', {{    
     setParams(stims.VanGogh, ...
-    'rng_seed',    1:2,         ... RNG seed 1:150
+    'rng_seed',    1:60,         ... RNG seed 1:150
     'frame_downsample', 1,      ... 1=60 fps, 2=30 fps, 3=20 fps, 4=15 fps, etc
     'luminance',   10,           ... cd/m^2
     'contrast',    0.95,        ... Michelson's 0-1
     'duration', 30,            ... (seconds)
-    'tex_ydim', 150,           ... (pixels) texture dimension
-    'tex_xdim', 256,           ... (pixels) texture dimension
+    'tex_ydim', 76,           ... (pixels) texture dimension
+    'tex_xdim', 128,           ... (pixels) texture dimension
     'spatial_freq_half', 0.04, ... (cy/deg) spatial frequency modulated to 50
     'spatial_freq_stop', 0.3,  ... (cy/deg), spatial lowpass cutoff
     'temp_bandwidth', 4,       ... (Hz) temporal bandwidth
