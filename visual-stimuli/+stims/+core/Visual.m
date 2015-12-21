@@ -74,7 +74,9 @@ classdef Visual < handle
                 self.constants = constants;
                 self.conditions = makeFactorialConditions(self.params);
                 self.prepare()
-                self.conditions = self.logger.logConditions(self.conditions);
+                if ~isempty(logger)
+                    self.conditions = self.logger.logConditions(self.conditions);
+                end
             end
         end
         

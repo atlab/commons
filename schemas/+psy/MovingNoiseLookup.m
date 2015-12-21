@@ -21,7 +21,7 @@ classdef MovingNoiseLookup < dj.Relvar
             %   degxy - visual degrees across x and y
             %   fps   - frames per second
             
-            key.moving_noise_version = 3;  % increment if you make any changes to the code below
+            key.moving_noise_version = 4;  % increment if you make any changes to the code below
             
             params = {cond degxy fps};
             hash = dj.DataHash(params);
@@ -49,10 +49,11 @@ classdef MovingNoiseLookup < dj.Relvar
                 
                 % apply spatial filter in frequency space
                 [y, x] = ndgrid(...
-                    (-sz(1)/2:sz(1)/2-1)*degxy(2), ...
-                    (-sz(2)/2:sz(2)/2-1)*degxy(1));
-                radius = sqrt(y.*y + x.*x)*cond.spatial_freq_stop;
-                kernel = fftn(0.46*cos(2*pi*radius) + 0.54);
+                    (-sz(1)/2:sz(1)/2-1)/sz(1)*degxy(2), ...
+                    (-sz(2)/2:sz(2)/2-1)/sz(2)*degxy(1));
+                radius = 2*sqrt(y.*y + x.*x)*cond.spatial_freq_stop;
+                kernel = (0.46*cos(pi*radius) + 0.54).*(radius<1);  % hamming kernel
+                kernel = fftn(kernel);
                 m = fftn(m);
                 m = bsxfun(@times, m, kernel);
                 
@@ -64,6 +65,9 @@ classdef MovingNoiseLookup < dj.Relvar
                 sigma = std(result(:));
                 
                 % modulate orientation
+                [fy,fx] = ndgrid(...
+                    (-sz(1)/2:sz(1)/2-1)/degxy(2), ...
+                    (-sz(2)/2:sz(2)/2-1)/degxy(1));   % in units of cy/degree
                 directions = (r.randperm(cond.n_dirs)-1)/cond.n_dirs*2*pi;
                 onsets = nan(size(directions));
                 offsets =  nan(size(directions));
@@ -76,10 +80,12 @@ classdef MovingNoiseLookup < dj.Relvar
                     biased = real(ifftn(bsxfun(@times, space_bias, m)));
                     biased = result + cond.ori_modulation*(biased*sigma/std(biased(:)) - result);
                     biased = sigma/std(biased(:))*biased;
-                    mix = abs(frametimes - (i-0.5)*(period)) < cond.ori_on_secs/2;
                     onsets(i) = (i-0.5)*period - cond.ori_on_secs/2;
                     offsets(i) = (i-0.5)*period + cond.ori_on_secs/2;
+                    mix = abs(frametimes - (i-0.5)*(period)) < cond.ori_on_secs/2;  % apply motion in the middle
                     speed = speed - mix*exp(-1i*directions(i));
+                    mix = abs(frametimes - (i-0.5)*(period)) < (period-semi/fps)/2;   % apply orientation bias always
+                    mix = conv(double(mix),k,'same');
                     result = result + bsxfun(@times, biased-result, permute(mix,[3 2 1]));
                 end
                 m = result;

@@ -26,17 +26,11 @@ classdef VanGogh < stims.core.Visual
         function d = degPerPix(self)
             % assume isometric pixels
             rect = self.rect;
-            if isempty(rect)
+            if isempty(rect)  % hack for precomputing
                 rect = [0 0 1024 600];
             end
             d = 180/pi*self.constants.monitor_size*2.54/norm(rect(3:4))/self.constants.monitor_distance;
-        end
-           
-        function prep(self)
-            % hack
-            self.prepare()
-        end
-        
+        end           
     end
     
    
@@ -64,7 +58,7 @@ classdef VanGogh < stims.core.Visual
                         lookup.lookup(cond, self.degPerPix*rect(3:4), ...
                         fps/cond.frame_downsample);
                     cond = dj.struct.join(self.conditions(iCond), key);
-                    cond.movie = max(1,min(254, movie,254));  % 0 and 255 are reserved for flips
+                    cond.movie = max(1,min(254, movie));  % 0 and 255 are reserved for flips
                     newConditions = [newConditions; cond]; %#ok<AGROW>
                 end
                 fprintf \n

@@ -29,7 +29,7 @@ end
 function initProtocol(protocol, key)
 init(protocol.logger, key, protocol.constants);
 rect = stims.core.Visual.screen.rect;
-if false && any([protocol.constants.resolution_x protocol.constants.resolution_y] ~= rect(3:4))
+if any([protocol.constants.resolution_x protocol.constants.resolution_y] ~= rect(3:4))
     disp 'Mismatching screen size'
     fprintf('Stimulus specifies [%d,%d]\n', protocol.constants.resolution_x, protocol.constants.resolution_y)
     fprintf('Screen resolution is [%d,%d]\n', rect(3), rect(4))
