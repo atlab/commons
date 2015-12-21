@@ -21,7 +21,7 @@ classdef MovingNoiseLookup < dj.Relvar
             %   degxy - visual degrees across x and y
             %   fps   - frames per second
             
-            key.moving_noise_version = 1;  % increment if you make any changes to the code below
+            key.moving_noise_version = 3;  % increment if you make any changes to the code below
             
             params = {cond degxy fps};
             hash = dj.DataHash(params);
@@ -48,16 +48,13 @@ classdef MovingNoiseLookup < dj.Relvar
                 m = convn(m, permute(k, [3 2 1]), 'same');
                 
                 % apply spatial filter in frequency space
+                [y, x] = ndgrid(...
+                    (-sz(1)/2:sz(1)/2-1)*degxy(2), ...
+                    (-sz(2)/2:sz(2)/2-1)*degxy(1));
+                radius = sqrt(y.*y + x.*x)*cond.spatial_freq_stop;
+                kernel = fftn(0.46*cos(2*pi*radius) + 0.54);
                 m = fftn(m);
-                [fy,fx] = ndgrid(...
-                    (-sz(1)/2:sz(1)/2-1)/degxy(2), ...
-                    (-sz(2)/2:sz(2)/2-1)/degxy(1));   % in
-                fxy = ifftshift(sqrt(fy.^2 + fx.^2));  % radial frequency
-                sigmoid = 1./(1+exp(-200*(fxy-cond.spatial_freq_half/10)));  % remove zero frequency
-                cutoff = fxy<cond.spatial_freq_stop;
-                xymask = cutoff;
-                xymask = xymask.*sigmoid./(1+fxy/cond.spatial_freq_half);  % 1/f filter
-                m = bsxfun(@times, m, xymask);
+                m = bsxfun(@times, m, kernel);
                 
                 % normalize to [-1 1]
                 result = real(ifftn(m));                % back to spacetime
@@ -100,7 +97,7 @@ classdef MovingNoiseLookup < dj.Relvar
                 
                 % save results
                 m = max(-1, min(1, m)).*(abs(m)>0.001);
-                m = uint8((m+1)/2*254);
+                m = uint8((m+1)/2*253)+1;
                 
                 tuple = key;
                 stim.frametimes = frametimes;
