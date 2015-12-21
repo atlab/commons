@@ -75,7 +75,7 @@ classdef MovingNoiseLookup < dj.Relvar
                 speed = zeros(size(frametimes));
                 for i=1:cond.n_dirs
                     q = theta + directions(i);
-                    space_bias = hamm(q, cond.ori_bands*2*pi/cond.n_dirs);
+                    space_bias = hann(q, cond.ori_bands*2*pi/cond.n_dirs);
                     biased = real(ifftn(bsxfun(@times, space_bias, m)));
                     biased = result + cond.ori_modulation*(biased*sigma/std(biased(:)) - result);
                     biased = sigma/std(biased(:))*biased;
@@ -119,7 +119,8 @@ classdef MovingNoiseLookup < dj.Relvar
 end
 
 
-function y = hamm(q, width)
+function y = hann(q, width)
+% circuar hanning mask with symmetric opposite lobes
 q = (mod(q + pi/2,pi)-pi/2)/width;
-y = (0.54 + 0.46*cos(q*pi)).*(abs(q)<1);
+y = (0.5 + 0.5*cos(q*pi)).*(abs(q)<1);
 end
