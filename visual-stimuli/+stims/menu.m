@@ -514,6 +514,35 @@ fastMovingBar = struct(...
 
 
 
+trippy = struct(...
+    'prompt', 'trippy (30 mins total)', ...
+    'logger', stims.core.Logger(psy.Session, psy.Condition, psy.Trial, psy.Trippy), ...
+    'constants', ...
+    struct(...
+    'stimulus', 'trippy', ...  % stimulus name recorded in the session table
+    'monitor_distance', 10, ... (cm)
+    'monitor_size', 7, ...      (inches) diagonal
+    'monitor_aspect', 1.7, ...  (physical aspect ratio W/H)
+    'resolution_x', 1024, ...   (pixels)
+    'resolution_y',  600 ...    (pixels)
+    ), ...
+    'blocks', 30, ...
+    'stim', {{
+    setParams(stims.Trippy,...
+    'pre_blank', 0, ...   (s) blank period preceding trials
+    'luminance', 30, ...    cd/m^2 mid-value luminance"
+    'contrast', 0.99, ...  Michelson contrast
+    'rng_seed', 1:30, ... RNG seed
+    'duration', 60, ... (s) trial duration
+    'tex_ydim', 150, ...  (pixels) texture dimension
+    'tex_xdim', 256, ...  (pixels) texture dimension
+    'temp_bandwidth', 4, ... (Hz) temporal bandwidth of phase 
+    'max_spatial_freq', 0.2, ... (cy)/degree
+    'control_points', 8, ...  number of control points along each dimension
+    'frame_downsample', 1)
+    }});
+
+
 % menu items callback
 % menu = [
 %     simpleGrating
@@ -528,11 +557,12 @@ fastMovingBar = struct(...
 %     ];
 
 result = [
-    simpleGrating
-    shanGrating
-    quadrantGrating
-    movingBar
-    movingNoise
-    vanGogh
-    fastMovingBar
+%     simpleGrating
+%     shanGrating
+%     quadrantGrating
+%     movingBar
+%     movingNoise
+%     vanGogh
+%     fastMovingBar
+    trippy
     ];
