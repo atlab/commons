@@ -14,15 +14,29 @@ classdef TrippyLookup < dj.Relvar
     end
     
     methods(Static)
-        function img = upsample(img)
-            assert(all(mod(size(img),2)==0))
-            k = [0 3 8 10 8 3]'/32;
-            img = conv2(2*cat(1, zeros(1,size(img,1)), upsample(fold(img'),2)),k,'valid');
-            img = conv2(2*cat(1, zeros(1,size(img,1)), upsample(fold(img'),2)),k,'valid');
-            function im = fold(im)
-                im = cat(1, (im(1,:)+im(2,:))/2, im, (im(end,:)+im(end-1,:))/2);
+        function img = upsample(img, factor)
+            % fast upsamping with a radially symmetric separable kernel (Gaussian) for interpolation.
+            % The resulting image is circular 
+            for i=1:2
+                img = upsample(img', factor, round(factor/2));
+                l = size(img,1);
+                k = gausswin(l,0.75*l/factor);
+                k = ifftshift(factor/sum(k)*k);
+                img = real(ifft(bsxfun(@times, fft(img), fft(k))));
             end
         end
+        
+%         function img = upsample(img, n)
+%             assert(all(mod(size(img),2)==0))
+%             k = [0 3 8 10 8 3]'/32;
+%             for i=1:n
+%                 img = conv2(2*cat(1, zeros(1,size(img,1)), upsample(fold(img'),2)),k,'valid');
+%                 img = conv2(2*cat(1, zeros(1,size(img,1)), upsample(fold(img'),2)),k,'valid');
+%             end
+%             function im = fold(im)
+%                 im = cat(1, (im(1,:)+im(2,:))/2, im, (im(end,:)+im(end-1,:))/2);
+%             end
+%         end
         
     end
         
