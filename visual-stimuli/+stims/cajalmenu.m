@@ -37,19 +37,19 @@ flashingBar = struct(...
     'resolution_x', 1024, ...   (pixels)
     'resolution_y',  600 ...    (pixels)
     ), ...
-    'blocks', 2, ...
+    'blocks', 1, ...
     'stim', {{
     setParams(stims.FlashingBar,...
-    'pre_blank', 1.5, ...   (s) blank period preceding trials
+    'pre_blank', 1.0, ...   (s) blank period preceding trials
     'luminance', 30, ...    cd/m^2 mid-value luminance"
     'contrast', 0.99, ...  Michelson contrast
     'bg_color', 127, ...   0-254
     'orientation', [45 135], ... (degrees) 0=north, 90=east
     'bg_color', 127, ...   0-254
-    'offset', -linspace(-0.8,0.8,30), ... normalized by half-diagonal
-    'width', 0.03,  ... normalized by half-diagonal
+    'offset', -linspace(-0.7,0.7,30), ... normalized by half-diagonal
+    'width', 0.02,  ... normalized by half-diagonal
     'trial_duration', 0.5, ... (s) ON time of flashing bar
-    'pattern_frequency', 15 ... (Hz) will be rounded to nearest fraction of fps
+    'pattern_frequency', 20 ... (Hz) will be rounded to nearest fraction of fps
     )
     }});
 
