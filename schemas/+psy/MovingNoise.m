@@ -23,9 +23,4 @@ frame_downsample            : tinyint                       # 1=60 fps, 2=30 fps
 
 
 classdef MovingNoise < dj.Relvar
-    
-    properties(Constant)
-        table = dj.Table('psy.MovingNoise')
-    end
-    
 end

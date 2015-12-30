@@ -430,7 +430,7 @@ movingNoise = struct(...
     'blocks', 1, ... % 100 for imaging @38000 frames
     'stim', {{
     setParams(stims.MovingNoise, ...
-    'rng_seed',    41:60,         ... RNG seed 1:60
+    'rng_seed',    1:60,         ... RNG seed 1:60
     'luminance',   10,           ... cd/m^2
     'contrast',    0.95,        ... Michelson's 0-1
     'tex_ydim',    76,          ... (pixels) texture dimension

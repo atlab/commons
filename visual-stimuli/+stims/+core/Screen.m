@@ -1,11 +1,11 @@
-% stims.core.Screen manages the visual stimulus display, incuding the coded 
+% stims.core.Screen manages the visual stimulus display, incuding the coded
 % photodiode signal in the corner of the screen for synchronization.
 
 % -- Dimitri Yatsenko, 2012
 
 
 classdef Screen < handle
-     
+    
     properties(Constant)
         flipSize  = [0.05 0.06];   %  the relative size of the photodiode texture
     end
@@ -91,7 +91,7 @@ classdef Screen < handle
                 assert(x0 >= 0 && x255 <= 255 ,'SlimStim:invalidContrast', ...
                     'Contrast/luminance combination is out of range of current monitor settings: (%.1f, %.1f) cd/m^2', ...
                     lumTab(1),lumTab(end))
-                gammaTable = [0; interp1(0:255, gammaTable, ramp,'cubic')'; 1];
+                gammaTable = [0; interp1(0:255, gammaTable, ramp, 'pchip')'; 1];
                 Screen('LoadNormalizedGammaTable', self.win, gammaTable * ones(1, 3));
             end
         end
@@ -108,13 +108,13 @@ classdef Screen < handle
         end
         
         
-        function [flipTime, droppedFrames] = flip(self, flipCount, frameStep, dontClear)            
+        function [flipTime, droppedFrames] = flip(self, flipCount, frameStep, dontClear)
             % draw coded photodiode flip texture
             if ~isempty(flipCount)
                 Screen('DrawTexture', self.win, ...
                     self.flipTex(flipCode(flipCount)), [],...
                     [0 0 self.flipRect(1) self.flipRect(2)]);
-            end            
+            end
             % update screen
             when = self.prevFlip+frameStep*self.frameInterval;
             flipTime = Screen('Flip', self.win, when - 0.5*self.frameInterval, dontClear);
@@ -123,7 +123,7 @@ classdef Screen < handle
             else
                 droppedFrames = round((flipTime - when)/self.frameInterval);
             end
-            self.prevFlip = flipTime;           
+            self.prevFlip = flipTime;
         end
     end
     
@@ -131,9 +131,9 @@ classdef Screen < handle
     methods(Static)
         function ret = escape
             % Returns true if escape has been pressed.
-            % To clear, invoke without output arguments.           
+            % To clear, invoke without output arguments.
             persistent ESC
-            ESC = ~isempty(ESC) && ESC && nargout;   % reset 
+            ESC = ~isempty(ESC) && ESC && nargout;   % reset
             if ~ESC
                 [keyPressed, ~, keys] = KbCheck;
                 if keyPressed && keys(KbName('ESCAPE'))

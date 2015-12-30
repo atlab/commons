@@ -18,14 +18,4 @@ end_pos                     : float                         # ending position of
 %}
 
 classdef MovingBar < dj.Relvar
-
-	properties(Constant)
-		table = dj.Table('psy.MovingBar')
-	end
-
-	methods
-		function self = MovingBar(varargin)
-			self.restrict(varargin)
-		end
-	end
 end
