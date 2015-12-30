@@ -61,7 +61,9 @@ classdef Trippy < stims.core.Visual
             self.saveAfterEachTrial = true;
             for i=1:size(movie,1)
                 if self.escape, break, end
-                tex = Screen('MakeTexture', self.win, psy.Trippy.interp_space());
+                m = psy.Trippy.interp_space(movie(i,:), cond);
+                m = (cos(2*pi*m)+1)/2*253+1;
+                tex = Screen('MakeTexture', self.win, m);
                 Screen('DrawTexture',self.win, tex, [], self.rect)
                 self.flip(false, false, i==1)
                 Screen('close',tex)
