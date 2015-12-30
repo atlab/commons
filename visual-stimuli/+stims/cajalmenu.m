@@ -121,9 +121,42 @@ vanGogh = struct(...
     }});
 
 
+
+trippy = struct(...
+    'prompt', 'Trippy', ...
+    'logger', stims.core.Logger(psy.Session, psy.Condition, psy.Trial, psy.Trippy), ...
+    'constants', ...
+    struct(...
+    'stimulus', 'trippy', ...  % stimulus name recorded in the session table
+    'monitor_distance', 7, ... (cm)
+    'monitor_size', 7, ...      (inches) diagonal
+    'monitor_aspect', 1.7, ...  (physical aspect ratio W/H)
+    'resolution_x', 1024, ...   (pixels)
+    'resolution_y',  600 ...    (pixels)
+    ), ...
+    'blocks', 1, ...
+    'stim', {{
+    setParams(stims.Trippy, ...
+    'rng_seed',    1:60,         ... RNG seed 1:150
+    'frame_downsample', 1,      ... 1=60 fps, 2=30 fps, 3=20 fps, 4=15 fps, etc
+    'luminance',   10,           ... cd/m^2
+    'contrast',    0.95,        ... Michelson's 0-1
+    'duration', 30,            ... (seconds)
+    'tex_ydim', 150,           ... (pixels) texture dimension
+    'tex_xdim', 256,           ... (pixels) texture dimension
+    'xnodes', 12, ...     % x dimension of low-res phase movie
+    'ynodes', 8, ...      % y dimension of low-res phase movie
+    'up_factor', 24, ...  % upscale factor from low-res to texture dimensions
+    'temp_freq', 4, ...   % (Hz) temporal frequency if the phase pattern were static
+    'temp_kernel_length', 61, ...  % length of Hanning kernel used for temporal filter. Controls the rate of change of the phase pattern.
+    'spatial_freq', 0.20 ...  % (cy/degree) approximate max. Actual frequency spectrum ranges propoprtionally.
+    )}});
+
+
 result = [
      quadrantGrating
      flashingBar
      movingNoise
      vanGogh
+     trippy
     ];

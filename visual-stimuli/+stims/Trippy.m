@@ -14,13 +14,15 @@ classdef Trippy < stims.core.Visual
                 rect = [0 0 1024 600];
             end
             d = 180/pi*self.constants.monitor_size*2.54/norm(rect(3:4))/self.constants.monitor_distance;
-        end        
+        end
     end
+    
     
     methods(Access=protected)
         
         function prepare(self)
             if ~isfield(self.conditions, 'movie')
+                
                 % pre-compute movies
                 disp 'making movies'
                 rect = self.rect;
@@ -35,12 +37,10 @@ classdef Trippy < stims.core.Visual
                 for iCond=1:length(self.conditions)
                     fprintf .
                     cond = self.conditions(iCond);
-                    lookup = psy.TrippyLookup;
-                    [movie, key] = ...
-                        lookup.lookup(cond, self.degPerPix*rect(3:4), ...
-                        fps/cond.frame_downsample);
-                    cond = dj.struct.join(self.conditions(iCond), key);
-                    cond.movie = max(1, min(254, movie));  % 0 and 255 are reserved for flips
+                    cond.packed_phase_movie = ...
+                        psy.Trippy.make_packed_phase_movie(...
+                        cond, fps/cond.frame_downsample, self.degPerPix*rect(3:4));
+                    cond.version = psy.Trippy.version;
                     newConditions = [newConditions; cond]; %#ok<AGROW>
                 end
                 fprintf \n
@@ -50,13 +50,18 @@ classdef Trippy < stims.core.Visual
         
         function showTrial(self, cond)
             % execute a single trial with a single cond
-            assert(~isnan(self.constants.monitor_distance), 'monitor distance is not set')            
+            fps = self.screen.fps;
+            if isempty(fps)
+                fps = 60;
+            end
+            assert(~isnan(self.constants.monitor_distance), 'monitor distance is not set')
             self.screen.setContrast(cond.luminance, cond.contrast)
             self.frameStep = cond.frame_downsample;
+            movie = psy.Trippy.interp_time(cond.packed_phase_movie, cond, fps/cond.frame_downsample);
             self.saveAfterEachTrial = true;
-            for i=1:size(cond.movie,3)
+            for i=1:size(movie,1)
                 if self.escape, break, end
-                tex = Screen('MakeTexture', self.win, cond.movie(:,:,i));
+                tex = Screen('MakeTexture', self.win, psy.Trippy.interp_space());
                 Screen('DrawTexture',self.win, tex, [], self.rect)
                 self.flip(false, false, i==1)
                 Screen('close',tex)
