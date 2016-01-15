@@ -1,4 +1,4 @@
-classdef reader < handle
+classdef Reader4 < handle
     %  pre.reader is a ScanImage filereader with random access indexed as reader(col, row, frame, slice, channel)
     %
     %  Usage:
@@ -20,7 +20,7 @@ classdef reader < handle
     
     methods
         
-        function self = reader(path)
+        function self = Reader4(path)
             % r = reso.reader('/fullpath/files.tif')
             % If path.ext is not found, look for 'path_001.ext'. If found,
             % then loads all files matching pattern 'path_%03u.ext';
