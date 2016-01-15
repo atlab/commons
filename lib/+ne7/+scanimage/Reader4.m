@@ -48,7 +48,7 @@ classdef Reader4 < handle
         end
         
         function data = subsref(self, S)
-            if ~strcmp(S.type, '()')
+            if ~strcmp(S(1).type, '()')
                 data = builtin('subsref', self, S);
             else
                 assert(length(S.subs)==5, 'subscript error')
