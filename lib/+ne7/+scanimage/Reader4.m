@@ -53,7 +53,7 @@ classdef Reader4 < handle
             else
                 assert(length(S.subs)==5, 'subscript error')
                 frame_indices = S.subs{5};
-                if isequal(frame_indices, ':')
+                if ischar(frame_indices) && strcmp(frame_indices, ':') 
                     frame_indices = 1:self.nframes;
                 end
                 subs = S.subs(1:4);
