@@ -5,7 +5,7 @@
 
 
 classdef Screen < handle
-    
+
     properties(Constant)
         flipSize  = [0.05 0.06];   %  the relative size of the photodiode texture
     end
@@ -22,7 +22,7 @@ classdef Screen < handle
         flipCount         % the index of the last flip
         prevFlip          % (seconds)
     end
-    
+
     properties(Access=private)
         isOpened = false
         contrast     % currently set contrast
@@ -30,7 +30,6 @@ classdef Screen < handle
         binaryGray      % if true, use black and white images (e.g. square gratings)
         gammaData       % gamma table loaded from file
         savedSettings   % saved settings to restore upon closing
-        
         flipTimes       % the flip times of the recent flips
         flipTex         % photodiode textures
         flipRect        % photodiode rectangle
@@ -42,7 +41,8 @@ classdef Screen < handle
                 disp 'Configuring display...'
                 AssertOpenGL
                 sca
-                screen = min(Screen('Screens'));
+                % pix screen with the largest screen number
+                screen = max(Screen('Screens'));
                 [self.win, self.rect] = Screen('OpenWindow',screen,127,[],[],[],[],[], ...
                     mor(kPsychNeedFastBackingStore,kPsychNeed16BPCFloat));
                 AssertGLSL
@@ -51,13 +51,13 @@ classdef Screen < handle
                 self.fps = Screen(screen, 'FrameRate',[]);
                 self.frameInterval = Screen('GetFlipInterval', self.win);
                 Priority(MaxPriority(self.win));
-                
+
                 % Set luminance and contrast
                 disp 'Loading gamma'
                 self.savedSettings.gammaTable = Screen('ReadNormalizedGammaTable',self.win);
                 self.gammaData = load('~/stimulation/gammatable.mat');
                 self.setContrast(self.gammaData.luminance(end)/10, 0.5)  % while waiting, darken the screen to 1/10 of its max luminance
-                
+
                 % create photodiode flip textures
                 self.flipRect = round(self.rect(3:4).*self.flipSize);
                 x = 1:self.flipRect(1);
@@ -76,7 +76,7 @@ classdef Screen < handle
             binaryGray = nargin>=4 && binaryGray;
             if isempty(self.luminance) || isepmty(self.contrast) || ...
                     contrast~=self.contrast || luminance~=self.luminance || self.binaryGray~=binaryGray
-                
+
                 gammaTable = self.gammaData.gammaVals(:,1);
                 lumTab = self.gammaData.luminance;
                 minLum = lumTab(1);
@@ -85,7 +85,7 @@ classdef Screen < handle
                 maxLumNew = 2 * luminance - minLumNew;
                 x0 = 255 * (minLumNew - minLum) / (maxLum - minLum);
                 x255 = 255 * (maxLumNew - minLum) / (maxLum - minLum);
-                
+
                 if ~binaryGray
                     ramp = linspace(x0, x255, 254);
                 else
@@ -99,8 +99,8 @@ classdef Screen < handle
                 Screen('LoadNormalizedGammaTable', self.win, gammaTable * ones(1, 3));
             end
         end
-        
-        
+
+
         function close(self)
             disp 'restoring gamma'
             Screen('LoadNormalizedGammaTable', self.win, self.savedSettings.gammaTable);
@@ -110,7 +110,7 @@ classdef Screen < handle
             sca
             self.isOpened = false;
         end
-        
+
         
         function setFlipCount(self, flipCount)
             self.flipCount = flipCount;
@@ -158,8 +158,8 @@ classdef Screen < handle
             end
         end
     end
-    
-    
+
+
     methods(Static)
         function ret = escape
             % Returns true if escape has been pressed.
