@@ -1,12 +1,7 @@
 classdef Trippy < stims.core.Visual
     
-    properties
-        nBlocks
-        params = struct
-    end
-    
-    
-    methods
+    methods(Access=protected)
+        
         function d = degPerPix(self)
             % assume isometric pixels
             rect = self.rect;
@@ -15,16 +10,11 @@ classdef Trippy < stims.core.Visual
             end
             d = 180/pi*self.constants.monitor_size*2.54/norm(rect(3:4))/self.constants.monitor_distance;
         end
-    end
-    
-    
-    methods(Access=protected)
+        
         
         function prepare(self)
             if ~isfield(self.conditions, 'movie')
-                
-                % pre-compute movies
-                disp 'making movies'
+                disp 'precomuting movies...'
                 rect = self.rect;
                 if isempty(rect)
                     rect = [0 0 1024 600];
@@ -46,8 +36,10 @@ classdef Trippy < stims.core.Visual
                 fprintf \n
                 self.conditions = newConditions;
             end
-        end
+        end        
+    end
         
+    methods
         function showTrial(self, cond)
             % execute a single trial with a single cond
             fps = self.screen.fps;
@@ -56,17 +48,16 @@ classdef Trippy < stims.core.Visual
             end
             assert(~isnan(self.constants.monitor_distance), 'monitor distance is not set')
             self.screen.setContrast(cond.luminance, cond.contrast)
-            self.frameStep = cond.frame_downsample;
+            self.screen.frameStep = cond.frame_downsample;
             movie = psy.Trippy.interp_time(cond.packed_phase_movie, cond, fps/cond.frame_downsample);
-            self.saveAfterEachTrial = true;
             for i=1:size(movie,1)
-                if self.escape, break, end
+                if self.screen.escape, break, end
                 m = psy.Trippy.interp_space(movie(i,:), cond);
                 m = (cos(2*pi*m)+1)/2*253+1;
                 tex = Screen('MakeTexture', self.win, m);
-                Screen('DrawTexture',self.win, tex, [], self.rect)
-                self.flip(false, false, i==1)
-                Screen('close',tex)
+                Screen('DrawTexture', self.win, tex, [], self.rect)
+                self.screen.flip(false, false, i==1)
+                Screen('close', tex)  % delete the texture
             end
         end
     end

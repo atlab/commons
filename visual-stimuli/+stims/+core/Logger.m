@@ -10,7 +10,6 @@ classdef Logger < handle
         sessionTable
         condTable
         trialTable
-        paramTable
         parentKey       % primary key of session's parent
         sessionKey
         
@@ -20,17 +19,16 @@ classdef Logger < handle
     end
     
     methods
-        function self = Logger(sessionTable, condTable, trialTable, paramTable)
+        function self = Logger(sessionTable, condTable, trialTable)
             self.sessionTable = sessionTable;
             self.trialTable = trialTable;
             self.condTable = condTable;
-            self.paramTable = paramTable;
         end
         
         
         function init(self, parentKey, constants)
             if ~isempty(self.parentKey)
-                disp 'logger alread initialized'
+                disp 'logger already initialized'
             else
                 self.parentKey = parentKey;
                 
@@ -66,7 +64,7 @@ classdef Logger < handle
         end
         
         
-        function conditions = logConditions(self, conditions)
+        function conditions = logConditions(self, conditions, paramTable)
             lastCond = max(fetchn(self.condTable & self.sessionKey, 'cond_idx'));
             if isempty(lastCond)
                 lastCond = 0;
@@ -78,8 +76,8 @@ classdef Logger < handle
                 tuple = self.sessionKey;
                 tuple.cond_idx = condIdx;
                 self.condTable.insert(tuple);
-                attrs = [self.paramTable.primaryKey self.paramTable.nonKeyFields];
-                self.paramTable.insert(dj.struct.join(tuple, dj.struct.pro(conditions(iCond), attrs{:})))
+                attrs = [paramTable.primaryKey paramTable.nonKeyFields];
+                paramTable.insert(dj.struct.join(tuple, dj.struct.pro(conditions(iCond), attrs{:})))
             end
         end
         
@@ -89,15 +87,7 @@ classdef Logger < handle
             key = self.sessionKey;
             key.(self.trialIdName)=self.trialIdx;
             tuple = dj.struct.join(key, tuple);
-            self.unsavedTrials = [self.unsavedTrials tuple];
-        end
-        
-        
-        function flushTrials(self)
-            if ~isempty(self.unsavedTrials)
-                self.trialTable.insert(self.unsavedTrials);
-                self.unsavedTrials = [];
-            end
-        end
+            self.trialTable.insertParallel(tuple)
+        end        
     end
 end
