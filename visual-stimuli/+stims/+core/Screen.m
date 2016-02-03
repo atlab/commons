@@ -1,7 +1,7 @@
 % stims.core.Screen manages the visual stimulus display, incuding the coded
 % photodiode signal in the corner of the screen for synchronization.
 
-% -- Dimitri Yatsenko, 2012
+% -- Dimitri Yatsenko, 2012, 2016
 
 
 classdef Screen < handle
@@ -9,12 +9,17 @@ classdef Screen < handle
     properties(Constant)
         flipSize  = [0.05 0.06];   %  the relative size of the photodiode texture
     end
-
+    
+    properties
+        frameStep=1 % 1=full fps, 2=half, 3=third, etc
+    end
+    
     properties(SetAccess=private)
         rect              % (pixels) window rectangle
         win               % window pointer
         fps               % frames per second
         frameInterval     % (seconds)
+        flipCount         % the index of the last flip
         prevFlip          % (seconds)
     end
 
@@ -25,12 +30,11 @@ classdef Screen < handle
         binaryGray      % if true, use black and white images (e.g. square gratings)
         gammaData       % gamma table loaded from file
         savedSettings   % saved settings to restore upon closing
-
+        flipTimes       % the flip times of the recent flips
         flipTex         % photodiode textures
         flipRect        % photodiode rectangle
     end
-
-
+    
     methods
         function open(self)
             if ~self.isOpened
@@ -63,9 +67,8 @@ classdef Screen < handle
                 self.isOpened = true;
             end
         end
-
-
-
+        
+        
         function setContrast(self, luminance, contrast, binaryGray)
             % luminance = cd/m^2
             % contrast  = Michelson contrast between 0 and 1
@@ -108,23 +111,51 @@ classdef Screen < handle
             self.isOpened = false;
         end
 
-
-        function [flipTime, droppedFrames] = flip(self, flipCount, frameStep, dontClear)
+        
+        function setFlipCount(self, flipCount)
+            self.flipCount = flipCount;
+        end
+        
+        function flipTimes = clearFlipTimes(self)
+            flipTimes = self.flipTimes;
+            self.flipTimes = [];
+        end
+        
+        
+        function flip(self, dontLogFlips, dontClearScreen, dontCheckDroppedFrames)
+            % defaults:    self.flip(false, false, false)
+            dontLogFlips   = nargin>=2 && dontLogFlips;
+            dontClearScreen = nargin>=3 && dontClearScreen;
+            dontCheckDroppedFrames = nargin>=4 && dontCheckDroppedFrames;
+            
+            if ~dontLogFlips
+                self.flipCount = self.flipCount + 1;
+            end
+            
             % draw coded photodiode flip texture
-            if ~isempty(flipCount)
+            if ~isempty(self.flipCount)
                 Screen('DrawTexture', self.win, ...
-                    self.flipTex(flipCode(flipCount)), [],...
+                    self.flipTex(flipCode(self.flipCount)), [],...
                     [0 0 self.flipRect(1) self.flipRect(2)]);
             end
             % update screen
-            when = self.prevFlip+frameStep*self.frameInterval;
-            flipTime = Screen('Flip', self.win, when - 0.5*self.frameInterval, dontClear);
-            if isempty(when)
-                droppedFrames = 0;
-            else
+            when = self.prevFlip+self.frameStep*self.frameInterval;
+            flipTime = Screen('Flip', self.win, when - 0.5*self.frameInterval, double(dontClearScreen));
+            if ~isempty(when)
                 droppedFrames = round((flipTime - when)/self.frameInterval);
+                if ~dontCheckDroppedFrames
+                    % indicated dropped frames by a '$" or $(n) for n dropped frames
+                    if droppedFrames>5
+                        fprintf('$(%d)', droppedFrames)
+                    else
+                        fprintf(repmat('$',1,droppedFrames));
+                    end
+                end
             end
             self.prevFlip = flipTime;
+            if ~dontLogFlips
+                self.flipTimes(end+1) = flipTime;
+            end
         end
     end
 

@@ -3,6 +3,8 @@ function [x,y] = measureShift(fxcorr)
 % Example: 
 %    [x,y] = measureShift(fft2(img1), conj(fft2(img2)));
 
+% Dimitri Yatsenko,  2016-01-07
+
 sz = size(fxcorr);
 assert(all(sz(3:end)==1), 'only 2D images are accepted')
 assert(all(sz(1:2)>0 & mod(sz(1:2),2)==0), 'image must have even dimensions.')  % TODO: support odd 
@@ -32,28 +34,4 @@ mag = mag(iy,ix);
 phase_gain = [fy(:).*mag(:) fx(:).*mag(:)]\(phase(:).*mag(:));
 y = y-phase_gain(1)/(2*pi);
 x = x-phase_gain(2)/(2*pi);
-end
-
-
-
-function demo()
-[y,x] = ndgrid(1:32, 1:20);
-rng(1)
-center = [10 14];
-r = sqrt((x-center(1)).^2+(y-center(2)).^2);
-template = cos(2*pi*r/4).*exp(-r.^2/200)/2 + randn(size(x))/10;
-offset = [-3.5 0.2];
-center = center + offset;
-r = sqrt((x-center(1)).^2+(y-center(2)).^2);
-frame = cos(2*pi*r/4).*exp(-r.^2/200)/2 + randn(size(x))/10;
-
-[xx,yy] = ne7.ip.measureShift(fft2(frame).*conj(fft2(template)));
-
-subplot 141, imagesc(frame,[-1 1]), axis image, title frame
-subplot 142, imagesc(template,[-1 1]), axis image, title template
-shifted = interp2(frame,x+xx,y+yy,'cubic'); 
-%shifted = ne7.ip.correctMotion(frame, [xx;yy]);
-subplot 143, imagesc(shifted,[-1 1]), axis image, title 'shifted frame'
-subplot 144, imagesc(shifted-template,[-1 1]), axis image, title difference
-
 end
