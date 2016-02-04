@@ -92,8 +92,8 @@ classdef Trippy < dj.Relvar
         function test()
             
             cond.rng_seed = 1;
-            cond.tex_ydim = 180;  %
-            cond.tex_xdim = 256;  %
+            cond.tex_ydim = 90;  %
+            cond.tex_xdim = 160;  %
             cond.duration = 60;   % (s) trial duration
             cond.xnodes = 6;     % x dimension of low-res phase movie
             cond.ynodes = 6;      % y dimension of low-res phase movie
