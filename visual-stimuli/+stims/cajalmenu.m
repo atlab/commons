@@ -5,9 +5,9 @@ logger = @() stims.core.Logger(psy.Session, psy.Condition, psy.Trial);
 stims.core.Visual.screen.enableContrast(false);  % when false, disables contrast and brightness settings and uses default monitor settings
 
 constants = struct(...
-    'monitor_distance', 7, ... (cm)
-    'monitor_size', 7, ...      (inches) diagonal
-    'monitor_aspect', 1.7, ...  (physical aspect ratio W/H)
+    'monitor_distance', 15, ... (cm)
+    'monitor_size', 25, ...      (inches) diagonal
+    'monitor_aspect', 1.78, ...  (physical aspect ratio W/H)
     'resolution_x', 2560, ...   (pixels)
     'resolution_y',  1440 ...    (pixels)
     );
@@ -126,7 +126,7 @@ trippy = struct(...
     'duration', 60,            ... (seconds)
     'tex_ydim',  90,           ... (pixels) texture dimension
     'tex_xdim', 160,           ... (pixels) texture dimension
-    'xnodes', 6, ...     % x dimension of low-res phase movie
+    'xnodes', 8, ...     % x dimension of low-res phase movie
     'ynodes', 6, ...      % y dimension of low-res phase movie
     'up_factor', 24, ...  % upscale factor from low-res to texture dimensions
     'temp_freq', 2.5, ...   % (Hz) temporal frequency if the phase pattern were static
@@ -149,7 +149,7 @@ trippyMonet = struct( ...
     'duration', 60,            ... (seconds)
     'tex_ydim',  90,           ... (pixels) texture dimension
     'tex_xdim', 160,           ... (pixels) texture dimension
-    'xnodes', 6, ...     % x dimension of low-res phase movie
+    'xnodes', 8, ...     % x dimension of low-res phase movie
     'ynodes', 6, ...      % y dimension of low-res phase movie
     'up_factor', 24, ...  % upscale factor from low-res to texture dimensions
     'temp_freq', 2.5, ...   % (Hz) temporal frequency if the phase pattern were static
