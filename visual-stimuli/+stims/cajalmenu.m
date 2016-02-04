@@ -2,11 +2,13 @@ function choices = cajalmenu()
 
 logger = @() stims.core.Logger(psy.Session, psy.Condition, psy.Trial);
 
+stims.core.Visual.screen.enableContrast(false);  % when false, disables contrast and brightness settings and uses default monitor settings
+
 constants = struct(...
     'monitor_distance', 7, ... (cm)
     'monitor_size', 7, ...      (inches) diagonal
     'monitor_aspect', 1.7, ...  (physical aspect ratio W/H)
-    'resolution_x', 2056, ...   (pixels)
+    'resolution_x', 2560, ...   (pixels)
     'resolution_y',  1440 ...    (pixels)
     );
 
@@ -50,7 +52,7 @@ flashingBar = struct(...
     'contrast', 0.99, ...  Michelson contrast
     'bg_color', 127, ...   0-254
     'orientation', [0 90], ... (degrees) 0=north, 90=east
-    'offset', -linspace(-0.7,0.7,30), ... normalized by half-diagonal
+    'offset', -linspace(-0.6, 0.6, 30), ... normalized by half-diagonal
     'width', 0.02,  ... normalized by half-diagonal
     'trial_duration', 0.5, ... (s) ON time of flashing bar
     'pattern_frequency', 20 ... (Hz) will be rounded to nearest fraction of fps
@@ -65,11 +67,11 @@ movingNoise = struct(...
     'blocks', 1, ... % 100 for imaging @38000 frames
     'stim', {{
     setParams(stims.MovingNoise, psy.MovingNoise, ...
-    'rng_seed',    1:3,         ... RNG seed 1:60
+    'rng_seed',    1:30,         ... RNG seed 1:60
     'luminance',   10,           ... cd/m^2
     'contrast',    0.95,        ... Michelson's 0-1
     'tex_ydim',    90,          ... (pixels) texture dimension
-    'tex_xdim',    128,          ... (pixels) texture dimension
+    'tex_xdim',    160,          ... (pixels) texture dimension
     'spatial_freq_half', 0.04,  ... deprecated in version 3 -- (cy/deg) spatial frequency modulated to 50 - 
     'spatial_freq_stop',0.08,    ... (cy/deg), spatial lowpass cutoff
     'temp_bandwidth',4,        ... (Hz) temporal bandwidth
@@ -77,8 +79,8 @@ movingNoise = struct(...
     'n_dirs', 16, ...  number of directions of motion
     'ori_bands', 2, ...  orientation width expressed in units of 2*pi/n_dirs.  Must be integer
     'ori_modulation', 0, ...  mix-in proportion of oriented noise
-    'ori_on_secs', 0.875, ...  seconds of movement and orientation bias
-    'ori_off_secs', 1, ...  second with no movement or orientation bias
+    'ori_on_secs', 1.75, ...  seconds of movement and orientation bias
+    'ori_off_secs', 2, ...  second with no movement or orientation bias
     'speed', 0 ...  degrees per second
     )
     }}); %#ok<SFLD>
@@ -97,7 +99,7 @@ vanGogh = struct(...
     'contrast',    0.95,        ... Michelson's 0-1
     'duration', 30,            ... (seconds)
     'tex_ydim', 90,           ... (pixels) texture dimension
-    'tex_xdim', 128,           ... (pixels) texture dimension
+    'tex_xdim', 160,           ... (pixels) texture dimension
     'spatial_freq_half', 0.04, ... (cy/deg) spatial frequency modulated to 50 - deprecated in version 3
     'spatial_freq_stop', 0.3,  ... (cy/deg), spatial lowpass cutoff
     'temp_bandwidth', 4,       ... (Hz) temporal bandwidth
@@ -123,7 +125,7 @@ trippy = struct(...
     'contrast',    0.95,        ... Michelson's 0-1
     'duration', 60,            ... (seconds)
     'tex_ydim',  90,           ... (pixels) texture dimension
-    'tex_xdim', 128,           ... (pixels) texture dimension
+    'tex_xdim', 160,           ... (pixels) texture dimension
     'xnodes', 6, ...     % x dimension of low-res phase movie
     'ynodes', 6, ...      % y dimension of low-res phase movie
     'up_factor', 24, ...  % upscale factor from low-res to texture dimensions
@@ -134,19 +136,19 @@ trippy = struct(...
 
 
 trippyMonet = struct( ...
-    'prompt', 'TrippyMonet (30 mins)', ...
+    'prompt', 'TrippyMonet (40 mins)', ...
     'logger', logger(), ...
     'constants', setfield(constants, 'stimulus', 'grating'), ...
     'blocks', 1, ...
     'stim', {{
     setParams(stims.Trippy, psy.Trippy, ...
-    'rng_seed',    1:3,         ... RNG seed 1:150
+    'rng_seed',    1:20,         ... RNG seed 1:150
     'frame_downsample', 1,      ... 1=60 fps, 2=30 fps, 3=20 fps, 4=15 fps, etc
     'luminance',   10,           ... cd/m^2
     'contrast',    0.95,        ... Michelson's 0-1
     'duration', 60,            ... (seconds)
     'tex_ydim',  90,           ... (pixels) texture dimension
-    'tex_xdim', 128,           ... (pixels) texture dimension
+    'tex_xdim', 160,           ... (pixels) texture dimension
     'xnodes', 6, ...     % x dimension of low-res phase movie
     'ynodes', 6, ...      % y dimension of low-res phase movie
     'up_factor', 24, ...  % upscale factor from low-res to texture dimensions
@@ -155,11 +157,11 @@ trippyMonet = struct( ...
     'spatial_freq', 0.06 ...  % (cy/degree) approximate max. Actual frequency spectrum ranges propoprtionally.
     )
     setParams(stims.MovingNoise, psy.MovingNoise, ...
-    'rng_seed',    1:3,         ... RNG seed 1:60
+    'rng_seed',    1:20,         ... RNG seed 1:60
     'luminance',   10,           ... cd/m^2
     'contrast',    0.95,        ... Michelson's 0-1
     'tex_ydim',    90,          ... (pixels) texture dimension
-    'tex_xdim',    128,          ... (pixels) texture dimension
+    'tex_xdim',    160,          ... (pixels) texture dimension
     'spatial_freq_half', 0.04,  ... deprecated in version 3 -- (cy/deg) spatial frequency modulated to 50 - 
     'spatial_freq_stop',0.08,    ... (cy/deg), spatial lowpass cutoff
     'temp_bandwidth',4,        ... (Hz) temporal bandwidth
@@ -167,8 +169,8 @@ trippyMonet = struct( ...
     'n_dirs', 16, ...  number of directions of motion
     'ori_bands', 2, ...  orientation width expressed in units of 2*pi/n_dirs.  Must be integer
     'ori_modulation', 0, ...  mix-in proportion of oriented noise
-    'ori_on_secs', 0.875, ...  seconds of movement and orientation bias
-    'ori_off_secs', 1, ...  second with no movement or orientation bias
+    'ori_on_secs', 1.75, ...  seconds of movement and orientation bias
+    'ori_off_secs', 2, ...  second with no movement or orientation bias
     'speed', 0 ...  degrees per second
     )
     }}); %#ok<SFLD>

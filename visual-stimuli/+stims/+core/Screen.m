@@ -21,6 +21,7 @@ classdef Screen < handle
         frameInterval     % (seconds)
         flipCount         % the index of the last flip
         prevFlip          % (seconds)
+        contrastEnabled   %  when false, disables contrast and brightness settings and uses default monitor settings
     end
 
     properties(Access=private)
@@ -36,6 +37,7 @@ classdef Screen < handle
     end
     
     methods
+        
         function open(self)
             if ~self.isOpened
                 disp 'Configuring display...'
@@ -53,10 +55,12 @@ classdef Screen < handle
                 Priority(MaxPriority(self.win));
 
                 % Set luminance and contrast
-                disp 'Loading gamma'
-                self.savedSettings.gammaTable = Screen('ReadNormalizedGammaTable',self.win);
-                self.gammaData = load('~/stimulation/gammatable.mat');
-                self.setContrast(self.gammaData.luminance(end)/10, 0.5)  % while waiting, darken the screen to 1/10 of its max luminance
+                if self.contrastEnabled
+                    disp 'Loading gamma'
+                    self.savedSettings.gammaTable = Screen('ReadNormalizedGammaTable',self.win);
+                    self.gammaData = load('~/stimulation/gammatable.mat');
+                    self.setContrast(self.gammaData.luminance(end)/10, 0.5)  % while waiting, darken the screen to 1/10 of its max luminance
+                end
 
                 % create photodiode flip textures
                 self.flipRect = round(self.rect(3:4).*self.flipSize);
@@ -69,10 +73,18 @@ classdef Screen < handle
         end
         
         
+        function enableContrast(self, yes)
+            self.contrastEnabled = yes;
+        end
+        
+        
         function setContrast(self, luminance, contrast, binaryGray)
             % luminance = cd/m^2
             % contrast  = Michelson contrast between 0 and 1
             % if binaryGray=true - stepwise contrast to make sine gratings appear as square gratings
+            if ~self.contrastEnabled
+                return
+            end
             binaryGray = nargin>=4 && binaryGray;
             if isempty(self.luminance) || isepmty(self.contrast) || ...
                     contrast~=self.contrast || luminance~=self.luminance || self.binaryGray~=binaryGray
@@ -102,8 +114,10 @@ classdef Screen < handle
 
 
         function close(self)
-            disp 'restoring gamma'
-            Screen('LoadNormalizedGammaTable', self.win, self.savedSettings.gammaTable);
+            if self.contrastEnabled
+                disp 'restoring gamma'
+                Screen('LoadNormalizedGammaTable', self.win, self.savedSettings.gammaTable);
+            end
             Screen('Close',self.win);
             ShowCursor;
             self.savedSettings = [];
