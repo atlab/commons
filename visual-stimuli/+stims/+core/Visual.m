@@ -7,7 +7,7 @@ classdef Visual < handle
     % -- Dimitri Yatsenko, 2012-2015
     
     properties(Constant)
-        DEBUG = true
+        DEBUG = false
         screen = stims.core.Screen   % all stimuli share one static screen object
     end
     
