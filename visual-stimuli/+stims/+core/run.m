@@ -49,7 +49,7 @@ screen = stims.core.Visual.screen;
 
 % open parallel pool for trial inserts
 if isempty(gcp('nocreate'))
-    parpool('local',1);
+    parpool('local', 2);
 end
 
 if ~stims.core.Visual.DEBUG
