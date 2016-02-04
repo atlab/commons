@@ -95,15 +95,15 @@ classdef Trippy < dj.Relvar
             cond.tex_ydim = 90;  %
             cond.tex_xdim = 160;  %
             cond.duration = 60;   % (s) trial duration
-            cond.xnodes = 6;     % x dimension of low-res phase movie
+            cond.xnodes = 8;     % x dimension of low-res phase movie
             cond.ynodes = 6;      % y dimension of low-res phase movie
-            cond.up_factor = 48;  % upscale factor from low-res to texture dimensions
+            cond.up_factor = 24;  % upscale factor from low-res to texture dimensions
             cond.temp_freq = 2.5;   % (Hz) temporal frequency if the phase pattern were static
             cond.temp_kernel_length = 61;  % length of Hanning kernel used for temporal filter. Controls the rate of change of the phase pattern.
             cond.spatial_freq = 0.06;  % (cy/degree) approximate max. Actual frequency spectrum ranges propoprtionally.
             
             fps = 60;
-            screenSize = [128 90];  % degrees
+            screenSize = [160 90];  % degrees
             phase = psy.Trippy.make_packed_phase_movie(cond, fps, screenSize);
             
             phase = psy.Trippy.interp_time(phase, cond, fps);
