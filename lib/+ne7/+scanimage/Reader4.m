@@ -3,10 +3,13 @@ classdef Reader4 < handle
     %  indexed as reader(col, row, frame, slice, channel).
     %  It works with scanimage 4 and scanimage 5.
     %
-    %  Usage:
+    %  The reader can then be addressed with subscripts 
+    %         reader(y, x, channel, slice, frame)
+    %
+    %  Example:
     %    r = reader(filename_mask)
-    %    r(:,:,:,:,2);  % the entire stack from channel 2
-    %    r(:,:,1:10,1,2);   % first ten frames from slice 1 from channel 2
+    %    r(:,:,2,:,:);  % the entire stack from channel 2
+    %    r(:,:,2,1,1:10);   % first ten frames from slice 1 from channel 2
     
     properties(SetAccess=private)
         files
