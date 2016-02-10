@@ -67,7 +67,7 @@ movingNoise = struct(...
     'blocks', 1, ... % 100 for imaging @38000 frames
     'stim', {{
     setParams(stims.MovingNoise, psy.MovingNoise, ...
-    'rng_seed',    1:30,         ... RNG seed 1:60
+    'rng_seed',    1:30,         ... RNG seed 1:30
     'luminance',   10,           ... cd/m^2
     'contrast',    0.95,        ... Michelson's 0-1
     'tex_ydim',    90,          ... (pixels) texture dimension
@@ -78,10 +78,10 @@ movingNoise = struct(...
     'frame_downsample', 1,      ... 1=60 fps, 2=30 fps, 3=20 fps, 4=15 fps, etc
     'n_dirs', 16, ...  number of directions of motion
     'ori_bands', 2, ...  orientation width expressed in units of 2*pi/n_dirs.  Must be integer
-    'ori_modulation', 0, ...  mix-in proportion of oriented noise
-    'ori_on_secs', 1.75, ...  seconds of movement and orientation bias
-    'ori_off_secs', 2, ...  second with no movement or orientation bias
-    'speed', 0 ...  degrees per second
+    'ori_modulation', 1, ...  mix-in proportion of oriented noise
+    'ori_on_secs', 1.0, ...  seconds of movement and orientation bias
+    'ori_off_secs', 2.75, ...  second with no movement or orientation bias
+    'speed', 20 ...  degrees per second
     )
     }}); %#ok<SFLD>
 

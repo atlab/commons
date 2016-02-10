@@ -21,7 +21,7 @@ classdef MovingNoiseLookup < dj.Relvar
             %   degxy - visual degrees across x and y
             %   fps   - frames per second
             
-            key.moving_noise_version = 4;  % increment if you make any changes to the code below
+            key.moving_noise_version = 5;  % increment if you make any changes to the code below
             
             params = {cond degxy fps};
             hash = dj.DataHash(params);
@@ -84,8 +84,7 @@ classdef MovingNoiseLookup < dj.Relvar
                     offsets(i) = (i-0.5)*period + cond.ori_on_secs/2;
                     mix = abs(frametimes - (i-0.5)*(period)) < cond.ori_on_secs/2;  % apply motion in the middle
                     speed = speed - mix*exp(-1i*directions(i));
-                    mix = abs(frametimes - (i-0.5)*(period)) < (period-semi/fps)/2;   % apply orientation bias always
-                    mix = conv(double(mix),k,'same');
+                    mix = conv(double(mix),k,'same');   % smooth orientation bias
                     result = result + bsxfun(@times, biased-result, permute(mix,[3 2 1]));
                 end
                 m = result;
