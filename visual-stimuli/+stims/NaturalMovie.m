@@ -74,7 +74,7 @@ classdef NaturalMovie < stims.core.Visual
                 WaitSecs(cond.pre_blank);
             end
 %             self.screen.setContrast(cond.luminance, cond.contrast)
-            self.frameStep = cond.frame_downsample;
+            self.screen.frameStep = cond.frame_downsample;
             self.saveAfterEachTrial = true;
             for i=1:size(cond.movie,3)
                 if self.escape, break, end

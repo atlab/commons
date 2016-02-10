@@ -1,14 +1,7 @@
 function pick(menu)    % stims.pick allows picking one of several preconfigured visual stimuli�
 
-reload(psy.getSchema)  % preload to speed up the initialization
-
+fprintf '\n\n\nWelcome to stims.pick\n'
 parentTable = common.Animal;
-
-if nargin==0
-    menu = stims.menu;
-end
-
-clc, disp 'Welcome to stims.pick'
 
 % enter primary key
 while true

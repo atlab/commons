@@ -1,13 +1,17 @@
 % stims.core.Screen manages the visual stimulus display, incuding the coded
 % photodiode signal in the corner of the screen for synchronization.
 
-% -- Dimitri Yatsenko, 2012
+% -- Dimitri Yatsenko, 2012, 2016
 
 
 classdef Screen < handle
-    
+
     properties(Constant)
         flipSize  = [0.05 0.06];   %  the relative size of the photodiode texture
+    end
+    
+    properties
+        frameStep=1 % 1=full fps, 2=half, 3=third, etc
     end
     
     properties(SetAccess=private)
@@ -15,9 +19,11 @@ classdef Screen < handle
         win               % window pointer
         fps               % frames per second
         frameInterval     % (seconds)
+        flipCount         % the index of the last flip
         prevFlip          % (seconds)
+        contrastEnabled   %  when false, disables contrast and brightness settings and uses default monitor settings
     end
-    
+
     properties(Access=private)
         isOpened = false
         contrast     % currently set contrast
@@ -25,19 +31,20 @@ classdef Screen < handle
         binaryGray      % if true, use black and white images (e.g. square gratings)
         gammaData       % gamma table loaded from file
         savedSettings   % saved settings to restore upon closing
-        
+        flipTimes       % the flip times of the recent flips
         flipTex         % photodiode textures
         flipRect        % photodiode rectangle
     end
     
-    
     methods
+        
         function open(self)
             if ~self.isOpened
                 disp 'Configuring display...'
                 AssertOpenGL
                 sca
-                screen = min(Screen('Screens'));
+                % pix screen with the largest screen number
+                screen = max(Screen('Screens'));
                 [self.win, self.rect] = Screen('OpenWindow',screen,127,[],[],[],[],[], ...
                     mor(kPsychNeedFastBackingStore,kPsychNeed16BPCFloat));
                 AssertGLSL
@@ -46,13 +53,15 @@ classdef Screen < handle
                 self.fps = Screen(screen, 'FrameRate',[]);
                 self.frameInterval = Screen('GetFlipInterval', self.win);
                 Priority(MaxPriority(self.win));
-                
+
                 % Set luminance and contrast
-                disp 'Loading gamma'
-                self.savedSettings.gammaTable = Screen('ReadNormalizedGammaTable',self.win);
-                self.gammaData = load('~/stimulation/gammatable.mat');
-                self.setContrast(self.gammaData.luminance(end)/10, 0.5)  % while waiting, darken the screen to 1/10 of its max luminance
-                
+                if self.contrastEnabled
+                    disp 'Loading gamma'
+                    self.savedSettings.gammaTable = Screen('ReadNormalizedGammaTable',self.win);
+                    self.gammaData = load('~/stimulation/gammatable.mat');
+                    self.setContrast(self.gammaData.luminance(end)/10, 0.5)  % while waiting, darken the screen to 1/10 of its max luminance
+                end
+
                 % create photodiode flip textures
                 self.flipRect = round(self.rect(3:4).*self.flipSize);
                 x = 1:self.flipRect(1);
@@ -64,15 +73,22 @@ classdef Screen < handle
         end
         
         
+        function enableContrast(self, yes)
+            self.contrastEnabled = yes;
+        end
+        
         
         function setContrast(self, luminance, contrast, binaryGray)
             % luminance = cd/m^2
             % contrast  = Michelson contrast between 0 and 1
             % if binaryGray=true - stepwise contrast to make sine gratings appear as square gratings
+            if ~self.contrastEnabled
+                return
+            end
             binaryGray = nargin>=4 && binaryGray;
             if isempty(self.luminance) || isepmty(self.contrast) || ...
                     contrast~=self.contrast || luminance~=self.luminance || self.binaryGray~=binaryGray
-                
+
                 gammaTable = self.gammaData.gammaVals(:,1);
                 lumTab = self.gammaData.luminance;
                 minLum = lumTab(1);
@@ -81,7 +97,7 @@ classdef Screen < handle
                 maxLumNew = 2 * luminance - minLumNew;
                 x0 = 255 * (minLumNew - minLum) / (maxLum - minLum);
                 x255 = 255 * (maxLumNew - minLum) / (maxLum - minLum);
-                
+
                 if ~binaryGray
                     ramp = linspace(x0, x255, 254);
                 else
@@ -95,39 +111,69 @@ classdef Screen < handle
                 Screen('LoadNormalizedGammaTable', self.win, gammaTable * ones(1, 3));
             end
         end
-        
-        
+
+
         function close(self)
-            disp 'restoring gamma'
-            Screen('LoadNormalizedGammaTable', self.win, self.savedSettings.gammaTable);
+            if self.contrastEnabled
+                disp 'restoring gamma'
+                Screen('LoadNormalizedGammaTable', self.win, self.savedSettings.gammaTable);
+            end
             Screen('Close',self.win);
             ShowCursor;
             self.savedSettings = [];
             sca
             self.isOpened = false;
         end
+
+        
+        function setFlipCount(self, flipCount)
+            self.flipCount = flipCount;
+        end
+        
+        function flipTimes = clearFlipTimes(self)
+            flipTimes = self.flipTimes;
+            self.flipTimes = [];
+        end
         
         
-        function [flipTime, droppedFrames] = flip(self, flipCount, frameStep, dontClear)
+        function flip(self, dontLogFlips, dontClearScreen, dontCheckDroppedFrames)
+            % defaults:    self.flip(false, false, false)
+            dontLogFlips   = nargin>=2 && dontLogFlips;
+            dontClearScreen = nargin>=3 && dontClearScreen;
+            dontCheckDroppedFrames = nargin>=4 && dontCheckDroppedFrames;
+            
+            if ~dontLogFlips
+                self.flipCount = self.flipCount + 1;
+            end
+            
             % draw coded photodiode flip texture
-            if ~isempty(flipCount)
+            if ~isempty(self.flipCount)
                 Screen('DrawTexture', self.win, ...
-                    self.flipTex(flipCode(flipCount)), [],...
+                    self.flipTex(flipCode(self.flipCount)), [],...
                     [0 0 self.flipRect(1) self.flipRect(2)]);
             end
             % update screen
-            when = self.prevFlip+frameStep*self.frameInterval;
-            flipTime = Screen('Flip', self.win, when - 0.5*self.frameInterval, dontClear);
-            if isempty(when)
-                droppedFrames = 0;
-            else
+            when = self.prevFlip+self.frameStep*self.frameInterval;
+            flipTime = Screen('Flip', self.win, when - 0.5*self.frameInterval, double(dontClearScreen));
+            if ~isempty(when)
                 droppedFrames = round((flipTime - when)/self.frameInterval);
+                if ~dontCheckDroppedFrames
+                    % indicated dropped frames by a '$" or $(n) for n dropped frames
+                    if droppedFrames>5
+                        fprintf('$(%d)', droppedFrames)
+                    else
+                        fprintf(repmat('$',1,droppedFrames));
+                    end
+                end
             end
             self.prevFlip = flipTime;
+            if ~dontLogFlips
+                self.flipTimes(end+1) = flipTime;
+            end
         end
     end
-    
-    
+
+
     methods(Static)
         function ret = escape
             % Returns true if escape has been pressed.

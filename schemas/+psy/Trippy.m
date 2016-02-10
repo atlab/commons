@@ -67,7 +67,7 @@ classdef Trippy < dj.Relvar
             movie = zeros(cond.ynodes*f, cond.xnodes*f, size(phase,1));
             for i=1:size(phase,1)
                 movie(:,:,i) = psy.Trippy.frozen_upscale(reshape(phase(i,:),n),f);
-            end            
+            end
             % crop to screen size
             movie = movie(1:cond.tex_ydim, 1:cond.tex_xdim, :);
         end
@@ -90,30 +90,46 @@ classdef Trippy < dj.Relvar
         
         
         function test()
+            
             cond.rng_seed = 1;
-            cond.tex_ydim = 150;  %
-            cond.tex_xdim = 256;  %
-            cond.duration = 30;   % (s) trial duration
-            cond.xnodes = 12;     % x dimension of low-res phase movie
-            cond.ynodes = 8;      % y dimension of low-res phase movie
+            cond.tex_ydim = 90;  %
+            cond.tex_xdim = 160;  %
+            cond.duration = 60;   % (s) trial duration
+            cond.xnodes = 8;     % x dimension of low-res phase movie
+            cond.ynodes = 6;      % y dimension of low-res phase movie
             cond.up_factor = 24;  % upscale factor from low-res to texture dimensions
-            cond.temp_freq = 4;   % (Hz) temporal frequency if the phase pattern were static
+            cond.temp_freq = 2.5;   % (Hz) temporal frequency if the phase pattern were static
             cond.temp_kernel_length = 61;  % length of Hanning kernel used for temporal filter. Controls the rate of change of the phase pattern.
-            cond.spatial_freq = 0.20;  % (cy/degree) approximate max. Actual frequency spectrum ranges propoprtionally.
+            cond.spatial_freq = 0.06;  % (cy/degree) approximate max. Actual frequency spectrum ranges propoprtionally.
             
             fps = 60;
-            phase = psy.Trippy.make_packed_phase_movie(cond, fps, [128 76]);
+            screenSize = [160 90];  % degrees
+            phase = psy.Trippy.make_packed_phase_movie(cond, fps, screenSize);
             
             phase = psy.Trippy.interp_time(phase, cond, fps);
             phase = psy.Trippy.interp_space(phase, cond);
-            
-            sz = size(phase);
             movie = cos(2*pi*phase)/2+1/2;
+            
+            % plot statistics
+            degPerPixel = screenSize(2)/cond.tex_ydim;
+            [gx, gy] = gradient(phase, degPerPixel);
+            spatial_freq = sqrt(gx.^2 + gy.^2);
+            temp_freq = (phase(:,:,[2:end end]) - phase(:,:,[1 1:end-1]))*fps/2;
+            subplot 121,  hist(spatial_freq(:),300); box off, xlabel 'log spatial frequencies (cy/degree)'
+            xlim([0 0.2]), grid on
+            set(gca, 'YTickLabel', [])
+            subplot 122,  hist(abs(temp_freq(:)),300);   box off,  xlabel 'temporal frequencies (Hz)'
+            xlim([0 15]), grid on
+            set(gca, 'YTickLabel', [])
+            set(gcf, 'PaperSize', [8 3], 'PaperPosition', [0 0 8 3])
+            print -dpng ~/Desktop/trippy-stats
+            
+            % save movie
             v = VideoWriter('~/Desktop/trippy', 'MPEG-4');
             v.FrameRate = fps;
             v.Quality = 100;
             open(v)
-            writeVideo(v, permute(movie(1:sz(1),1:sz(2),:),[1 2 4 3]));
+            writeVideo(v, permute(movie, [1 2 4 3]));
             close(v)
         end
     end

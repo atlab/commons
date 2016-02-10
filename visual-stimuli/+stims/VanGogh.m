@@ -1,28 +1,7 @@
 classdef VanGogh < stims.core.Visual
     
-    properties
-        nBlocks = 1
+    methods(Access=protected)
         
-        params = struct(...
-            'rng_seed',    1:60,         ... RNG seed 1:150
-            'luminance',   10,           ... cd/m^2
-            'contrast',    0.95,        ... Michelson's 0-1
-            'duration', 30,            ... (seconds)
-            'tex_ydim', 150,           ... (pixels) texture dimension
-            'tex_xdim', 256,           ... (pixels) texture dimension
-            'spatial_freq_half', 0.04, ... (cy/deg) spatial frequency modulated to 50
-            'spatial_freq_stop', 0.3,  ... (cy/deg), spatial lowpass cutoff
-            'temp_bandwidth', 4,       ... (Hz) temporal bandwidth
-            'ori_bandwidth', pi / 20,  ... (rad) bandwidth of orientation filter
-            'ori_map_spatial_bandwidth', 0.05,  ... (cy/deg) spatial bandwidth for ori map
-            'ori_map_temp_bandwidth', 1,        ... (Hz) temporal bandwidth for ori map
-            'contrast_spatial_bandwidth', 0.03, ... (cy/deg) spatial bandwidth of contrast map
-            'contrast_temp_bandwidth', 1,       ... (Hz) temporal bandwidth of contrast map
-            'contrast_exponent', 1/3            ... exponent of power function for contrast map
-            )
-    end
-     
-    methods
         function d = degPerPix(self)
             % assume isometric pixels
             rect = self.rect;
@@ -30,12 +9,8 @@ classdef VanGogh < stims.core.Visual
                 rect = [0 0 1024 600];
             end
             d = 180/pi*self.constants.monitor_size*2.54/norm(rect(3:4))/self.constants.monitor_distance;
-        end           
-    end
-    
-   
-    
-    methods(Access=protected)
+        end
+        
         
         function prepare(self)
             if ~isfield(self.conditions, 'movie')
@@ -65,7 +40,10 @@ classdef VanGogh < stims.core.Visual
                 self.conditions = newConditions;
             end
         end
-        
+    end
+    
+    
+    methods
         function showTrial(self, cond)
             % execute a single trial with a single cond
             % See PsychToolbox DriftDemo4.m for API calls
@@ -85,13 +63,12 @@ classdef VanGogh < stims.core.Visual
                 }, fieldnames(cond))))
             
             self.screen.setContrast(cond.luminance, cond.contrast)
-            self.frameStep = cond.frame_downsample;
-            self.saveAfterEachTrial = true;
+            self.screen.frameStep = cond.frame_downsample;
             for i=1:size(cond.movie,3)
                 if self.escape, break, end
                 tex = Screen('MakeTexture', self.win, cond.movie(:,:,i));
                 Screen('DrawTexture',self.win, tex, [], self.rect)
-                self.flip(false, false, i==1)
+                self.screen.flip(false, false, i==1)
                 Screen('close',tex)
             end
         end
