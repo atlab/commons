@@ -85,7 +85,8 @@ classdef Reader4 < handle
                 end
             else
                 if self.nslices >= 1
-                    fps = 1/self.header.hFastZ_period;
+                    %fps = 1/self.header.hFastZ_period;
+                    fps = self.header.hRoiManager_scanVolumeRate;
                 else
                     fps = self.header.hRoiManager_scanFrameRate;
                 end
