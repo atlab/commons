@@ -9,6 +9,16 @@ trialTable = psy.Trial;
 [photodiode_flip_indices, photodiode_flip_numbers] = ...
     stims.analysis.whichFlips(photodiode_signal, photodiode_fs, fps);
 
+% remove duplicated numbers due to terminated programs
+ix = ~isnan(photodiode_flip_numbers);
+photodiode_flip_indices = photodiode_flip_indices(ix); 
+photodiode_flip_numbers = photodiode_flip_numbers(ix);
+ix = find(photodiode_flip_numbers(2:end) <= photodiode_flip_numbers(1:end-1), 1, 'last');
+if ~isempty(ix)
+    photodiode_flip_indices = photodiode_flip_indices(ix+1:end); 
+    photodiode_flip_numbers = photodiode_flip_numbers(ix+1:end);
+end
+    
 % consider all trials with flip nums within the min and max of detected flip nums
 trials = trialTable & key & ...
     sprintf('last_flip_count between %d and %d', min(photodiode_flip_numbers), max(photodiode_flip_numbers));
@@ -17,7 +27,13 @@ trials = trialTable & key & ...
 [psy_id, last_flip_in_trial, trial_flip_times] = fetchn(trials,...
     'psy_id', 'last_flip_count', 'flip_times', 'ORDER BY trial_idx');
 
-assert(all(psy_id == psy_id(1)), 'Multiple psy.Sessions per scan: not allowed.');
+if any(psy_id ~= psy_id(1))
+    warning 'Multiple psy.Sessions per scan: not allowed.'
+    same_session = mode(psy_id)==psy_id;
+    psy_id = psy_id(same_session);
+    last_flip_in_trial = last_flip_in_trial(same_session); 
+    trial_flip_times = trial_flip_times(same_session);
+end
 key.psy_id = psy_id(1);
 sync_info = key;
 
@@ -35,8 +51,8 @@ photodiode_flip_indices = photodiode_flip_indices(ix);
 photodiode_flip_numbers = photodiode_flip_numbers(ix);
 trial_flip_times = trial_flip_times(ismember(trial_flip_numbers, photodiode_flip_numbers));
 
-% regress the photodiode_signal indices against the vis stim times to get the
-% photodiode_signal signal time on the stimulus clock. Assumes uninterrupted uniform sampling of photodiode_signal!!!
+% regress the photodiode_signal indices against the stimulus times to get the
+% photodiode_signal signal time on stimulus clock. Assumes uninterrupted uniform sampling of photodiode_signal!!!
 photodiode_flip_times = photodiode_flip_indices/photodiode_fs;
 b = robustfit(photodiode_flip_times, trial_flip_times-trial_flip_times(1));
 sync_info.signal_start_time = b(1) + trial_flip_times(1);
@@ -45,15 +61,15 @@ time_discrepancy =  (b(1) + photodiode_flip_times*b(2)) -  (trial_flip_times(:)-
 assert(max(abs(time_discrepancy)) < 0.02, ...
     'Incorrectly detected flips. Time discrepancy = %f s', max(abs(time_discrepancy)))
 
-% find first and last trials entirely within signal
-trials = fetch(trialTable & key, 'trial_idx', 'flip_times');
+% find first and last trials overlapping signal
+trials = fetch(trialTable & key, 'trial_idx', 'flip_times', 'ORDER BY trial_idx');
 i=1;
 while trials(i).flip_times(end) < sync_info.signal_start_time
     i=i+1;
 end
 sync_info.first_trial = trials(i).trial_idx;
 i=length(trials);
-while trials(i).flip_times(1) - sync_info.signal_start_time > sync_info.signal_duration
+while trials(i).flip_times(1) > sync_info.signal_start_time + sync_info.signal_duration
     i=i-1;
 end
 sync_info.last_trial = trials(i).trial_idx;
