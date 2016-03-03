@@ -62,7 +62,8 @@ classdef Reader4 < handle
         
         function f = get.is_functional(self)
             if self.scanimage_version == 4
-                f = 0;
+                f = 1;
+                %f = self.header.fastZEnable;
             else
                 f = self.header.hFastZ_enable;
             end
@@ -142,7 +143,11 @@ classdef Reader4 < handle
             if self.is_functional
                 n = sum(cellfun(@(s) size(s, 5), self.stacks));
             else
-                n = self.header.hStackManager_framesPerSlice;
+                if self.scanimage_version == 4
+                    n = self.header.acqNumFrames;
+                else
+                    n = self.header.hStackManager_framesPerSlice;
+                end
             end
         end
         
