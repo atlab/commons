@@ -12,6 +12,7 @@ classdef Reader4 < handle
     %    r(:,:,2,1,1:10);   % first ten frames from slice 1 from channel 2
     
     properties(SetAccess=private)
+        data
         files
         stacks
         header
@@ -30,6 +31,7 @@ classdef Reader4 < handle
         dwell_time
         bidirectional
         fill_fraction
+        is_functional
     end
     
     methods
@@ -58,12 +60,21 @@ classdef Reader4 < handle
             end
         end
         
+        function f = get.is_functional(self)
+            if self.scanimage_version == 4
+                f = 0;
+            else
+                f = self.header.hFastZ_enable;
+            end
+        end
+                
+        
         function n = get.nslices(self)
             if self.scanimage_version == 4
                 n = self.header.stackNumSlices;
             else
                 n = self.header.hStackManager_numSlices;
-                assert(n == self.header.hFastZ_numFramesPerVolume)
+                %assert(n == self.header.hFastZ_numFramesPerVolume)
             end
         end
         
@@ -128,7 +139,11 @@ classdef Reader4 < handle
         
         function n = get.nframes(self)
             % actually acquired frames
-            n = sum(cellfun(@(s) size(s, 5), self.stacks));
+            if self.is_functional
+                n = sum(cellfun(@(s) size(s, 5), self.stacks));
+            else
+                n = self.header.hStackManager_framesPerSlice;
+            end
         end
         
         function yes = get.bidirectional(self)
@@ -160,14 +175,20 @@ classdef Reader4 < handle
         end
         
         function sz = size(self)
-            sz = size(self.stacks{1});
-            sz(5) = self.nframes;
+            if self.is_functional
+                sz = size(self.stacks{1});
+                sz(5) = self.nframes;
+            else
+                sz = size(self.data);
+            end
         end
         
         
         function data = subsref(self, S)
             if ~strcmp(S(1).type, '()')
                 data = builtin('subsref', self, S);
+            elseif ~self.is_functional
+                data = builtin('subsref', self.data, S);
             else
                 assert(length(S.subs)==5, 'subscript error')
                 frame_indices = S.subs{5};
@@ -234,9 +255,27 @@ classdef Reader4 < handle
         end
         
         function init_stacks(self)
-            self.stacks = arrayfun(@(ifile) ...
-                TIFFStack(self.files{ifile}, [], [length(self.channels) self.nslices]), ...
-                1:length(self.files), 'uni', false);
+            if self.is_functional
+                self.stacks = arrayfun(@(ifile) ...
+                    TIFFStack(self.files{ifile}, [], [length(self.channels) self.nslices]), ...
+                    1:length(self.files), 'uni', false);
+            else
+                % if structural data, then load the entire stack into
+                % memory. The loaded data is initially flat and needs
+                % reshaping as well as permutation of axis as frames and
+                % slices are flipped.
+                data = [];
+                for idx = 1:length(self.files)
+                    stack = TIFFStack(self.files{idx}, [], length(self.channels));
+                    data = cat(4, data, stack(:,:,:,:));
+                end
+                sz = size(data);
+                assert(sz(4) == self.nframes * self.nslices, ...
+                    sprintf(['stack size mismatch: expected %d images but only %d '...
+                    'found -- be sure to load all files together'], self.nframes*self.nslices, sz(4)));
+                sz = [sz(1:end-1) self.nframes self.nslices];
+                self.data = permute(reshape(data, sz), [1,2,3,5,4]);
+            end
         end
         
     end
