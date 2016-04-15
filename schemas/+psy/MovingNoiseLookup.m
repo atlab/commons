@@ -9,11 +9,24 @@ moving_noise_lookup_ts=CURRENT_TIMESTAMP: timestamp            # automatic
 %}
 
 classdef MovingNoiseLookup < dj.Relvar
-    properties(Constant)
-        table = dj.Table('psy.MovingNoiseLookup')
-    end
     
     methods
+        function saveMovie(self, filename)
+            if ~exist('filename','var')
+                filename = '~/Desktop/monet';
+            end
+            assert(self.count==1, 'one movie at a time please')
+            [params, movie] = self.fetch1('params', 'cached_movie');
+            
+            v = VideoWriter(filename, 'MPEG-4');
+            v.FrameRate = params{3};
+            v.Quality = 100;
+            open(v)
+            writeVideo(v, permute(movie, [1 2 4 3]));
+            close(v)
+        end
+
+        
         function [m, key] = lookup(self, cond, degxy, fps)
             % make noise stimulus movie  and update condition
             % INPUTS:
