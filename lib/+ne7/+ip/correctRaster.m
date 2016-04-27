@@ -3,7 +3,7 @@ function img = correctRaster(img, rasterPhase, fillFraction)
 % rasterPhase is the phase different between left-right and right-left scan
 % lines. 
 %
-% img size [x y nSlices nFrames].   2D and 3D images also work
+% img size [x y nSlices nFrames].   2D, 3D, 4D images also work
 
 
 sz = [size(img,1) size(img,2) size(img,3) size(img,4)];

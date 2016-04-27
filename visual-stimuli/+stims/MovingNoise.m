@@ -21,6 +21,7 @@ classdef MovingNoise < stims.core.Visual
                 end
                 fps = self.screen.fps;
                 if isempty(fps)
+                    disp 'Not using display.  Using 60 fps default'
                     fps = 60;
                 end
                 newConditions = [];
