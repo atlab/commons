@@ -574,14 +574,8 @@ classdef plots
                 h = findobj(101,'tag','index');
                 set(h,'string',[num2str(d.keyInd) '/' num2str(length(d.key))]);
             else
-                d.type = input('Please enter the type of the spotmap: ');
-                
-                if d.type==1
-                    d.key = fetch(opt.SpotMap(varargin{:}))';
-                else
-                    d.key = fetch(opt.SpotMap2(varargin{:}))';
-                end
-                if ~length(d.key)
+                d.key = fetch(opt.BarrelMap & varargin{:})';
+                if isempty(d.key)
                     warning('No tuples found');
                     return
                 end
@@ -591,7 +585,76 @@ classdef plots
                 if length(d.key)>1
                     uicontrol('string','<<','units','pixels','position',[0 5 50 20],'tag','prev','callback',@opt.plots.BarrelMap)
                     uicontrol('style','text','units','pixels','position',[60 5 50 20],'tag','index','string',[num2str(d.keyInd) '/' num2str(length(d.key))])
-                    uicontrol('string','>>','units','pixels','position',[120 5 50 20],'tag','next','callback',@opt.plots.SpotMapMerge)
+                    uicontrol('string','>>','units','pixels','position',[120 5 50 20],'tag','next','callback',@opt.plots.BarrelMap)
+                end
+            end
+            
+            % fetch barrel map
+            key = d.key(d.keyInd);
+            amp = fetch1(opt.BarrelMap & key,'barrel_amp');
+            
+            % fetch structure
+            structKey.animal_id=key.animal_id;
+            structKey.opt_sess=key.opt_sess;
+            structImg=fetchn(opt.Structure(structKey),'structure_img');
+            structMask=fetchn(opt.StructureMask(structKey),'structure_mask');
+            if length(structImg)>1
+                structImg=structImg{end};
+                warning('More than one structural image for this session. Using {end}');
+            end
+            
+            if length(structMask)>1
+                structMask=structMask{1};
+                warning('More than one structural mask for this session. Using {1}');
+            end
+            
+            structImg=double(structImg{1}.*uint8(structMask{1}));
+            
+            amp = bsxfun(@times, amp, double(structMask{1}));
+            
+            % filter spotmap
+            k = hamming(5);
+            k = k/sum(k);
+            amp = imfilter(amp,k,'symmetric');
+            amp = imfilter(amp,k','symmetric');
+            img = amp;
+            
+           
+            % plot barrel map
+            figure(101)
+            h=imagesc(img,[-1 1]*max(abs(img(:))));
+            
+            set(h,'buttondownfcn',@opt.plots.moveMarker);
+            colormap('gray')
+            axis image
+            set(gca,'xdir','reverse','xtick',[],'ytick',[])
+
+            p=get(gca,'position');
+            p=[p(1) p(2)-.01 p(3) .03];
+            c=caxis;
+            uicontrol('style','slider','min',c(1)-.005,'max',c(1)+.005,'value',c(1),'units','normalized','position',p,'tag','min','callback',@opt.plots.slider,'userdata',gca);
+            uicontrol('style','slider','min',c(2)-.005,'max',c(2)+.005,'value',c(2),'units','normalized','position',p-[0 .03 0 0],'tag','max','callback',@opt.plots.slider,'userdata',gca);
+            
+            % Structural image
+            figure(102)
+            hold off
+            h=imagesc(structImg); colormap('gray');
+            set(h,'buttondownfcn',@opt.plots.moveMarker);
+            keyTitle(structKey);
+            axis image
+            set(gca,'xdir','reverse','xtick',[],'ytick',[])
+            p=get(gca,'position');
+            p=[p(1) p(2)-.03 p(3) .03];
+            uicontrol('style','slider','min',0,'max',127,'value',0,'units','normalized','position',p,'tag','min','callback',@opt.plots.slider,'userdata',gca);
+            uicontrol('style','slider','min',128,'max',255,'value',255,'units','normalized','position',p-[0 .03 0 0],'tag','max','callback',@opt.plots.slider,'userdata',gca);
+            
+            h = [findobj(101,'type','axes');findobj(102,'type','axes')];
+            for i=1:length(h)
+                if  isempty(get(h(i),'userdata')) || ~ishandle(get(h(i),'userdata'))
+                    axes(h(i));
+                    hold on
+                    pHandle = plot(0,0,'marker','x','linewidth',2);
+                    set(h(i),'userdata',pHandle);
                 end
             end
         end
