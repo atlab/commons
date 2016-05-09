@@ -45,6 +45,34 @@ class Source(dj.Lookup):
 
 
 @schema
+class Virus(dj.Manual):
+    definition = """
+    # table of viruses
+    virus_id                    : int  # unique id for each produced or purchased virus
+    ---
+    -> Gene
+    -> Type
+    -> Source
+    virus_lot=NULL              : varchar(64)               # virus lot
+    virus_titer=NULL            : float                     # virus titer
+    virus_notes=""              : varchar(4095)             # free-text notes
+    virus_ts=CURRENT_TIMESTAMP  : timestamp                 # automatic
+    """
+
+
+@schema
+class Serotype(dj.Lookup):
+    definition = """
+    # virus serotypes
+
+    serotype            : char(12)    # serotype of the virus
+    ---
+    """
+
+    contents = [(s,) for s in ['AAV2/1', 'AAV2', 'AAV2/5', 'AAV2/8']]
+
+
+@schema
 class Promoter(dj.Lookup):
     definition = """
     # table of viral promoters
@@ -68,11 +96,22 @@ class ViralPromoter(dj.Manual):
 
 
 @schema
+class ViralSerotype(dj.Manual):
+    definition = """
+    # membership table for viral serotypes
+
+    -> Virus
+    ---
+    -> Serotype
+    """
+
+
+@schema
 class Opsin(dj.Lookup):
     definition = """
     # lookup table of virus opsins
 
-    opsin_id     : char(12)  # identifier of the opsin
+    opsin_id     : char(25)  # identifier of the opsin
     ---
 
     """
@@ -99,45 +138,6 @@ class Conditional(dj.Manual):
     -> Virus
     ---
     condition     : enum('floxed','flipped','tet-on','tet-off')
-    """
-
-
-@schema
-class Serotype(dj.Lookup):
-    definition = """
-    # virus serotypes
-
-    serotype            : char(12)    # serotype of the virus
-    ---
-    """
-
-    contents = [(s,) for s in ['AAV2/1', 'AAV2', 'AAV2/5', 'AAV2/8']]
-
-
-@schema
-class ViralSerotype(dj.Manual):
-    definition = """
-    # membership table for viral serotypes
-
-    -> Virus
-    ---
-    -> Serotype
-    """
-
-
-@schema
-class Virus(dj.Manual):
-    definition = """
-    # table of viruses
-    virus_id                    : int  # unique id for each produced or purchased virus
-    ---
-    -> Gene
-    -> Type
-    -> Source
-    virus_lot=NULL              : varchar(64)               # virus lot
-    virus_titer=NULL            : float                     # virus titer
-    virus_notes=""              : varchar(4095)             # free-text notes
-    virus_ts=CURRENT_TIMESTAMP  : timestamp                 # automatic
     """
 
 
