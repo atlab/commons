@@ -3,30 +3,47 @@ import datajoint as dj
 schema = dj.schema('common_virus', locals())
 
 
+
+
 @schema
 class Gene(dj.Manual):
     definition = """
     # lookup table of virus genes
 
-    gene_id                     : char(12)      # identifier of the gne
+    gene_name                   : char(30)      # identifier of the gne
     ---
-    function                    : varchar(1024) # anticipated function of that gene
-    dna_source                  : varchar(255)  # source of the DNA
+    function=NULL               : varchar(1024) # anticipated function of that gene
+    dna_source=NULL             : varchar(255)  # source of the DNA
     risk="no known risk"        : varchar(512) # risk for humans
     """
 
+@schema
+class Construct(dj.Manual):
+    definition = """
+    # combinations of several genes
+
+    construct_id        : char(80)
+    """
+@schema
+class ConstructGene(dj.Manual):
+    definition = """
+    # genes in a construct
+
+    ->Construct
+    gene_name       : char(30) # name of the gene
+    """
 
 @schema
 class Type(dj.Lookup):
     definition = """
     # table of virus types
 
-    virus_type      : char(12)      # unique identifier for the virus type
+    virus_type      : char(30)      # unique identifier for the virus type
     ---
 
     """
 
-    contents = [(t,) for t in ['AAV', 'Rabies', 'Lenti']]
+    contents = [(t,) for t in ['AAV', 'Rabies', 'Lenti','Herpes']]
 
 
 @schema
@@ -34,14 +51,13 @@ class Source(dj.Lookup):
     definition = """
     # table of vendors and sources of viruses
 
-    source_id        : tinyint      # index of the source
+    source_id        : varchar(20)  # source identifier
     ---
-    source_name      : varchar(50)  # real name of the source
     """
 
     @property
     def contents(self):
-        yield from enumerate(['Penn', 'UNC', 'Homegrown', 'MIT'])
+        yield from zip(['Penn', 'UNC', 'Homegrown', 'MIT'])
 
 
 @schema
@@ -50,7 +66,7 @@ class Virus(dj.Manual):
     # table of viruses
     virus_id                    : int  # unique id for each produced or purchased virus
     ---
-    -> Gene
+    -> Construct
     -> Type
     -> Source
     virus_lot=NULL              : varchar(64)               # virus lot
@@ -65,7 +81,7 @@ class Serotype(dj.Lookup):
     definition = """
     # virus serotypes
 
-    serotype            : char(12)    # serotype of the virus
+    serotype            : char(30)    # serotype of the virus
     ---
     """
 
@@ -77,7 +93,7 @@ class Promoter(dj.Lookup):
     definition = """
     # table of viral promoters
 
-    promoter        : char(12)   # promotor
+    promoter        : char(30)   # promotor
     ---
     """
 
@@ -111,12 +127,14 @@ class Opsin(dj.Lookup):
     definition = """
     # lookup table of virus opsins
 
-    opsin_id     : char(25)  # identifier of the opsin
+    opsin     : char(30)  # identifier of the opsin
     ---
 
     """
 
-    contents = [(o,) for o in ['ChR2(H134R)', 'ChR2(E123T/T159C)', 'ArchT1.0']]
+    @property
+    def contents(self):
+        yield from zip(['ChR2(H134R)', 'ChR2(E123T/T159C)', 'ArchT1.0', 'ArchT3.0', 'SwiChR(C128A)'])
 
 
 @schema
@@ -146,8 +164,8 @@ class ViralPlasmid(dj.Manual):
     definition = """
     # table of viral plasmids
 
-    -> Gene
-    viral_vector    : char(20)      # name of the eukaryotic vector
+    -> Construct
+    viral_vector    : char(30)      # name of the eukaryotic vector
     ---
     point_of_use    : varchar(255)  # species of cells
     """
@@ -158,7 +176,7 @@ class ProcaryoticPlasmid(dj.Manual):
     definition = """
     # table of bacterial plasmids
 
-    -> Gene
+    -> Construct
     procaryotic_vector    : char(20)      # name of the eukaryotic vector
     ---
     point_of_use          : varchar(255)  # species of cells
