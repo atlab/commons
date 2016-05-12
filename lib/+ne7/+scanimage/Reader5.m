@@ -1,5 +1,5 @@
-classdef Reader4 < handle
-    %  ne7.scanimage.Reader4 is a ScanImage filereader with random access
+classdef Reader5 < handle
+    %  ne7.scanimage.Reader5 is a ScanImage filereader with random access
     %  indexed as reader(col, row, frame, slice, channel).
     %  It works with scanimage 4 and scanimage 5.
     %
@@ -17,13 +17,14 @@ classdef Reader4 < handle
         stacks
         header
         scanimage_version
+        nframes
+        frames_per_file
     end
-    
+        
     properties(Dependent)
         nslices
         channels
         nchannels
-        nframes
         requested_frames
         zoom
         slice_pitch
@@ -36,7 +37,7 @@ classdef Reader4 < handle
     
     methods
         
-        function self = Reader4(path)
+        function self = Reader5(path)
             % r = reso.reader('/fullpath/file_001_*.tif')
             % Opens the stack reader.  All files that match the mask are
             % treated as one movie.  The files matching the mask are sorted
@@ -45,6 +46,7 @@ classdef Reader4 < handle
             self.find_files(path)
             self.load_header
             self.init_stacks
+            self.compute_nframes
             
             if self.scanimage_version == 4
                 assert(strcmp(self.header.fastZImageType, 'XY-Z'), ...
@@ -68,7 +70,7 @@ classdef Reader4 < handle
                 f = self.header.hFastZ_enable;
             end
         end
-                
+        
         
         function n = get.nslices(self)
             if self.scanimage_version == 4
@@ -133,22 +135,13 @@ classdef Reader4 < handle
                     n = self.header.acqNumFrames;
                 end
             else
-                n = self.header.hFastZ_numVolumes;
-            end
-            
-        end
-        
-        function n = get.nframes(self)
-            % actually acquired frames
-            if self.is_functional
-                n = sum(cellfun(@(s) size(s, 5), self.stacks));
-            else
-                if self.scanimage_version == 4
-                    n = self.header.acqNumFrames;
+                if self.header.hFastZ_enable
+                    n = self.header.hFastZ_numVolumes;
                 else
-                    n = self.header.hStackManager_framesPerSlice;
+                    n = hStackManager_framesPerSlice;
                 end
             end
+            
         end
         
         function yes = get.bidirectional(self)
@@ -181,7 +174,10 @@ classdef Reader4 < handle
         
         function sz = size(self)
             if self.is_functional
-                sz = size(self.stacks{1});
+                sz(1) = self.header.hRoiManager_linesPerFrame; % not sure this is lines or pixels (JR)
+                sz(2) = self.header.hRoiManager_pixelsPerLine; % not sure this is lines or pixels (JR)
+                sz(3) = self.nchannels;
+                sz(4) = self.nslices;
                 sz(5) = self.nframes;
             else
                 sz = size(self.data);
@@ -196,29 +192,61 @@ classdef Reader4 < handle
                 data = builtin('subsref', self.data, S);
             else
                 assert(length(S.subs)==5, 'subscript error')
-                frame_indices = S.subs{5};
-                if ischar(frame_indices) && strcmp(frame_indices, ':')
-                    frame_indices = 1:self.nframes;
+                sz = size(self);
+                
+                yInd = S.subs{1};
+                if ischar(yInd) && strcmp(yInd, ':')
+                    yInd = 1:sz(1);
                 end
-                subs = S.subs(1:4);
-                assert(isnumeric(frame_indices) && ...
-                    all(frame_indices == round(frame_indices)) && ...
-                    all(frame_indices >= 1) && ...
-                    all(frame_indices <= self.nframes), ...
-                    'invalid frame subscript')
-                data = zeros(0, 'int16');
-                for i=1:length(frame_indices)
-                    iframe = frame_indices(i);
-                    for istack=1:length(self.stacks)
-                        frames_in_stack = size(self.stacks{istack}, 5);
-                        if iframe <= frames_in_stack
-                            data(:,:,:,:,i) = self.stacks{istack}(subs{:}, iframe);
-                            break
-                        else
-                            iframe = iframe - frames_in_stack;
-                        end
+                assert(isnumeric(yInd) && all(yInd == round(yInd)) &&...
+                    all(yInd >= 1) && all(yInd <= sz(1)), 'invalid pixel subscripts')
+                
+                xInd = S.subs{2};
+                if ischar(xInd) && strcmp(xInd, ':')
+                    xInd = 1:sz(2);
+                end
+                assert(isnumeric(xInd) && all(xInd == round(xInd)) &&...
+                    all(xInd >= 1) && all(xInd <= sz(2)), 'invalid line subscripts')
+                
+                chanInd = S.subs{3};
+                if ischar(chanInd) && strcmp(chanInd, ':')
+                    chanInd = 1:self.nchannels;
+                end
+                assert(isnumeric(chanInd) && all(chanInd == round(chanInd)) &&...
+                    all(chanInd >= 1) && all(chanInd <= self.nchannels), 'invalid channel subscript')
+                
+                sliceInd = S.subs{4};
+                if ischar(sliceInd) && strcmp(sliceInd, ':')
+                    sliceInd = 1:self.nslices;
+                end
+                assert(isnumeric(sliceInd) && all(sliceInd == round(sliceInd)) &&...
+                    all(sliceInd >= 1) && all(sliceInd <= self.nslices), 'invalid slice subscript')
+                
+                frameInd = S.subs{5};
+                if ischar(frameInd) && strcmp(frameInd, ':')
+                    frameInd = 1:self.nframes;
+                end
+                assert(isnumeric(frameInd) && all(frameInd == round(frameInd)) &&...
+                    all(frameInd >= 1) && all(frameInd <= self.nframes), 'invalid frame subscript')
+                
+                ind = false(sz(3:5));
+                ind(chanInd,sliceInd,frameInd) = true;
+                
+                data = zeros([length(yInd) length(xInd) length(chanInd)*length(sliceInd)*length(frameInd)], 'int16');
+                k=1;
+                for i=1:length(self.stacks)
+                    stackInd = find(ind(sum(self.frames_per_file(1:i-1))+1 : sum(self.frames_per_file(1:i))));
+                    if ~isempty(stackInd)
+                        disp(['Loading ' num2str(length(stackInd)) ' frames from ' self.files{i}]);
+                    end
+                    for j=stackInd
+                        setDirectory(self.stacks{i},j);
+                        f = read(self.stacks{i});
+                        data(:,:,k) = f(yInd,xInd);
+                        k=k+1;
                     end
                 end
+                data = reshape(data,[length(yInd) length(xInd) length(chanInd) length(sliceInd) length(frameInd)]);
             end
         end
         
@@ -226,6 +254,30 @@ classdef Reader4 < handle
     
     
     methods(Access=private)
+        
+        function compute_nframes(self)
+            % actually acquired frames or volumes
+            if self.scanimage_version == 4
+                n = self.header.acqNumFrames;
+            else
+                n = (length(self.files)-1) * self.header.hScan2D_logFramesPerFile;
+                
+                disp('Reading number of frames in last file...');
+                k=1; 
+                while ~lastDirectory(self.stacks{end})
+                    nextDirectory(self.stacks{end}); 
+                    k=k+1; 
+                end; 
+                setDirectory(self.stacks{end},1);
+                
+                n = (n + (k / self.nchannels)) / self.nslices;
+                
+                assert(n == round(n),'Total nframes / nslices must be an integer. Maybe scan aborted?')
+            end
+            self.nframes = n;
+            self.frames_per_file(1:length(self.files)-1) = deal(self.header.hScan2D_logFramesPerFile * self.nchannels);
+            self.frames_per_file(length(self.files)) = k;
+        end
         
         function find_files(self, path)
             file_list = dir(path);  % may contain a wild card
@@ -262,8 +314,14 @@ classdef Reader4 < handle
         function init_stacks(self)
             if self.is_functional
                 self.stacks = arrayfun(@(ifile) ...
-                    TIFFStack(self.files{ifile}, [], [length(self.channels) self.nslices]), ...
+                    Tiff(self.files{ifile}), ...
                     1:length(self.files), 'uni', false);
+                
+                %self.stacks = arrayfun(@(ifile) ...
+                %    TIFFStack(self.files{ifile}, [], [self.nchannels self.nslices]), ...
+                %    1:length(self.files), 'uni', false);
+                
+                %self.stacks = arrayfun(@(ifile) TIFFStack(self.files{ifile}),1:length(self.files), 'uni', false);
             else
                 % if structural data, then load the entire stack into
                 % memory. The loaded data is initially flat and needs
@@ -271,7 +329,7 @@ classdef Reader4 < handle
                 % slices are flipped.
                 data = [];
                 for idx = 1:length(self.files)
-                    stack = TIFFStack(self.files{idx}, [], length(self.channels));
+                    stack = TIFFStack(self.files{idx}, [], self.nchannels);
                     data = cat(4, data, stack(:,:,:,:));
                 end
                 sz = size(data);

@@ -25,13 +25,4 @@ INDEX(temp_freq)
 
 
 classdef Grating < dj.Relvar
-    properties(Constant)
-        table = dj.Table('psy.Grating')
-    end
-    
-    methods
-        function self = Grating(varargin)
-            self.restrict(varargin)
-        end
-    end
 end
