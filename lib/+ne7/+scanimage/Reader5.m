@@ -270,13 +270,13 @@ classdef Reader5 < handle
                 end; 
                 setDirectory(self.stacks{end},1);
                 
-                n = (n + (k / self.nchannels)) / self.nslices;
+                n = floor((n + (k / self.nchannels)) / self.nslices);
                 
-                assert(n == round(n),'Total nframes / nslices must be an integer. Maybe scan aborted?')
+%                 assert(n == round(n),'Total nframes / nslices must be an integer. Maybe scan aborted?')
             end
             self.nframes = n;
             self.frames_per_file(1:length(self.files)-1) = deal(self.header.hScan2D_logFramesPerFile * self.nchannels);
-            self.frames_per_file(length(self.files)) = k;
+            self.frames_per_file(length(self.files)) = n - sum(self.frames_per_file);
         end
         
         function find_files(self, path)
