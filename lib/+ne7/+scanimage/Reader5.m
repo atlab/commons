@@ -276,7 +276,8 @@ classdef Reader5 < handle
             end
             self.nframes = n;
             self.frames_per_file(1:length(self.files)-1) = deal(self.header.hScan2D_logFramesPerFile * self.nchannels);
-            self.frames_per_file(length(self.files)) = n - sum(self.frames_per_file); 
+            self.frames_per_file(length(self.files)) = n - sum(self.frames_per_file);
+
         end
         
         function find_files(self, path)
