@@ -3,8 +3,6 @@ import datajoint as dj
 schema = dj.schema('common_virus', locals())
 
 
-
-
 @schema
 class Gene(dj.Manual):
     definition = """
@@ -17,6 +15,7 @@ class Gene(dj.Manual):
     risk="no known risk"        : varchar(512) # risk for humans
     """
 
+
 @schema
 class Construct(dj.Manual):
     definition = """
@@ -24,6 +23,8 @@ class Construct(dj.Manual):
 
     construct_id        : char(80)
     """
+
+
 @schema
 class ConstructGene(dj.Manual):
     definition = """
@@ -32,6 +33,7 @@ class ConstructGene(dj.Manual):
     ->Construct
     gene_name       : char(30) # name of the gene
     """
+
 
 @schema
 class Type(dj.Lookup):
@@ -43,7 +45,7 @@ class Type(dj.Lookup):
 
     """
 
-    contents = [(t,) for t in ['AAV', 'Rabies', 'Lenti','Herpes']]
+    contents = [(t,) for t in ['AAV', 'Rabies', 'Lenti', 'Herpes']]
 
 
 @schema
