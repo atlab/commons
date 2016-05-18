@@ -236,9 +236,6 @@ classdef Reader5 < handle
                 k=1;
                 for i=1:length(self.stacks)
                     stackInd = find(ind(sum(self.frames_per_file(1:i-1))+1 : sum(self.frames_per_file(1:i))));
-                    if ~isempty(stackInd)
-                        disp(['Loading ' num2str(length(stackInd)) ' frames from ' self.files{i}]);
-                    end
                     for j=stackInd
                         setDirectory(self.stacks{i},j);
                         f = read(self.stacks{i});
