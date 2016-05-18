@@ -1,4 +1,4 @@
-classdef MadMax < stims.core.Visual  
+classdef Movie < stims.core.Visual  
     methods
         function showTrial(self, cond)       
             moviename = sprintf(cond.path_template, cond.clip_number);
