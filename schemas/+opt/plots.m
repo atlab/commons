@@ -74,7 +74,7 @@ classdef plots
             
             key = d.key(d.keyInd);
             % fetch spotmap
-            amp = fetch1(opt.SpotMap(key), 'spot_amp');
+            [amp, p] = fetch1(opt.SpotMap(key), 'spot_amp', 'spot_fp');
             
             % fetch structure
             structKey.animal_id=key.animal_id;
@@ -101,7 +101,6 @@ classdef plots
             amp = imfilter(amp,k,'symmetric');
             amp = imfilter(amp,k','symmetric');
             img = amp;
-            
             
             % Spot map
             figure(101)
