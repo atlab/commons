@@ -1,4 +1,5 @@
 function precompute(menu)
+% simulates running all the protocols, triggering precomputation of conditions
 
 for protocol = menu(:)'
     fprintf('Protocol: %s:\n', protocol.constants.stimulus)
