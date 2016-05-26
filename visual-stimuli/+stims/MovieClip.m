@@ -5,10 +5,11 @@ classdef MovieClip < stims.core.Visual
         function prepare(self)
             % precompute the filenames for all conditions
             filenames = cell(size(self.conditions));
+          
             for i=1:length(self.conditions)
-                filenames{i} = sprintf(...
-                    fetch1(psy.MovieInfo & self.conditions(i), 'path_template'), ...
-                    self.conditions(i).clip_number);
+                    
+                filenames{i} = export(psy.MovieClipStore & self.conditions(i));
+                    
                 if ~exist(filenames{i}, 'file')
                     stims.core.Visual.screen.close()
                     error('Could not find file %s', filenames{i})
