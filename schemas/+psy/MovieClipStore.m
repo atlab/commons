@@ -4,32 +4,10 @@ psy.MovieClipStore (imported) # clips from movies
 clip_number : int           # clip index
 -----
 file_name  : varchar(255)   # full file name
-clip : longblob  #  
+clip : longblob  #
 %}
 
-
-classdef MovieClipStore < dj.Relvar & dj.AutoPopulate
-     properties
-        popRel = psy.MovieInfo
-     end
-    
-    methods (Access=protected)
-        function makeTuples(self,key)
-            [path,file_temp] = fetch1(psy.MovieInfo & key,'path','file_template');
-            clips = dir(fullfile(getLocalPath(path),['*.' file_temp(end-2:end)]));
-            for iclip = 1:length(clips);
-                clip_number = sscanf(clips(iclip).name,file_temp);
-                if isempty(clip_number);continue;end
-                tuple = key;
-                tuple.clip_number = clip_number;    
-                tuple.file_name = clips(iclip).name;
-                fid = fopen(getLocalPath(fullfile(path,tuple.file_name)));
-                tuple.clip = fread(fid,'*int8');
-                fclose(fid);
-                self.insert(tuple)
-            end
-        end
-    end
+classdef MovieClipStore < dj.Relvar 
     
     methods
         function filenames = export(obj)
