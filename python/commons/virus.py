@@ -59,7 +59,7 @@ class Source(dj.Lookup):
 
     @property
     def contents(self):
-        yield from zip(['Penn', 'UNC', 'Homegrown', 'MIT'])
+        yield from zip(['Penn', 'UNC', 'Homegrown',  'MIT', 'AToliasLab'])
 
 
 @schema
