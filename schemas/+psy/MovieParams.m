@@ -87,5 +87,54 @@ classdef MovieParams < dj.Relvar & dj.AutoPopulate
             if length(filenames)==1; filenames = filenames{1};end
             
         end
+        
+        function plotPos(obj)
+            params = fetch1(obj,'params');
+            figure
+            hold on
+            px = interpn(params.frames,params.camera_pos_x,1:params.frames(end),'cubic');
+            pz = interpn(params.frames,params.camera_pos_z,1:params.frames(end),'cubic');
+            
+            fps = fetch1(obj,'frame_rate');
+            tbin = 500; % in msec
+            bin = fps*tbin/1000; % in frames
+            
+            trials = 200;
+            nsz = floor(length(px)/bin)*bin;
+            px = px(1:nsz);
+            pz = pz(1:nsz);
+            nx = reshape(px,bin,nsz/bin);
+            nz = reshape(pz,bin,nsz/bin);
+            [~,idx] = sort(nx(1,:));
+            nz = nz(:,idx);
+            nx = nx(:,idx);
+         
+            
+            range =  floor(linspace(1,size(nx,2),trials));
+            try
+                colors = cbrewer('qual','Set3',length(range));
+            catch
+                colors = hsv(length(range));
+            end
+            idx = randperm(size(colors,1));
+            colors = colors(idx,:);
+            idx = 0;
+
+            for i = range
+                px = nx(:,i);
+                pz = nz(:,i);
+                idx = idx+1;
+                  plot(interpn(px,3,'cubic'),interpn(pz,3,'cubic'),'color',colors(idx,:),'linewidth',1)
+
+            end
+
+            xlim([min(nx(:)) max(nx(:))])
+            ylim([min(nz(:)) max(nz(:))])
+            set(gca,'xtick',[],'ytick',[])
+            xlabel('X dimension')
+            ylabel('Y dimension')
+            title(['Object trajectories (' num2str(tbin) 'msec)'])
+            
+        end
     end
 end
