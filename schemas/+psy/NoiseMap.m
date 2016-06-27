@@ -20,9 +20,4 @@ modulation_shift            : float                         # shift of the signa
 
 
 classdef NoiseMap < dj.Relvar
-    
-    properties(Constant)
-        table = dj.Table('psy.NoiseMap')
-    end
-    
 end

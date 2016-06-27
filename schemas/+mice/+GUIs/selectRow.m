@@ -27,8 +27,8 @@ set(h.dow,'string',m.new_mice{row,4});
 
 
 if ~isempty(h.isMice)
-    set(h.rack,'string',m.new_mice{row,20});
-    set(h.row,'string',m.new_mice{row,21});
+    set(h.rack,'string',m.new_mice{row,26});
+    set(h.row,'string',m.new_mice{row,27});
     s = get(h.sex,'string');
     v = find(strcmp(m.new_mice{row,8},s));
     set(h.sex,'value',v);
@@ -41,7 +41,7 @@ if ~isempty(h.isMice)
     set(h.parent1,'string',m.new_mice{row,5});
     set(h.parent2,'string',m.new_mice{row,6});
     set(h.parent3,'string',m.new_mice{row,7});
-    set(h.mouse_notes,'string',m.new_mice{row,22});
+    set(h.mouse_notes,'string',m.new_mice{row,28});
     s = get(h.line1,'string');
     v = find(strcmp(m.new_mice{row,11},s));
     set(h.line1,'value',v);
@@ -60,16 +60,33 @@ if ~isempty(h.isMice)
     s = get(h.genotype3,'string');
     v = find(strcmp(m.new_mice{row,16},s));
     set(h.genotype3,'value',v);
-    s = get(h.owner,'string');
+    s = get(h.line4,'string');
     v = find(strcmp(m.new_mice{row,17},s));
+    set(h.line4,'value',v);
+    s = get(h.genotype4,'string');
+    v = find(strcmp(m.new_mice{row,18},s));
+    set(h.genotype4,'value',v);
+    s = get(h.line5,'string');
+    v = find(strcmp(m.new_mice{row,19},s));
+    set(h.line5,'value',v);
+    s = get(h.genotype5,'string');
+    v = find(strcmp(m.new_mice{row,20},s));
+    set(h.genotype5,'value',v);
+    s = get(h.line6,'string');
+    v = find(strcmp(m.new_mice{row,21},s));
+    set(h.line6,'value',v);
+    s = get(h.genotype6,'string');
+    v = find(strcmp(m.new_mice{row,22},s));
+    set(h.genotype6,'value',v);
+    s = get(h.owner,'string');
+    v = find(strcmp(m.new_mice{row,23},s));
     set(h.owner,'value',v);
     s = get(h.facility,'string');
-    v = find(strcmp(m.new_mice{row,18},s));
+    v = find(strcmp(m.new_mice{row,24},s));
     set(h.facility,'value',v);
     s = get(h.room,'string');
-    v = find(strcmp(m.new_mice{row,19},s));
+    v = find(strcmp(m.new_mice{row,25},s));
     set(h.room,'value',v);
-
 end
 
 if ~isempty(h.isFounder)

@@ -15,6 +15,12 @@ uicontrol('style','text','string','Line 2','position',[763 630 166 16],'fontunit
 uicontrol('style','text','string','Genotype 2','position',[934 630 135 16],'fontunits','normalized','fontsize',.8);
 uicontrol('style','text','string','Line 3','position',[763 560 166 16],'fontunits','normalized','fontsize',.8);
 uicontrol('style','text','string','Genotype 3','position',[934 560 135 16],'fontunits','normalized','fontsize',.8);
+uicontrol('style','text','string','Line 4','position',[1074 700 166 16],'fontunits','normalized','fontsize',.8);
+uicontrol('style','text','string','Genotype 4','position',[1245 700 135 16],'fontunits','normalized','fontsize',.8);
+uicontrol('style','text','string','Line 5','position',[1074 630 166 16],'fontunits','normalized','fontsize',.8);
+uicontrol('style','text','string','Genotype 5','position',[1245 630 135 16],'fontunits','normalized','fontsize',.8);
+uicontrol('style','text','string','Line 6','position',[1074 560 166 16],'fontunits','normalized','fontsize',.8);
+uicontrol('style','text','string','Genotype 6','position',[1245 560 135 16],'fontunits','normalized','fontsize',.8);
 uicontrol('style','text','string','Owner','position',[50 630 106 16],'fontunits','normalized','fontsize',.8);
 uicontrol('style','text','string','Facility','position',[161 630 106 16],'fontunits','normalized','fontsize',.8);
 uicontrol('style','text','string','Room','position',[272 630 106 16],'fontunits','normalized','fontsize',.8);
@@ -61,6 +67,9 @@ v = find(strcmp('',s));
 h.line1 = uicontrol('style','popupmenu','string',s,'value',v,'position',[763 660 166 35],'fontunits','normalized','fontsize',.4,'tag','line1Field');
 h.line2 = uicontrol('style','popupmenu','string',s,'value',v,'position',[763 590 166 35],'fontunits','normalized','fontsize',.4,'tag','line2Field');
 h.line3 = uicontrol('style','popupmenu','string',s,'value',v,'position',[763 520 166 35],'fontunits','normalized','fontsize',.4,'tag','line3Field');
+h.line4 = uicontrol('style','popupmenu','string',s,'value',v,'position',[1074 660 166 35],'fontunits','normalized','fontsize',.4,'tag','line4Field');
+h.line5 = uicontrol('style','popupmenu','string',s,'value',v,'position',[1074 590 166 35],'fontunits','normalized','fontsize',.4,'tag','line5Field');
+h.line6 = uicontrol('style','popupmenu','string',s,'value',v,'position',[1074 520 166 35],'fontunits','normalized','fontsize',.4,'tag','line6Field');
 
 s = getEnumValues(mice.Genotypes.table,'genotype');
 s = {'' s{:}};
@@ -68,13 +77,16 @@ v = find(strcmp('',s));
 h.genotype1 = uicontrol('style','popupmenu','string',s,'value',v,'position',[934 660 135 35],'fontunits','normalized','fontsize',.4,'tag','genotype1Field');
 h.genotype2 = uicontrol('style','popupmenu','string',s,'value',v,'position',[934 590 135 35],'fontunits','normalized','fontsize',.4,'tag','genotype2Field');
 h.genotype3 = uicontrol('style','popupmenu','string',s,'value',v,'position',[934 520 135 35],'fontunits','normalized','fontsize',.4,'tag','genotype3Field');
+h.genotype4 = uicontrol('style','popupmenu','string',s,'value',v,'position',[1245 660 135 35],'fontunits','normalized','fontsize',.4,'tag','genotype4Field');
+h.genotype5 = uicontrol('style','popupmenu','string',s,'value',v,'position',[1245 590 135 35],'fontunits','normalized','fontsize',.4,'tag','genotype5Field');
+h.genotype6 = uicontrol('style','popupmenu','string',s,'value',v,'position',[1245 520 135 35],'fontunits','normalized','fontsize',.4,'tag','genotype6Field');
 
 h.used = uicontrol('style','checkbox','string','Include Used/Euthanized Mice','position',[140 550 250 35],'fontunits','normalized','fontsize',.4,'tag','usedBox');
 h.clear = uicontrol('style','pushbutton','string','Clear','position',[50 550 90 35],'fontunits','normalized','fontsize',.4,'Callback',@mice.GUIs.clearEntry);
 
-cnames = {'ID','AltID','DOB','DOW','Parent1','Parent2','Parent3','Sex','Color','EarPunch','Line1','Genotype1','Line2','Genotype2','Line3','Genotype3','Owner','Facility','Room','Rack','Row','Notes'};
-cformat = {'char','char','char','char','char','char','char','char','char','char','char','char','char','char','char','char','char','char','char','char','char','char'};
-cwidth = {40,40,'auto','auto',50,50,50,40,40,60,'auto','auto','auto','auto','auto','auto','auto',50,40,40,40,'auto'};
+cnames = {'ID','AltID','DOB','DOW','Parent1','Parent2','Parent3','Sex','Color','EarPunch','Line1','Genotype1','Line2','Genotype2','Line3','Genotype3','Line4','Genotype4','Line5','Genotype5','Line6','Genotype6','Owner','Facility','Room','Rack','Row','Notes'};
+cformat = {'char','char','char','char','char','char','char','char','char','char','char','char','char','char','char','char','char','char','char','char','char','char','char','char','char','char','char','char'};
+cwidth = {40,40,'auto','auto',50,50,50,40,40,60,'auto','auto','auto','auto','auto','auto','auto','auto','auto','auto','auto','auto','auto',50,40,40,40,'auto'};
 h.new_mice = uitable('position',[50 60 1304 450],'RowName',' ','ColumnName',cnames,'ColumnFormat',cformat,'columnwidth',cwidth,'tag','miceTable','CellSelectionCallback',@mice.GUIs.selectRow);
 
 h.find = uicontrol('style','pushbutton','position',[50 510 110 29],'fontunits','normalized','fontsize',.4,'string','Find Mice','HorizontalAlignment','Center','Callback',@mice.GUIs.findViewMice);

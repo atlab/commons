@@ -2,7 +2,7 @@ classdef reader < handle
     % scanimage 4.0 sequential reader
     
     properties(SetAccess=private)
-        fullfile 
+        fullfile
         path
         base
         scanNumber
@@ -90,8 +90,8 @@ classdef reader < handle
             self.tiff.setDirectory(1);
             if self.multifile
                 self.currentFileNumber = 1;
+                self.tiff = Tiff(self.filename);
             end
-            
         end
         
         
