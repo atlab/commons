@@ -1,5 +1,5 @@
 f = figure;
-set(f, 'position',[0 0 1404 750])
+set(f, 'position',[0 0 1704 750])
 
 uicontrol('style','text','string','Ear Tag #','position',[50 700 90 16],'fontunits','normalized','fontsize',.8);
 uicontrol('style','text','string','Alternate ID','position',[145 700 90 16],'fontunits','normalized','fontsize',.8);
@@ -17,6 +17,12 @@ uicontrol('style','text','string','Line 2','position',[1048 630 166 16],'fontuni
 uicontrol('style','text','string','Genotype 2','position',[1219 630 135 16],'fontunits','normalized','fontsize',.8);
 uicontrol('style','text','string','Line 3','position',[1048 560 166 16],'fontunits','normalized','fontsize',.8);
 uicontrol('style','text','string','Genotype 3','position',[1219 560 135 16],'fontunits','normalized','fontsize',.8);
+uicontrol('style','text','string','Line 4','position',[1359 700 166 16],'fontunits','normalized','fontsize',.8);
+uicontrol('style','text','string','Genotype 4','position',[1530 700 135 16],'fontunits','normalized','fontsize',.8);
+uicontrol('style','text','string','Line 5','position',[1359 630 166 16],'fontunits','normalized','fontsize',.8);
+uicontrol('style','text','string','Genotype 5','position',[1530 630 135 16],'fontunits','normalized','fontsize',.8);
+uicontrol('style','text','string','Line 6','position',[1359 560 166 16],'fontunits','normalized','fontsize',.8);
+uicontrol('style','text','string','Genotype 6','position',[1530 560 135 16],'fontunits','normalized','fontsize',.8);
 uicontrol('style','text','string','Owner','position',[50 630 106 16],'fontunits','normalized','fontsize',.8);
 uicontrol('style','text','string','Facility','position',[161 630 106 16],'fontunits','normalized','fontsize',.8);
 uicontrol('style','text','string','Room','position',[272 630 106 16],'fontunits','normalized','fontsize',.8);
@@ -66,12 +72,18 @@ v = find(strcmp('',s));
 h.line1 = uicontrol('style','popupmenu','string',s,'value',v,'position',[1048 660 166 35],'fontunits','normalized','fontsize',.4,'tag','line1Field');
 h.line2 = uicontrol('style','popupmenu','string',s,'value',v,'position',[1048 590 166 35],'fontunits','normalized','fontsize',.4,'tag','line2Field');
 h.line3 = uicontrol('style','popupmenu','string',s,'value',v,'position',[1048 520 166 35],'fontunits','normalized','fontsize',.4,'tag','line3Field');
+h.line4 = uicontrol('style','popupmenu','string',s,'value',v,'position',[1359 660 166 35],'fontunits','normalized','fontsize',.4,'tag','line4Field');
+h.line5 = uicontrol('style','popupmenu','string',s,'value',v,'position',[1359 590 166 35],'fontunits','normalized','fontsize',.4,'tag','line5Field');
+h.line6 = uicontrol('style','popupmenu','string',s,'value',v,'position',[1359 520 166 35],'fontunits','normalized','fontsize',.4,'tag','line6Field');
 
 s = getEnumValues(mice.Genotypes.table,'genotype');
 v = find(strcmp('unknown',s));
 h.genotype1 = uicontrol('style','popupmenu','string',s,'value',v,'position',[1219 660 135 35],'fontunits','normalized','fontsize',.4,'tag','genotype1Field');
 h.genotype2 = uicontrol('style','popupmenu','string',s,'value',v,'position',[1219 590 135 35],'fontunits','normalized','fontsize',.4,'tag','genotype2Field');
 h.genotype3 = uicontrol('style','popupmenu','string',s,'value',v,'position',[1219 520 135 35],'fontunits','normalized','fontsize',.4,'tag','genotype3Field');
+h.genotype4 = uicontrol('style','popupmenu','string',s,'value',v,'position',[1530 660 135 35],'fontunits','normalized','fontsize',.4,'tag','genotype4Field');
+h.genotype5 = uicontrol('style','popupmenu','string',s,'value',v,'position',[1530 590 135 35],'fontunits','normalized','fontsize',.4,'tag','genotype5Field');
+h.genotype6 = uicontrol('style','popupmenu','string',s,'value',v,'position',[1530 520 135 35],'fontunits','normalized','fontsize',.4,'tag','genotype6Field');
 
 last = fetch(mice.Mice);
 number = size(last,1);
@@ -82,14 +94,14 @@ end
 h.autopopulate = uicontrol('style','checkbox','string','Autopopulate','position',[140 550 150 35],'fontunits','normalized','fontsize',.4,'tag','autoBox');
 h.clear = uicontrol('style','pushbutton','string','Clear','position',[50 550 90 35],'fontunits','normalized','fontsize',.4,'Callback',@mice.GUIs.clearEntry);
 
-cnames = {'ID','Alt ID','DOB','DOW','Father','Mother1','Mother2','Sex','Color','Ear Punch','Line1','Genotype1','Line2','Genotype2','Line3','Genotype3','Owner','Facility','Room','Rack','Row','Notes'};
-cformat = {'char','char','char','char','char','char','char','char','char','char','char','char','char','char','char','char','char','char','char','char','char','char'};
-cwidth = {40,40,'auto','auto',40,50,50,40,40,60,'auto','auto','auto','auto','auto','auto','auto',50,40,40,40,'auto'};
-h.new_mice = uitable('position',[50 60 1304 450],'RowName',' ','ColumnName',cnames,'ColumnFormat',cformat,'columnwidth',cwidth,'tag','miceTable','CellSelectionCallback',@mice.GUIs.selectRow);
+cnames = {'ID','Alt ID','DOB','DOW','Father','Mother1','Mother2','Sex','Color','Ear Punch','Line1','Genotype1','Line2','Genotype2','Line3','Genotype3','Line4','Genotype4','Line5','Genotype5','Line6','Genotype6','Owner','Facility','Room','Rack','Row','Notes'};
+cformat = {'char','char','char','char','char','char','char','char','char','char','char','char','char','char','char','char','char','char','char','char','char','char','char','char','char','char','char','char'};
+cwidth = {40,40,'auto','auto',40,50,50,40,40,60,'auto','auto','auto','auto','auto','auto','auto','auto','auto','auto','auto','auto','auto',50,40,40,40,'auto'};
+h.new_mice = uitable('position',[50 60 1604 450],'RowName',' ','ColumnName',cnames,'ColumnFormat',cformat,'columnwidth',cwidth,'tag','miceTable','CellSelectionCallback',@mice.GUIs.selectRow);
 
 h.add = uicontrol('style','pushbutton','string','+','position',[50 510 25 25],'fontunits','normalized','fontsize',.8,'backgroundcolor','g','Callback',@mice.GUIs.plusCallback);
 h.delete = uicontrol('style','pushbutton','string','-','position',[75 510 25 25],'fontunits','normalized','fontsize',.8,'backgroundcolor','r','Callback',@mice.GUIs.minusCallback);
 
-h.submit = uicontrol('style','pushbutton','string','Submit New Mice to Database','position',[524 10 256 50],'fontunits','normalized','fontsize',.35,'Callback',@mice.GUIs.submitMice,'tag','submitMiceButton');
+h.submit = uicontrol('style','pushbutton','string','Submit New Mice to Database','position',[674 10 256 50],'fontunits','normalized','fontsize',.35,'Callback',@mice.GUIs.submitMice,'tag','submitMiceButton');
 
 

@@ -24,6 +24,9 @@ h.parent2 = findobj(figHand,'tag','parent2Field');
 h.line1 = findobj(figHand,'tag','line1Field');
 h.line2 = findobj(figHand,'tag','line2Field');
 h.line3 = findobj(figHand,'tag','line3Field');
+h.line4 = findobj(figHand,'tag','line4Field');
+h.line5 = findobj(figHand,'tag','line5Field');
+h.line6 = findobj(figHand,'tag','line6Field');
 h.used = findobj(figHand,'tag','usedBox');
 
 m.parent1 = get(h.parent1,'string');
@@ -39,6 +42,15 @@ m.line2 = s{v};
 v = get(h.line3,'value');
 s = get(h.line3,'string');
 m.line3 = s{v};
+v = get(h.line4,'value');
+s = get(h.line4,'string');
+m.line4 = s{v};
+v = get(h.line5,'value');
+s = get(h.line5,'string');
+m.line5 = s{v};
+v = get(h.line6,'value');
+s = get(h.line6,'string');
+m.line6 = s{v};
 v = get(h.genotype1,'value');
 s = get(h.genotype1,'string');
 m.genotype1 = s{v};
@@ -48,6 +60,15 @@ m.genotype2 = s{v};
 v = get(h.genotype3,'value');
 s = get(h.genotype3,'string');
 m.genotype3 = s{v};
+v = get(h.genotype4,'value');
+s = get(h.genotype4,'string');
+m.genotype4 = s{v};
+v = get(h.genotype5,'value');
+s = get(h.genotype5,'string');
+m.genotype5 = s{v};
+v = get(h.genotype6,'value');
+s = get(h.genotype6,'string');
+m.genotype6 = s{v};
 m.mouse_notes = get(h.mouse_notes,'string');
 m.used = get(h.used,'Value');
 
@@ -386,6 +407,21 @@ if ~isempty(m.genotype3) && isempty(m.line3)
     errorString{errorCount} = 'Please select line 3 or remove genotype 3 restriction.';
 end
 
+if ~isempty(m.genotype4) && isempty(m.line4)
+    errorCount = errorCount + 1;
+    errorString{errorCount} = 'Please select line 4 or remove genotype 4 restriction.';
+end
+
+if ~isempty(m.genotype5) && isempty(m.line5)
+    errorCount = errorCount + 1;
+    errorString{errorCount} = 'Please select line 5 or remove genotype 5 restriction.';
+end
+
+if ~isempty(m.genotype6) && isempty(m.line6)
+    errorCount = errorCount + 1;
+    errorString{errorCount} = 'Please select line 6 or remove genotype 6 restriction.';
+end
+
 % restrict by specified genotype
 
 mouseCount=0;
@@ -511,6 +547,129 @@ if ~isempty(m.line3)
     end
 end
 
+mouseCount=0;
+newmouseID = {};
+if ~isempty(m.line4)
+    if ~isempty(mouseID)
+        for i = 1:length(mouseID)
+            a = fetch(mice.Genotypes & ['animal_id=' num2str(mouseID{i})],'*');
+            for j = 1:size(a,1)
+                if strcmp(a(j).line,m.line4)
+                    if ~isempty(m.genotype4)
+                        if strcmp(a(j).genotype,m.genotype4)
+                            mouseCount = mouseCount + 1;
+                            newmouseID{mouseCount} = mouseID{i};
+                        end
+                    else
+                        mouseCount = mouseCount + 1;
+                        newmouseID{mouseCount} = mouseID{i};
+                    end
+                end
+            end
+        end
+    elseif ~isempty(m.genotype4)
+        a = fetch(mice.Genotypes & ['line="' m.line4 '"'] & ['genotype="' m.genotype4 '"']);
+        for i = 1:size(a,1)
+            mouseCount = mouseCount + 1;
+            newmouseID{mouseCount} = a(i).animal_id;
+        end
+    else 
+        a = fetch(mice.Genotypes & ['line="' m.line4 '"']);
+        for i = 1:size(a,1)
+            mouseCount = mouseCount + 1;
+            newmouseID{mouseCount} = a(i).animal_id;
+        end
+    end
+    try mouseID = newmouseID;
+        if isempty(mouseID)
+            errorCount = errorCount + 1;
+            errorString{errorCount} = 'There are no mice matching these search criteria.';
+        end
+    end
+end
+
+mouseCount=0;
+newmouseID = {};
+if ~isempty(m.line5)
+    if ~isempty(mouseID)
+        for i = 1:length(mouseID)
+            a = fetch(mice.Genotypes & ['animal_id=' num2str(mouseID{i})],'*');
+            for j = 1:size(a,1)
+                if strcmp(a(j).line,m.line5)
+                    if ~isempty(m.genotype5)
+                        if strcmp(a(j).genotype,m.genotype5)
+                            mouseCount = mouseCount + 1;
+                            newmouseID{mouseCount} = mouseID{i};
+                        end
+                    else
+                        mouseCount = mouseCount + 1;
+                        newmouseID{mouseCount} = mouseID{i};
+                    end
+                end
+            end
+        end
+    elseif ~isempty(m.genotype5)
+        a = fetch(mice.Genotypes & ['line="' m.line5 '"'] & ['genotype="' m.genotype5 '"']);
+        for i = 1:size(a,1)
+            mouseCount = mouseCount + 1;
+            newmouseID{mouseCount} = a(i).animal_id;
+        end
+    else 
+        a = fetch(mice.Genotypes & ['line="' m.line5 '"']);
+        for i = 1:size(a,1)
+            mouseCount = mouseCount + 1;
+            newmouseID{mouseCount} = a(i).animal_id;
+        end
+    end
+    try mouseID = newmouseID;
+        if isempty(mouseID)
+            errorCount = errorCount + 1;
+            errorString{errorCount} = 'There are no mice matching these search criteria.';
+        end
+    end
+end
+
+mouseCount=0;
+newmouseID = {};
+if ~isempty(m.line6)
+    if ~isempty(mouseID)
+        for i = 1:length(mouseID)
+            a = fetch(mice.Genotypes & ['animal_id=' num2str(mouseID{i})],'*');
+            for j = 1:size(a,1)
+                if strcmp(a(j).line,m.line6)
+                    if ~isempty(m.genotype6)
+                        if strcmp(a(j).genotype,m.genotype6)
+                            mouseCount = mouseCount + 1;
+                            newmouseID{mouseCount} = mouseID{i};
+                        end
+                    else
+                        mouseCount = mouseCount + 1;
+                        newmouseID{mouseCount} = mouseID{i};
+                    end
+                end
+            end
+        end
+    elseif ~isempty(m.genotype6)
+        a = fetch(mice.Genotypes & ['line="' m.line6 '"'] & ['genotype="' m.genotype6 '"']);
+        for i = 1:size(a,1)
+            mouseCount = mouseCount + 1;
+            newmouseID{mouseCount} = a(i).animal_id;
+        end
+    else 
+        a = fetch(mice.Genotypes & ['line="' m.line6 '"']);
+        for i = 1:size(a,1)
+            mouseCount = mouseCount + 1;
+            newmouseID{mouseCount} = a(i).animal_id;
+        end
+    end
+    try mouseID = newmouseID;
+        if isempty(mouseID)
+            errorCount = errorCount + 1;
+            errorString{errorCount} = 'There are no mice matching these search criteria.';
+        end
+    end
+end
+
 % restrict to living mice unless "include used mice" box is checked
 
 mouseCount=0;
@@ -553,12 +712,12 @@ for i = 1:length(mouseID)
     mouseTable{i,8} = mouse.sex;
     mouseTable{i,9} = mouse.color;
     mouseTable{i,10} = mouse.ear_punch;
-    mouseTable{i,17} = mouse.owner;
-    mouseTable{i,18} = mouse.facility;
-    mouseTable{i,19} = mouse.room;
-    mouseTable{i,20} = mouse.rack;
-    mouseTable{i,21} = mouse.row;
-    mouseTable{i,22} = mouse.mouse_notes;
+    mouseTable{i,23} = mouse.owner;
+    mouseTable{i,24} = mouse.facility;
+    mouseTable{i,25} = mouse.room;
+    mouseTable{i,26} = mouse.rack;
+    mouseTable{i,27} = mouse.row;
+    mouseTable{i,28} = mouse.mouse_notes;
     genotypes = fetch(mice.Genotypes & ['animal_id=' num2str(mouseID{i})],'*');
     for j = 1:size(genotypes,1)
         mouseTable{i,(2*j+9)} = genotypes(j).line;

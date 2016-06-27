@@ -1,5 +1,5 @@
 f = figure;
-set(f, 'position',[0 0 1500 500]);
+set(f, 'position',[0 0 2000 500]);
 
 uicontrol('style','text','string','Enter Mouse IDs:','position',[50 430 110 29],'fontunits','normalized','fontsize',.4,'HorizontalAlignment','Right');
 uicontrol('style','text','string','Or Enter Range:','position',[50 400 110 29],'fontunits','normalized','fontsize',.4,'HorizontalAlignment','Right');
@@ -22,13 +22,13 @@ h.range_start = uicontrol('style','edit','position',[160 400 50 30],'fontunits',
 h.range_end = uicontrol('style','edit','position',[220 400 50 30],'fontunits','normalized','fontsize',.4,'tag','rangeEnd');
 h.find = uicontrol('style','pushbutton','position',[50 370 110 29],'fontunits','normalized','fontsize',.4,'string','Find Mice','HorizontalAlignment','Center','Callback',@mice.GUIs.findUpdateMice);
 
-cnames = {'ID','DOB','DOW','Sex','Color','Ear Punch','Line 1','Genotype 1','Line 2','Genotype 2','Line 3','Genotype 3','Notes'};
+cnames = {'ID','DOB','DOW','Sex','Color','Ear Punch','Line 1','Genotype 1','Line 2','Genotype 2','Line 3','Genotype 3','Line 4','Genotype 4','Line 5','Genotype 5','Line 6','Genotype 6','Notes'};
 genotypes = getEnumValues(mice.Genotypes.table,'genotype');
 sexes = getEnumValues(mice.Mice.table,'sex');
 colors = getEnumValues(mice.Mice.table,'color');
 ears = getEnumValues(mice.Mice.table,'ear_punch');
 cformat = {'char','char','char',sexes,colors,ears,'char',genotypes,'char',genotypes,'char',genotypes,'char'};
-cwidth = {50, 75, 75, 100, 100, 100,100,125,100,125,100,125,190};
-h.table = uitable('position',[50 60 1400 310],'RowName',' ','ColumnName',cnames,'tag','miceTable','CellSelectionCallback',@mice.GUIs.selectRow,'ColumnFormat',cformat,'ColumnEditable',[false true true true true true false true false true false true true],'ColumnWidth',cwidth);
+cwidth = {50, 75, 75, 100, 100, 100,100,125,100,125,100,125,100,125,100,125,100,125,190};
+h.table = uitable('position',[50 60 1900 310],'RowName',' ','ColumnName',cnames,'tag','miceTable','CellSelectionCallback',@mice.GUIs.selectRow,'ColumnFormat',cformat,'ColumnEditable',[false true true true true true false true false true false true false true false true false true true],'ColumnWidth',cwidth);
 
-h.submitUpdateMice = uicontrol('style','pushbutton','string','Update Mouse Info','position',[650 10 200 50],'fontunits','normalized','fontsize',.35,'Callback',@mice.GUIs.submitUpdateMice);
+h.submitUpdateMice = uicontrol('style','pushbutton','string','Update Mouse Info','position',[900 10 200 50],'fontunits','normalized','fontsize',.35,'Callback',@mice.GUIs.submitUpdateMice);
