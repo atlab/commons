@@ -1,8 +1,9 @@
 %{
-psy.NoiseMap (manual) # pink noise stimulus from Niell & Stryker
+psy.MovingNoise (manual) # pink noise with periods of motion and orientation
+
 -> psy.Condition
 ---
--> psy.NoiseMapLookup
+-> psy.MovingNoiseLookup
 rng_seed                    : double                        # random number generate seed
 luminance                   : float                         # (cd/m^2)
 contrast                    : float                         # michelson contrast
@@ -11,13 +12,15 @@ tex_xdim                    : smallint                      # (pixels) texture d
 spatial_freq_half           : float                         # (cy/deg) spatial frequency modulated to 50%
 spatial_freq_stop           : float                         # (cy/deg), spatial lowpass cutoff
 temp_bandwidth              : float                         # (Hz) temporal bandwidth of the stimulus
-contrast_mod_freq           : float                         # (Hz) raised cosine contrast modulation
+ori_on_secs                 : float                         # seconds of movement and orientation
+ori_off_secs                : float                         # seconds without movement
+n_dirs                      : smallint                      # number of directions
+ori_bands                   : tinyint                       # orientation width expressed in units of 2*pi/n_dirs
+ori_modulation              : float                         # mixin-coefficient of orientation biased noise
+speed                       : float                         # (degrees/s)
 frame_downsample            : tinyint                       # 1=60 fps, 2=30 fps, 3=20 fps, 4=15 fps, etc
-duration                    : float                         # (s) trial duration
-contrast_slope              : float                         # onset slope
-modulation_shift            : float                         # shift of the signamoid argument (cosine value)
 %}
 
 
-classdef NoiseMap < dj.Relvar
+classdef MovingNoise < dj.Relvar
 end

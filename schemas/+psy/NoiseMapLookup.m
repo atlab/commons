@@ -21,7 +21,7 @@ classdef NoiseMapLookup < dj.Relvar
             %   degxy - visual degrees across x and y
             %   fps   - frames per second
             
-            key.noise_map_version = 1;  % increment if you make any changes to the code below
+            key.noise_map_version = 2;  % increment if you make any changes to the code below
             
             params = {cond degxy fps};
             hash = dj.DataHash(params);
@@ -64,7 +64,7 @@ classdef NoiseMapLookup < dj.Relvar
                 % normalize movie to [-1 1];
                 m = m/quantile(abs(m(:)), 1-1e-5);
                 m = max(-1, min(1, m)).*(abs(m)>0.001);
-                m = uint8((m+1)/2*254);
+                m = uint8((m+1)/2*253)+1;
                 
                 tuple = key;
                 tuple.noise_map_params = params;
