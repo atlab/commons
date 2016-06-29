@@ -443,14 +443,14 @@ end
 % if the mouse is in Taub, the room cannot be VK3. if the mouse is in TMF
 % the room must be VK3.
 
-if strcmp(m.facility,'Taub') && strcmp(m.room,'VK3')
+if strcmp(m.facility,'Taub') && strcmp(m.room,'VK3') && strcmp(m.room,'VH1')
     errorCount = errorCount + 1;
-    errorString{errorCount} = 'If the mouse is in Taub it cannot be in room VK3.';
+    errorString{errorCount} = 'If the mouse is in Taub it cannot be in room VK3 or VH1.';
 end
 
-if strcmp(m.facility,'TMF') && ~strcmp(m.room,'VK3')
+if strcmp(m.facility,'TMF') && ~strcmp(m.room,'VK3') && ~strcmp(m.room,'VK3')
     errorCount = errorCount + 1;
-    errorString{errorCount} = 'If the mouse is in TMF it must be in room VK3.';
+    errorString{errorCount} = 'If the mouse is in TMF it must be in room VK3 or VH1.';
 end
 
 % add to  table if there are no errors 
