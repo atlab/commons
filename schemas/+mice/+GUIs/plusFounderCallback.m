@@ -155,16 +155,16 @@ end
 % If any line is C57Bl/6 or Fvb then it must be the only line and the
 % genotype must be wild type
 
-if (strcmp(m.line,'C57Bl/6') || strcmp(m.line,'Fvb')) && ~strcmp(m.genotype, 'wild type')
+if (strcmp(m.line,'C57Bl/6') || strcmp(m.line,'Fvb') || strcmp(m.line,'CD1')) && ~strcmp(m.genotype, 'wild type')
     errorCount = errorCount + 1;
-    errorString{errorCount} = 'Lines C57Bl/6 and Fvb should only be used to designate pure wild type mice.';
+    errorString{errorCount} = 'Lines C57Bl/6, Fvb, and CD1 should only be used to designate pure wild type mice.';
 end
 
 % wild type genotype can only be used for C57Bl/6 or Fvb lines.  
 
-if strcmp(m.genotype,'wild type') && ~strcmp(m.line,'C57Bl/6') && ~strcmp(m.line,'Fvb')
+if strcmp(m.genotype,'wild type') && ~strcmp(m.line,'C57Bl/6') && ~strcmp(m.line,'Fvb') && ~strcmp(m.line,'CD1')
     errorCount = errorCount + 1;
-    errorString{errorCount} = 'The wild type genotype should only be used to describe pure C57Bl/6 or Fvb lines.';
+    errorString{errorCount} = 'The wild type genotype should only be used to describe pure C57Bl/6, Fvb, or CD1 lines.';
 end
 
 % if the mouse is in Taub, the room cannot be VK3. if the mouse is in TMF
@@ -175,9 +175,9 @@ if strcmp(m.facility,'Taub') && strcmp(m.room,'VK3')
     errorString{errorCount} = 'If the mouse is in Taub it cannot be in room VK3.';
 end
 
-if strcmp(m.facility,'TMF') && ~strcmp(m.room,'VK3')
+if strcmp(m.facility,'TMF') && ~strcmp(m.room,'VK3') && ~strcmp(m.room,'VH1')
     errorCount = errorCount + 1;
-    errorString{errorCount} = 'If the mouse is in TMF it must be in room VK3.';
+    errorString{errorCount} = 'If the mouse is in TMF it must be in room VK3 or VH1.';
 end
 
 %
