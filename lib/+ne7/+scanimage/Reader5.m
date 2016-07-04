@@ -310,33 +310,9 @@ classdef Reader5 < handle
         end
         
         function init_stacks(self)
-            if self.is_functional
                 self.stacks = arrayfun(@(ifile) ...
                     Tiff(self.files{ifile}), ...
                     1:length(self.files), 'uni', false);
-                
-                %self.stacks = arrayfun(@(ifile) ...
-                %    TIFFStack(self.files{ifile}, [], [self.nchannels self.nslices]), ...
-                %    1:length(self.files), 'uni', false);
-                
-                %self.stacks = arrayfun(@(ifile) TIFFStack(self.files{ifile}),1:length(self.files), 'uni', false);
-            else
-                % if structural data, then load the entire stack into
-                % memory. The loaded data is initially flat and needs
-                % reshaping as well as permutation of axis as frames and
-                % slices are flipped.
-                data = [];
-                for idx = 1:length(self.files)
-                    stack = TIFFStack(self.files{idx}, [], self.nchannels);
-                    data = cat(4, data, stack(:,:,:,:));
-                end
-                sz = size(data);
-                assert(sz(4) == self.nframes * self.nslices, ...
-                    sprintf(['stack size mismatch: expected %d images but only %d '...
-                    'found -- be sure to load all files together'], self.nframes*self.nslices, sz(4)));
-                sz = [sz(1:end-1) self.nframes self.nslices];
-                self.data = permute(reshape(data, sz), [1,2,3,5,4]);
-            end
         end
         
     end
