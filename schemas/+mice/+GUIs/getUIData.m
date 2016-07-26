@@ -21,9 +21,15 @@ h.mouse_notes = findobj(FigHand,'tag','notesField');
 h.line1 = findobj(FigHand,'tag','line1Field');
 h.line2 = findobj(FigHand,'tag','line2Field');
 h.line3 = findobj(FigHand,'tag','line3Field');
+h.line4 = findobj(FigHand,'tag','line4Field');
+h.line5 = findobj(FigHand,'tag','line5Field');
+h.line6 = findobj(FigHand,'tag','line6Field');
 h.genotype1 = findobj(FigHand,'tag','genotype1Field');
 h.genotype2 = findobj(FigHand,'tag','genotype2Field');
 h.genotype3 = findobj(FigHand,'tag','genotype3Field');
+h.genotype4 = findobj(FigHand,'tag','genotype4Field');
+h.genotype5 = findobj(FigHand,'tag','genotype5Field');
+h.genotype6 = findobj(FigHand,'tag','genotype6Field');
 h.new_mice = findobj(FigHand,'tag','miceTable');
 h.doa = findobj(FigHand,'tag','doaField');
 h.source = findobj(FigHand,'tag','sourceField');
@@ -77,6 +83,15 @@ if ~isempty(h.isMice)
     v = get(h.line3,'value');
     s = get(h.line3,'string');
     m.line3 = s{v};
+    v = get(h.line4,'value');
+    s = get(h.line4,'string');
+    m.line4 = s{v};
+    v = get(h.line5,'value');
+    s = get(h.line5,'string');
+    m.line5 = s{v};
+    v = get(h.line6,'value');
+    s = get(h.line6,'string');
+    m.line6 = s{v};
     v = get(h.genotype1,'value');
     s = get(h.genotype1,'string');
     m.genotype1 = s{v};
@@ -86,6 +101,15 @@ if ~isempty(h.isMice)
     v = get(h.genotype3,'value');
     s = get(h.genotype3,'string');
     m.genotype3 = s{v};
+    v = get(h.genotype4,'value');
+    s = get(h.genotype4,'string');
+    m.genotype4 = s{v};
+    v = get(h.genotype5,'value');
+    s = get(h.genotype5,'string');
+    m.genotype5 = s{v};
+    v = get(h.genotype6,'value');
+    s = get(h.genotype6,'string');
+    m.genotype6 = s{v};
     m.mouse_notes = get(h.mouse_notes,'string');
 end
 

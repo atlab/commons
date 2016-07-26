@@ -22,14 +22,14 @@ if isempty(m.new_mice)
     return
 end
 
-s = struct('animal_id',m.new_mice(:,1),'other_id',m.new_mice(:,2),'dob',m.new_mice(:,3),'dow',m.new_mice(:,4),'parent1',m.new_mice(:,5),'parent2',m.new_mice(:,6),'parent3',m.new_mice(:,7),'sex',m.new_mice(:,8),'color',m.new_mice(:,9),'ear_punch',m.new_mice(:,10),'line1',m.new_mice(:,11),'genotype1',m.new_mice(:,12),'line2',m.new_mice(:,13),'genotype2',m.new_mice(:,14),'line3',m.new_mice(:,15),'genotype3',m.new_mice(:,16),'owner',m.new_mice(:,17),'facility',m.new_mice(:,18),'room',m.new_mice(:,19),'rack',m.new_mice(:,20),'row',m.new_mice(:,21),'mouse_notes',m.new_mice(:,22));
+s = struct('animal_id',m.new_mice(:,1),'other_id',m.new_mice(:,2),'dob',m.new_mice(:,3),'dow',m.new_mice(:,4),'parent1',m.new_mice(:,5),'parent2',m.new_mice(:,6),'parent3',m.new_mice(:,7),'sex',m.new_mice(:,8),'color',m.new_mice(:,9),'ear_punch',m.new_mice(:,10),'line1',m.new_mice(:,11),'genotype1',m.new_mice(:,12),'line2',m.new_mice(:,13),'genotype2',m.new_mice(:,14),'line3',m.new_mice(:,15),'genotype3',m.new_mice(:,16),'line4',m.new_mice(:,17),'genotype4',m.new_mice(:,18),'line5',m.new_mice(:,19),'genotype5',m.new_mice(:,20),'line6',m.new_mice(:,21),'genotype6',m.new_mice(:,22),'owner',m.new_mice(:,23),'facility',m.new_mice(:,24),'room',m.new_mice(:,25),'rack',m.new_mice(:,26),'row',m.new_mice(:,27),'mouse_notes',m.new_mice(:,28));
 for i = 1:size(s,1)
     if ischar(s(i).animal_id)
         s(i).animal_id = str2num(s(i).animal_id);
     end
 end
 
-fields = {'parent1','parent2','parent3','line1','genotype1','line2','genotype2','line3','genotype3'};
+fields = {'parent1','parent2','parent3','line1','genotype1','line2','genotype2','line3','genotype3','line4','genotype4','line5','genotype5','line6','genotype6'};
 mouseStruct = rmfield(s,fields);
 
 parentStruct = {};
@@ -52,6 +52,24 @@ for i = 1:size(s,1)
         genotypeStruct(genotypeCount).animal_id = s(i).animal_id;
         genotypeStruct(genotypeCount).line = s(i).line3;
         genotypeStruct(genotypeCount).genotype = s(i).genotype3;
+    end
+    if ~isempty(s(i).line4)
+        genotypeCount = genotypeCount + 1;
+        genotypeStruct(genotypeCount).animal_id = s(i).animal_id;
+        genotypeStruct(genotypeCount).line = s(i).line4;
+        genotypeStruct(genotypeCount).genotype = s(i).genotype4;
+    end
+    if ~isempty(s(i).line5)
+        genotypeCount = genotypeCount + 1;
+        genotypeStruct(genotypeCount).animal_id = s(i).animal_id;
+        genotypeStruct(genotypeCount).line = s(i).line5;
+        genotypeStruct(genotypeCount).genotype = s(i).genotype5;
+    end
+    if ~isempty(s(i).line6)
+        genotypeCount = genotypeCount + 1;
+        genotypeStruct(genotypeCount).animal_id = s(i).animal_id;
+        genotypeStruct(genotypeCount).line = s(i).line6;
+        genotypeStruct(genotypeCount).genotype = s(i).genotype6;
     end
     if ~isempty(s(i).parent1)
         parentCount = parentCount + 1;

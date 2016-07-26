@@ -110,7 +110,7 @@ for i = 1:length(mouseID)
         mouseTable{i,2*j+5} = genotypes(j).line;
         mouseTable{i,(2*j+6)} = genotypes(j).genotype;
     end
-    mouseTable{i,13} = mouse.mouse_notes;
+    mouseTable{i,19} = mouse.mouse_notes;
 end
 set(h.table,'data',mouseTable);
 end

@@ -1,5 +1,5 @@
 f = figure;
-set(f, 'position',[0 0 900 600]);
+set(f, 'position',[0 0 1300 600]);
 
 uicontrol('style','text','string','Enter Mouse IDs:','position',[50 530 110 29],'fontunits','normalized','fontsize',.4,'HorizontalAlignment','Right');
 uicontrol('style','text','string','Or Enter Range:','position',[50 500 110 29],'fontunits','normalized','fontsize',.4,'HorizontalAlignment','Right');
@@ -24,11 +24,11 @@ h.range_start = uicontrol('style','edit','position',[160 500 50 30],'fontunits',
 h.range_end = uicontrol('style','edit','position',[220 500 50 30],'fontunits','normalized','fontsize',.4,'tag','rangeEnd');
 h.find = uicontrol('style','pushbutton','position',[50 470 110 29],'fontunits','normalized','fontsize',.4,'string','Find Mice','HorizontalAlignment','Center','Callback',@mice.GUIs.findMice);
 
-cnames = {'ID','Line 1','Genotype 1','Line 2','Genotype 2','Line 3','Genotype 3'};
-cwidth = {75,100,125,100,125,100,125};
-h.table = uitable('position',[50 160 800 310],'RowName',' ','ColumnName',cnames,'tag','miceTable','CellSelectionCallback',@mice.GUIs.selectRow,'ColumnWidth',cwidth);
+cnames = {'ID','Line 1','Genotype 1','Line 2','Genotype 2','Line 3','Genotype 3','Line 4','Genotype 4','Line 5','Genotype 5','Line 6','Genotype 6'};
+cwidth = {75,100,125,100,125,100,125,100,125,100,125,100,125};
+h.table = uitable('position',[50 160 1200 310],'RowName',' ','ColumnName',cnames,'tag','miceTable','CellSelectionCallback',@mice.GUIs.selectRow,'ColumnWidth',cwidth);
 
 h.dod = uicontrol('style','edit','position',[150 118 100 30],'fontunits','normalized','fontsize',.4,'HorizontalAlignment','Center','tag','dod');
 h.death_notes = uicontrol('style','edit','position',[375 88 475 60],'fontunits','normalized','fontsize',.25,'HorizontalAlignment','Center','tag','deathNotes');
 
-h.submitDeath = uicontrol('style','pushbutton','string','Submit DOD','position',[350 10 200 50],'fontunits','normalized','fontsize',.3,'Callback',@mice.GUIs.submitDeath,'tag','submitDeathButton');
+h.submitDeath = uicontrol('style','pushbutton','string','Submit DOD','position',[550 10 200 50],'fontunits','normalized','fontsize',.3,'Callback',@mice.GUIs.submitDeath,'tag','submitDeathButton');
