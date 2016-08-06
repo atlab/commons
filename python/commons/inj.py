@@ -32,9 +32,15 @@ class AtlasStereotacticTargets(dj.Lookup):
     lambda_bregma_basedist=4.21   : double # base distance between lambda and bregma from the stereotactic atlas in mm
     """
     contents = [
-        dict(injection_site='dLGN', target_id='Tang2016', caudal=2.6, lateral=2.15, ventral=2.7),
-        dict(injection_site='V1',   target_id='fabee01',  caudal=3.8, lateral=2.5,  ventral=0.3),
-    ]
+                ('dLGN', 'Tang2016', 2.6, 2.15, 2.7, 4.21),
+                ('dLGN', 'fabee01', 2.3, 2.25, 2.5, 4.21),  # dLGN
+                ('dLGN', 'fabee05', 2.4, 2.25, 2.6, 4.21),  # dLGN10302015
+                ('dLGN', 'fabee06', 2.5, 2.5, 2.7, 4.21),  # dLGN12032015
+                ('dLGN', 'fabee02', 2.3, 2.4, 2.7, 4.21),  # dLGNDeeper
+                ('dLGN', 'fabee03', 2.3, 2.3, 2.6, 4.21),  # dLGNmod
+                ('dLGN', 'fabee04', 2.3, 2.4, 2.6, 4.21),  # dLGNMoreVentralLateral
+                ]
+
 
 @schema
 class GuidanceMethod(dj.Lookup):
@@ -77,5 +83,4 @@ class InjectionLocation(dj.Manual):
     lateral                       : double    # lateral coordinate in mm
     ventral                       : double    # coordinate ventral from cortical surface in mm
     adjustment                    : double    # adjustement factor to convert atlas coordinates to this injection
-    toi=CURRENT_TIMESTAMP         : timestamp # time of injection
     """
