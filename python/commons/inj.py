@@ -15,7 +15,7 @@ class Site(dj.Lookup):
 
     @property
     def contents(self):
-        yield from zip(['V1', 'dLGN', 'AL', 'LM', 'S1','S2','M1', 'PM'])
+        yield from zip(['V1', 'dLGN', 'AL', 'LM', 'S1','S2','M1', 'PM','_Test'])
 
 
 @schema
@@ -39,6 +39,8 @@ class AtlasStereotacticTargets(dj.Lookup):
                 ('dLGN', 'fabee02', 2.3, 2.4, 2.7, 4.21),  # dLGNDeeper
                 ('dLGN', 'fabee03', 2.3, 2.3, 2.6, 4.21),  # dLGNmod
                 ('dLGN', 'fabee04', 2.3, 2.4, 2.6, 4.21),  # dLGNMoreVentralLateral
+                ('_Test', 'lambda', 4.21, 0, 0, 4.21),  # dLGNMoreVentralLateral
+                ('_Test', 'bregma', 0, 0, 0, 4.21),  # dLGNMoreVentralLateral
                 ]
 
 
