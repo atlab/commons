@@ -9,7 +9,6 @@ caudal                        : double    # coordinate caudal from bregma in mm
 lateral                       : double    # lateral coordinate in mm
 ventral                       : double    # coordinate ventral from cortical surface in mm
 adjustment                    : double    # adjustement factor to convert atlas coordinates to this injection
-toi=CURRENT_TIMESTAMP         : timestamp # time of injection
 %}
 
 
