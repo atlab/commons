@@ -251,22 +251,24 @@ classdef Reader5 < handle
             if self.scanimage_version == 4
                 n = self.header.acqNumFrames;
             else
-                n = (length(self.files)-1) * self.header.hScan2D_logFramesPerFile;
+                n = (length(self.files)-1) * self.header.hScan2D_logFramesPerFile * self.nchannels;
                 % Reading number of frames in last file
                 k=1;
                 while ~lastDirectory(self.stacks{end})
                     nextDirectory(self.stacks{end});
                     k=k+1;
                 end;
-                setDirectory(self.stacks{end},1);
+                setDirectory(self.stacks{end},1);                
+                n = n + k;
                 
-                n = floor((n + (k / self.nchannels)) / self.nslices);
-                
-                % assert(n == round(n),'Total nframes / nslices must be an integer. Maybe scan aborted?')
             end
-            self.nframes = n;
+            self.nframes = n/self.nchannels/self.nslices;
+            if self.nframes ~= round(self.nframes)
+                warning 'Total nframes / nslices must be an integer. Maybe scan aborted?'
+                self.nframes = floor(self.nframes);
+            end
             self.frames_per_file(1:length(self.files)-1) = deal(self.header.hScan2D_logFramesPerFile * self.nchannels);
-            self.frames_per_file(length(self.files)) = n - sum(self.frames_per_file);
+            self.frames_per_file(length(self.files)) = self.nframes * self.nchannels * self.nslices - sum(self.frames_per_file);
             
         end
         
