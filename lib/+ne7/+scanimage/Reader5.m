@@ -297,7 +297,7 @@ classdef Reader5 < handle
             end
             hdr = temp;
             hdr = [hdr{~cellfun(@isempty, hdr)}];
-            if isempty(hdr)
+            if isempty(hdr) % in case we have used scanimage 5.2 
                 hdr = textscan(tiff.getTag('Software'),'%s','Delimiter',char(10));
                 hdr = strtrim(hdr{1});
                 self.scanimage_version = 5.2;
