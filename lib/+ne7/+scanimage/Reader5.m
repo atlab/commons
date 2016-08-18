@@ -296,7 +296,7 @@ classdef Reader5 < handle
                 hdr = textscan(tiff.getTag('Software'),'%s','Delimiter',char(10));
                 hdr = strtrim(hdr{1});
                 self.scanimage_version = 5.2;
-                temp = regexp(hdr, '^SI4\.(?<attr>\w*)\s*=\s*(?<value>.*\S)\s*$', 'names');
+                temp = regexp(hdr, '^SI\.(?<attr>[\.\w]*)\s*=\s*(?<value>.*\S)\s*$', 'names');
                 hdr = temp;
                 hdr = [hdr{~cellfun(@isempty, hdr)}];
             end
