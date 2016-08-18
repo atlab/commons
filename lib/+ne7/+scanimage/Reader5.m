@@ -292,10 +292,17 @@ classdef Reader5 < handle
             end
             hdr = temp;
             hdr = [hdr{~cellfun(@isempty, hdr)}];
+            if isempty(hdr)
+                hdr = textscan(tiff.getTag('Software'),'%s','Delimiter',char(10));
+                hdr = strtrim(hdr{1});
+                self.scanimage_version = 5.2;
+                temp = regexp(hdr, '^SI4\.(?<attr>\w*)\s*=\s*(?<value>.*\S)\s*$', 'names');
+                hdr = temp;
+                hdr = [hdr{~cellfun(@isempty, hdr)}];
+            end
             assert(~isempty(hdr), 'empty header -- possibly wrong ScanImage version.')
             self.header = cell2struct(cellfun(@(x) {evaluate(x)}, {hdr.value})', strrep({hdr.attr}, '.', '_'));
-            
-            
+ 
             function str = evaluate(str)
                 % if str is not in the form '<value>', then evaluate it.
                 if str(1)~='<' && str(end)~='>'
