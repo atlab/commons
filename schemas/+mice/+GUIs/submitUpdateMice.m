@@ -38,26 +38,26 @@ errorString = {};
 % if line 1 is C57Bl/6 or FVB the genotype miust be wild type
 
 for i = 1:size(m.table,1)
-    if (strcmp('C57Bl/6',m.table(i,7)) || strcmp('Fvb',m.table(i,7))) && ~strcmp('wild type',m.table(i,8))
+    if (strcmp('C57Bl/6',m.table(i,7)) || strcmp('Fvb',m.table(i,7)) || strcmp('CD1',m.table(i,7))) && ~strcmp('wild type',m.table(i,8))
         errorCount = errorCount + 1;
-        errorString{errorCount} = 'Lines C57Bl/6 and Fvb should only be used to designate pure wild type mice.';
+        errorString{errorCount} = 'Lines C57Bl/6, Fvb, and CD1 should only be used to designate pure wild type mice.';
     end
 end
 
 % wild type genotype can only be used for C57Bl/6 or Fvb lines
 
 for i = 1:size(m.table,1)
-    if strcmp('wild type',m.table(i,8)) && ~(strcmp('C57Bl/6',m.table(i,7)) || strcmp('Fvb',m.table(i,7)))
+    if strcmp('wild type',m.table(i,8)) && ~(strcmp('C57Bl/6',m.table(i,7)) || strcmp('Fvb',m.table(i,7)) || strcmp('CD1',m.table(i,7)))
         errorCount = errorCount + 1;
-        errorString{errorCount} = 'The wild type genotype should only be used to describe pure C57Bl/6 or Fvb lines.';
+        errorString{errorCount} = 'The wild type genotype should only be used to describe pure C57Bl/6, Fvb, or CD1 lines.';
     end
-    if strcmp('wild type',m.table(i,10)) && ~(strcmp('C57Bl/6',m.table(i,9)) || strcmp('Fvb',m.table(i,9)))
+    if strcmp('wild type',m.table(i,10)) && ~(strcmp('C57Bl/6',m.table(i,9)) || strcmp('Fvb',m.table(i,9)) || strcmp('CD1',m.table(i,9)))
         errorCount = errorCount + 1;
-        errorString{errorCount} = 'The wild type genotype should only be used to describe pure C57Bl/6 or Fvb lines.';
+        errorString{errorCount} = 'The wild type genotype should only be used to describe pure C57Bl/6, Fvb, or CD1 lines.';
     end
-    if strcmp('wild type',m.table(i,12)) && ~(strcmp('C57Bl/6',m.table(i,11)) || strcmp('Fvb',m.table(i,11)))
+    if strcmp('wild type',m.table(i,12)) && ~(strcmp('C57Bl/6',m.table(i,11)) || strcmp('Fvb',m.table(i,11)) || strcmp('CD1',m.table(i,11)))
         errorCount = errorCount + 1;
-        errorString{errorCount} = 'The wild type genotype should only be used to describe pure C57Bl/6 or Fvb lines.';
+        errorString{errorCount} = 'The wild type genotype should only be used to describe pure C57Bl/6, Fvb, or CD1 lines.';
     end
 end
 
@@ -147,7 +147,7 @@ if isempty(errorString)
         update(mice.Mice & ['animal_id=' m.table{i,1}],'sex',m.table{i,4})
         update(mice.Mice & ['animal_id=' m.table{i,1}],'color',m.table{i,5})
         update(mice.Mice & ['animal_id=' m.table{i,1}],'ear_punch',m.table{i,6})
-        update(mice.Mice & ['animal_id=' m.table{i,1}],'mouse_notes',m.table{i,13})
+        update(mice.Mice & ['animal_id=' m.table{i,1}],'mouse_notes',m.table{i,19})
         if ~isempty(m.table{i,7})
             update(mice.Genotypes & ['animal_id=' m.table{i,1}] & ['line="' m.table{i,7} '"'],'genotype',m.table{i,8})
         end
@@ -156,6 +156,15 @@ if isempty(errorString)
         end
         if ~isempty(m.table{i,11})
             update(mice.Genotypes & ['animal_id=' m.table{i,1}] & ['line="' m.table{i,11} '"'],'genotype',m.table{i,12})
+        end
+        if ~isempty(m.table{i,13})
+            update(mice.Genotypes & ['animal_id=' m.table{i,1}] & ['line="' m.table{i,13} '"'],'genotype',m.table{i,14})
+        end
+        if ~isempty(m.table{i,15})
+            update(mice.Genotypes & ['animal_id=' m.table{i,1}] & ['line="' m.table{i,15} '"'],'genotype',m.table{i,16})
+        end
+        if ~isempty(m.table{i,17})
+            update(mice.Genotypes & ['animal_id=' m.table{i,1}] & ['line="' m.table{i,17} '"'],'genotype',m.table{i,18})
         end
     end
     schema.conn.commitTransaction
