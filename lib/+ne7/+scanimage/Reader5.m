@@ -76,7 +76,7 @@ classdef Reader5 < handle
             if self.scanimage_version == 4
                 n = self.header.stackNumSlices;
             else
-                n = self.header.hStackManager_numSlices;
+                n = hFastZ_numFramesPerVolume;
                 %assert(n == self.header.hFastZ_numFramesPerVolume)
             end
         end
@@ -292,7 +292,7 @@ classdef Reader5 < handle
             end
             hdr = temp;
             hdr = [hdr{~cellfun(@isempty, hdr)}];
-            if isempty(hdr)
+            if isempty(hdr) % in case we have used scanimage 5.2 
                 hdr = textscan(tiff.getTag('Software'),'%s','Delimiter',char(10));
                 hdr = strtrim(hdr{1});
                 self.scanimage_version = 5.2;
