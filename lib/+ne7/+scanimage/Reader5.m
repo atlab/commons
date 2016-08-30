@@ -76,7 +76,7 @@ classdef Reader5 < handle
             if self.scanimage_version == 4
                 n = self.header.stackNumSlices;
             else
-                n = self.header.hStackManager_numSlices;
+                n = hFastZ_numFramesPerVolume;
                 %assert(n == self.header.hFastZ_numFramesPerVolume)
             end
         end
