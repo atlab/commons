@@ -43,6 +43,12 @@ while true
             else
                 removeOutlines
             end
+        case 91
+            h=findobj(gcf,'type','image');
+            set(h,'cdata',get(h,'cdata')*.9)
+        case 93
+            h=findobj(gcf,'type','image');
+            set(h,'cdata',get(h,'cdata')*1.1)
         case 27
             yes = questdlg('Do you wish to abort segmenting this image?','Finish segmentation', 'yes','no','no');
             if strcmpi('yes', yes)
@@ -66,6 +72,8 @@ end
         disp 'Shift-click to delete pixels from mask'
         disp 'Press BACKSPACE to undo'
         disp 'Press 1-9 to set brush size'
+        disp '[ to reduce brightness'
+        disp '] to increase brightness'
         disp 'Press SPACE to toggle outlines'
         disp 'Press ESC to discard all edits'
         disp 'Press ENTER to commit'

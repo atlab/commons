@@ -29,9 +29,15 @@ if ~isempty(h.isViewMice)
     set(h.line1,'Value',1);
     set(h.line2,'Value',1);
     set(h.line3,'Value',1);
+    set(h.line4,'Value',1);
+    set(h.line5,'Value',1);
+    set(h.line6,'Value',1);
     set(h.genotype1,'Value',1);
     set(h.genotype2,'Value',1);
     set(h.genotype3,'Value',1);
+    set(h.genotype4,'Value',1);
+    set(h.genotype5,'Value',1);
+    set(h.genotype6,'Value',1);
     set(h.range_start,'String','');
     set(h.range_end,'String','');
     return
@@ -46,8 +52,14 @@ set(h.room,'Value',6);
 set(h.line1,'Value',1);
 set(h.line2,'Value',1);
 set(h.line3,'Value',1);
+set(h.line4,'Value',1);
+set(h.line5,'Value',1);
+set(h.line6,'Value',1);
 set(h.genotype1,'Value',7);
 set(h.genotype2,'Value',7);
 set(h.genotype3,'Value',7);
+set(h.genotype4,'Value',7);
+set(h.genotype5,'Value',7);
+set(h.genotype6,'Value',7);
 
 end

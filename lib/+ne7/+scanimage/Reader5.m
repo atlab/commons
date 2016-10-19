@@ -3,7 +3,7 @@ classdef Reader5 < handle
     %  indexed as reader(col, row, frame, slice, channel).
     %  It works with scanimage 4 and scanimage 5.
     %
-    %  The reader can then be addressed with subscripts 
+    %  The reader can then be addressed with subscripts
     %         reader(y, x, channel, slice, frame)
     %
     %  Example:
@@ -20,7 +20,7 @@ classdef Reader5 < handle
         nframes
         frames_per_file
     end
-        
+    
     properties(Dependent)
         nslices
         channels
@@ -32,7 +32,7 @@ classdef Reader5 < handle
         dwell_time
         bidirectional
         fill_fraction
-        is_functional
+        fastz
     end
     
     methods
@@ -62,7 +62,7 @@ classdef Reader5 < handle
             end
         end
         
-        function f = get.is_functional(self)
+        function f = get.fastz(self)
             if self.scanimage_version == 4
                 f = 1;
                 %f = self.header.fastZEnable;
@@ -75,6 +75,8 @@ classdef Reader5 < handle
         function n = get.nslices(self)
             if self.scanimage_version == 4
                 n = self.header.stackNumSlices;
+            elseif self.header.hFastZ_enable
+                n = self.header.hFastZ_numFramesPerVolume;
             else
                 n = self.header.hStackManager_numSlices;
                 %assert(n == self.header.hFastZ_numFramesPerVolume)
@@ -138,7 +140,7 @@ classdef Reader5 < handle
                 if self.header.hFastZ_enable
                     n = self.header.hFastZ_numVolumes;
                 else
-                    n = hStackManager_framesPerSlice;
+                    n = self.header.hStackManager_framesPerSlice;
                 end
             end
             
@@ -173,23 +175,17 @@ classdef Reader5 < handle
         end
         
         function sz = size(self)
-            if self.is_functional
-                sz(1) = self.header.hRoiManager_linesPerFrame; % not sure this is lines or pixels (JR)
-                sz(2) = self.header.hRoiManager_pixelsPerLine; % not sure this is lines or pixels (JR)
-                sz(3) = self.nchannels;
-                sz(4) = self.nslices;
-                sz(5) = self.nframes;
-            else
-                sz = size(self.data);
-            end
+            sz(1) = self.header.hRoiManager_linesPerFrame; % not sure this is lines or pixels (JR)
+            sz(2) = self.header.hRoiManager_pixelsPerLine; % not sure this is lines or pixels (JR)
+            sz(3) = self.nchannels;
+            sz(4) = self.nslices;
+            sz(5) = self.nframes;
         end
         
         
         function data = subsref(self, S)
             if ~strcmp(S(1).type, '()')
                 data = builtin('subsref', self, S);
-            elseif ~self.is_functional
-                data = builtin('subsref', self.data, S);
             else
                 assert(length(S.subs)==5, 'subscript error')
                 sz = size(self);
@@ -236,10 +232,7 @@ classdef Reader5 < handle
                 k=1;
                 for i=1:length(self.stacks)
                     stackInd = find(ind(sum(self.frames_per_file(1:i-1))+1 : sum(self.frames_per_file(1:i))));
-                    if ~isempty(stackInd)
-                        disp(['Loading ' num2str(length(stackInd)) ' frames from ' self.files{i}]);
-                    end
-                    for j=stackInd
+                    for j=stackInd(:)'
                         setDirectory(self.stacks{i},j);
                         f = read(self.stacks{i});
                         data(:,:,k) = f(yInd,xInd);
@@ -260,23 +253,25 @@ classdef Reader5 < handle
             if self.scanimage_version == 4
                 n = self.header.acqNumFrames;
             else
-                n = (length(self.files)-1) * self.header.hScan2D_logFramesPerFile;
-                
-                disp('Reading number of frames in last file...');
-                k=1; 
+                n = (length(self.files)-1) * self.header.hScan2D_logFramesPerFile * self.nchannels;
+                % Reading number of frames in last file
+                k=1;
                 while ~lastDirectory(self.stacks{end})
-                    nextDirectory(self.stacks{end}); 
-                    k=k+1; 
-                end; 
-                setDirectory(self.stacks{end},1);
+                    nextDirectory(self.stacks{end});
+                    k=k+1;
+                end;
+                setDirectory(self.stacks{end},1);                
+                n = n + k;
                 
-                n = (n + (k / self.nchannels)) / self.nslices;
-                
-                assert(n == round(n),'Total nframes / nslices must be an integer. Maybe scan aborted?')
             end
-            self.nframes = n;
+            self.nframes = n/self.nchannels/self.nslices;
+            if self.nframes ~= round(self.nframes)
+                warning 'Total nframes / nslices must be an integer. Maybe scan aborted?'
+                self.nframes = floor(self.nframes);
+            end
             self.frames_per_file(1:length(self.files)-1) = deal(self.header.hScan2D_logFramesPerFile * self.nchannels);
-            self.frames_per_file(length(self.files)) = k;
+            self.frames_per_file(length(self.files)) = self.nframes * self.nchannels * self.nslices - sum(self.frames_per_file);
+            
         end
         
         function find_files(self, path)
@@ -299,10 +294,17 @@ classdef Reader5 < handle
             end
             hdr = temp;
             hdr = [hdr{~cellfun(@isempty, hdr)}];
+            if isempty(hdr) % in case we have used scanimage 5.2 
+                hdr = textscan(tiff.getTag('Software'),'%s','Delimiter',char(10));
+                hdr = strtrim(hdr{1});
+                self.scanimage_version = 5.2;
+                temp = regexp(hdr, '^SI\.(?<attr>[\.\w]*)\s*=\s*(?<value>.*\S)\s*$', 'names');
+                hdr = temp;
+                hdr = [hdr{~cellfun(@isempty, hdr)}];
+            end
             assert(~isempty(hdr), 'empty header -- possibly wrong ScanImage version.')
             self.header = cell2struct(cellfun(@(x) {evaluate(x)}, {hdr.value})', strrep({hdr.attr}, '.', '_'));
-            
-            
+ 
             function str = evaluate(str)
                 % if str is not in the form '<value>', then evaluate it.
                 if str(1)~='<' && str(end)~='>'
@@ -312,33 +314,9 @@ classdef Reader5 < handle
         end
         
         function init_stacks(self)
-            if self.is_functional
-                self.stacks = arrayfun(@(ifile) ...
-                    Tiff(self.files{ifile}), ...
-                    1:length(self.files), 'uni', false);
-                
-                %self.stacks = arrayfun(@(ifile) ...
-                %    TIFFStack(self.files{ifile}, [], [self.nchannels self.nslices]), ...
-                %    1:length(self.files), 'uni', false);
-                
-                %self.stacks = arrayfun(@(ifile) TIFFStack(self.files{ifile}),1:length(self.files), 'uni', false);
-            else
-                % if structural data, then load the entire stack into
-                % memory. The loaded data is initially flat and needs
-                % reshaping as well as permutation of axis as frames and
-                % slices are flipped.
-                data = [];
-                for idx = 1:length(self.files)
-                    stack = TIFFStack(self.files{idx}, [], self.nchannels);
-                    data = cat(4, data, stack(:,:,:,:));
-                end
-                sz = size(data);
-                assert(sz(4) == self.nframes * self.nslices, ...
-                    sprintf(['stack size mismatch: expected %d images but only %d '...
-                    'found -- be sure to load all files together'], self.nframes*self.nslices, sz(4)));
-                sz = [sz(1:end-1) self.nframes self.nslices];
-                self.data = permute(reshape(data, sz), [1,2,3,5,4]);
-            end
+            self.stacks = arrayfun(@(ifile) ...
+                Tiff(self.files{ifile}), ...
+                1:length(self.files), 'uni', false);
         end
         
     end
