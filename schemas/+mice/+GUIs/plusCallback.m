@@ -160,69 +160,69 @@ end
 % If any line is C57Bl/6, Fvb, or CD1 then it must be the only line and the
 % genotype must be wild type
 
-if (strcmp(m.line1,'C57Bl/6') || strcmp(m.line1,'Fvb') || strcmp(m.line1,'CD1')) && ~strcmp(m.genotype1, 'wild type')
+if (strcmp(m.line1,'C57Bl/6') || strcmp(m.line1,'Fvb') || strcmp(m.line1,'CD1') || strcmp(m.line1,'Crl-CD1')) && ~strcmp(m.genotype1, 'wild type')
     errorCount = errorCount + 1;
     errorString{errorCount} = 'Lines C57Bl/6, Fvb, and CD1 should only be used to designate pure wild type mice.';
 end
 
-if (strcmp(m.line1, 'C57Bl/6') || strcmp(m.line1,'Fvb') || strcmp(m.line1,'CD1')) && (~isempty(m.line2) || ~isempty(m.line3))
+if (strcmp(m.line1, 'C57Bl/6') || strcmp(m.line1,'Fvb') || strcmp(m.line1,'CD1')|| strcmp(m.line1,'Crl-CD1')) && (~isempty(m.line2) || ~isempty(m.line3))
     errorCount = errorCount + 1;
     errorString{errorCount} = 'Lines C57Bl/6, Fvb, and CD1 should only be used to designate pure wild type mice.';
 end
 
-if (strcmp(m.line2, 'C57Bl/6') || strcmp(m.line2,'Fvb') || strcmp(m.line2,'CD1')) && (~isempty(m.line1) || ~isempty(m.line3))
+if (strcmp(m.line2, 'C57Bl/6') || strcmp(m.line2,'Fvb') || strcmp(m.line2,'CD1')|| strcmp(m.line2,'Crl-CD1')) && (~isempty(m.line1) || ~isempty(m.line3))
     errorCount = errorCount + 1;
     errorString{errorCount} = 'Lines C57Bl/6, Fvb, and CD1 should only be used to designate pure wild type mice.';
 end
 
-if (strcmp(m.line3, 'C57Bl/6') || strcmp(m.line3,'Fvb') || strcmp(m.line3,'CD1')) && (~isempty(m.line1) || ~isempty(m.line2))
+if (strcmp(m.line3, 'C57Bl/6') || strcmp(m.line3,'Fvb') || strcmp(m.line3,'CD1')|| strcmp(m.line3,'Crl-CD1')) && (~isempty(m.line1) || ~isempty(m.line2))
     errorCount = errorCount + 1;
     errorString{errorCount} = 'Lines C57Bl/6, Fvb, and CD1 should only be used to designate pure wild type mice.';
 end
 
-if strcmp(m.line4, 'C57Bl/6') || strcmp(m.line4,'Fvb') || strcmp(m.line4, 'CD1')
+if strcmp(m.line4, 'C57Bl/6') || strcmp(m.line4,'Fvb') || strcmp(m.line4, 'CD1') || strcmp(m.line4,'Crl-CD1')
     errorCount = errorCount + 1;
     errorString{errorCount} = 'Lines C57Bl/6, Fvb, and CD1 should only be used to designate pure wild type mice.';
 end
 
-if strcmp(m.line5, 'C57Bl/6') || strcmp(m.line5,'Fvb') || strcmp(m.line5, 'CD1')
+if strcmp(m.line5, 'C57Bl/6') || strcmp(m.line5,'Fvb') || strcmp(m.line5, 'CD1') || strcmp(m.line5,'Crl-CD1')
     errorCount = errorCount + 1;
     errorString{errorCount} = 'Lines C57Bl/6, Fvb, and CD1 should only be used to designate pure wild type mice.';
 end
 
-if strcmp(m.line6, 'C57Bl/6') || strcmp(m.line6,'Fvb') || strcmp(m.line6, 'CD1')
+if strcmp(m.line6, 'C57Bl/6') || strcmp(m.line6,'Fvb') || strcmp(m.line6, 'CD1') || strcmp(m.line6,'Crl-CD1')
     errorCount = errorCount + 1;
     errorString{errorCount} = 'Lines C57Bl/6, Fvb, and CD1 should only be used to designate pure wild type mice.';
 end
 
 % wild type genotype can only be used for C57Bl/6 or Fvb lines.  
 
-if strcmp(m.genotype1,'wild type') && ~strcmp(m.line1,'C57Bl/6') && ~strcmp(m.line1,'Fvb') && ~strcmp(m.line1,'CD1')
+if strcmp(m.genotype1,'wild type') && ~strcmp(m.line1,'C57Bl/6') && ~strcmp(m.line1,'Fvb') && ~strcmp(m.line1,'CD1') && ~strcmp(m.line1,'Crl-CD1')
     errorCount = errorCount + 1;
     errorString{errorCount} = 'The wild type genotype should only be used to describe pure C57Bl/6, Fvb, or CD1 lines.';
 end
 
-if strcmp(m.genotype2,'wild type') && ~strcmp(m.line2,'C57Bl/6') && ~strcmp(m.line2,'Fvb') && ~strcmp(m.line2,'CD1')
+if strcmp(m.genotype2,'wild type') && ~strcmp(m.line2,'C57Bl/6') && ~strcmp(m.line2,'Fvb') && ~strcmp(m.line2,'CD1') && ~strcmp(m.line2,'Crl-CD1')
     errorCount = errorCount + 1;
     errorString{errorCount} = 'The wild type genotype should only be used to describe pure C57Bl/6, Fvb, or CD1 lines.';
 end
 
-if strcmp(m.genotype3,'wild type') && ~strcmp(m.line3,'C57Bl/6') && ~strcmp(m.line3,'Fvb') && ~strcmp(m.line3,'CD1')
+if strcmp(m.genotype3,'wild type') && ~strcmp(m.line3,'C57Bl/6') && ~strcmp(m.line3,'Fvb') && ~strcmp(m.line3,'CD1') && ~strcmp(m.line3,'Crl-CD1')
     errorCount = errorCount + 1;
     errorString{errorCount} = 'The wild type genotype should only be used to describe pure C57Bl/6, Fvb, or CD1 lines.';
 end
 
-if strcmp(m.genotype4,'wild type') && ~strcmp(m.line4,'C57Bl/6') && ~strcmp(m.line4,'Fvb') && ~strcmp(m.line4,'CD1')
+if strcmp(m.genotype4,'wild type') && ~strcmp(m.line4,'C57Bl/6') && ~strcmp(m.line4,'Fvb') && ~strcmp(m.line4,'CD1') && ~strcmp(m.line4,'Crl-CD1')
     errorCount = errorCount + 1;
     errorString{errorCount} = 'The wild type genotype should only be used to describe pure C57Bl/6, Fvb, or CD1 lines.';
 end
 
-if strcmp(m.genotype5,'wild type') && ~strcmp(m.line5,'C57Bl/6') && ~strcmp(m.line5,'Fvb') && ~strcmp(m.line5,'CD1')
+if strcmp(m.genotype5,'wild type') && ~strcmp(m.line5,'C57Bl/6') && ~strcmp(m.line5,'Fvb') && ~strcmp(m.line5,'CD1') && ~strcmp(m.line5,'Crl-CD1')
     errorCount = errorCount + 1;
     errorString{errorCount} = 'The wild type genotype should only be used to describe pure C57Bl/6, Fvb, or CD1 lines.';
 end
 
-if strcmp(m.genotype6,'wild type') && ~strcmp(m.line6,'C57Bl/6') && ~strcmp(m.line6,'Fvb') && ~strcmp(m.line6,'CD1')
+if strcmp(m.genotype6,'wild type') && ~strcmp(m.line6,'C57Bl/6') && ~strcmp(m.line6,'Fvb') && ~strcmp(m.line6,'CD1') && ~strcmp(m.line6,'Crl-CD1')
     errorCount = errorCount + 1;
     errorString{errorCount} = 'The wild type genotype should only be used to describe pure C57Bl/6, Fvb, or CD1 lines.';
 end
