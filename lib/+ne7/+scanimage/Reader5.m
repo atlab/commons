@@ -75,6 +75,8 @@ classdef Reader5 < handle
         function n = get.nslices(self)
             if self.scanimage_version == 4
                 n = self.header.stackNumSlices;
+            elseif self.header.hFastZ_enable
+                n = self.header.hFastZ_numFramesPerVolume;
             else
                 n = self.header.hStackManager_numSlices;
                 %assert(n == self.header.hFastZ_numFramesPerVolume)
@@ -251,22 +253,24 @@ classdef Reader5 < handle
             if self.scanimage_version == 4
                 n = self.header.acqNumFrames;
             else
-                n = (length(self.files)-1) * self.header.hScan2D_logFramesPerFile;
+                n = (length(self.files)-1) * self.header.hScan2D_logFramesPerFile * self.nchannels;
                 % Reading number of frames in last file
                 k=1;
                 while ~lastDirectory(self.stacks{end})
                     nextDirectory(self.stacks{end});
                     k=k+1;
                 end;
-                setDirectory(self.stacks{end},1);
+                setDirectory(self.stacks{end},1);                
+                n = n + k;
                 
-                n = floor((n + (k / self.nchannels)) / self.nslices);
-                
-                % assert(n == round(n),'Total nframes / nslices must be an integer. Maybe scan aborted?')
             end
-            self.nframes = n;
+            self.nframes = n/self.nchannels/self.nslices;
+            if self.nframes ~= round(self.nframes)
+                warning 'Total nframes / nslices must be an integer. Maybe scan aborted?'
+                self.nframes = floor(self.nframes);
+            end
             self.frames_per_file(1:length(self.files)-1) = deal(self.header.hScan2D_logFramesPerFile * self.nchannels);
-            self.frames_per_file(length(self.files)) = n - sum(self.frames_per_file);
+            self.frames_per_file(length(self.files)) = self.nframes * self.nchannels * self.nslices - sum(self.frames_per_file);
             
         end
         
@@ -288,12 +292,22 @@ classdef Reader5 < handle
                 self.scanimage_version = 5;
                 temp = regexp(hdr, '^scanimage\.SI\.(?<attr>[\.\w]*)\s*=\s*(?<value>.*\S)\s*$', 'names');
             end
+            framenums = regexp(hdr, '^(?<attr>[\.frameNumbers]*)\s*=\s*(?<value>.*\S)\s*$', 'names');
+            framenums = [framenums{~cellfun(@isempty, framenums)}];
             hdr = temp;
             hdr = [hdr{~cellfun(@isempty, hdr)}];
+            if isempty(hdr) % in case we have used scanimage 5.2 
+                hdr = textscan(tiff.getTag('Software'),'%s','Delimiter',char(10));
+                hdr = strtrim(hdr{1});
+                self.scanimage_version = 5.2;
+                temp = regexp(hdr, '^SI\.(?<attr>[\.\w]*)\s*=\s*(?<value>.*\S)\s*$', 'names');
+                hdr = temp;
+                hdr = [hdr{~cellfun(@isempty, hdr)}];
+            end
+            hdr(end+1) = framenums;
             assert(~isempty(hdr), 'empty header -- possibly wrong ScanImage version.')
             self.header = cell2struct(cellfun(@(x) {evaluate(x)}, {hdr.value})', strrep({hdr.attr}, '.', '_'));
-            
-            
+ 
             function str = evaluate(str)
                 % if str is not in the form '<value>', then evaluate it.
                 if str(1)~='<' && str(end)~='>'

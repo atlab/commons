@@ -115,33 +115,13 @@ b2 = {};
 b3 = {};
 
 if ~isempty(m.parent1) 
-    a1 = fetch(mice.Parents & ['parent_id="' m.parent1 '"']);
-    try parent1 = fetch(mice.Mice & ['animal_id=' m.parent1 ''],'*');
-    end
-    if isempty(parent1)
-        try parent1 = fetch(mice.Mice & ['other_id="' m.parent1 '"'],'*');
-        end
-    end
-    try a2 = fetch(mice.Parents & ['parent_id="' num2str(parent1.animal_id) '"']);
-    end
-    try a3 = fetch(mice.Parents & ['parent_id="' parent1.other_id '"']);
-    end
-    a = fetch(mice.Parents & ((mice.Parents & a1) | (mice.Parents & a2) | (mice.Parents & a3)));
+    a1 = fetch(mice.Mice & ['animal_id=' num2str(m.parent1) ' or other_id=' num2str(m.parent1)]);
+    a = fetch(mice.Parents & ['parent_id=' num2str(a1.animal_id)]);
 end
 
 if ~isempty(m.parent2) 
-    b1 = fetch(mice.Parents & ['parent_id="' m.parent2 '"']);
-    try parent2 = fetch(mice.Mice & ['animal_id=' m.parent2 ''],'*');
-    end
-    if isempty(parent2)
-        try parent2 = fetch(mice.Mice & ['other_id="' m.parent2 '"'],'*');
-        end
-    end
-    try b2 = fetch(mice.Parents & ['parent_id="' num2str(parent2.animal_id) '"']);
-    end
-    try b3 = fetch(mice.Parents & ['parent_id="' parent2.other_id '"']);
-    end
-    b = fetch(mice.Parents & ((mice.Parents & b1) | (mice.Parents & b2) | (mice.Parents & b3)));
+    b1 = fetch(mice.Mice & ['animal_id=' num2str(m.parent2) ' or other_id=' num2str(m.parent2)]);
+    b = fetch(mice.Parents & ['parent_id=' num2str(b1.animal_id)]);
 end
 
 offspringCount = 0;

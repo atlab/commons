@@ -160,69 +160,69 @@ end
 % If any line is C57Bl/6, Fvb, or CD1 then it must be the only line and the
 % genotype must be wild type
 
-if (strcmp(m.line1,'C57Bl/6') || strcmp(m.line1,'Fvb') || strcmp(m.line1,'CD1')) && ~strcmp(m.genotype1, 'wild type')
+if (strcmp(m.line1,'C57Bl/6') || strcmp(m.line1,'Fvb') || strcmp(m.line1,'CD1') || strcmp(m.line1,'Crl-CD1')) && ~strcmp(m.genotype1, 'wild type')
     errorCount = errorCount + 1;
     errorString{errorCount} = 'Lines C57Bl/6, Fvb, and CD1 should only be used to designate pure wild type mice.';
 end
 
-if (strcmp(m.line1, 'C57Bl/6') || strcmp(m.line1,'Fvb') || strcmp(m.line1,'CD1')) && (~isempty(m.line2) || ~isempty(m.line3))
+if (strcmp(m.line1, 'C57Bl/6') || strcmp(m.line1,'Fvb') || strcmp(m.line1,'CD1')|| strcmp(m.line1,'Crl-CD1')) && (~isempty(m.line2) || ~isempty(m.line3))
     errorCount = errorCount + 1;
     errorString{errorCount} = 'Lines C57Bl/6, Fvb, and CD1 should only be used to designate pure wild type mice.';
 end
 
-if (strcmp(m.line2, 'C57Bl/6') || strcmp(m.line2,'Fvb') || strcmp(m.line2,'CD1')) && (~isempty(m.line1) || ~isempty(m.line3))
+if (strcmp(m.line2, 'C57Bl/6') || strcmp(m.line2,'Fvb') || strcmp(m.line2,'CD1')|| strcmp(m.line2,'Crl-CD1')) && (~isempty(m.line1) || ~isempty(m.line3))
     errorCount = errorCount + 1;
     errorString{errorCount} = 'Lines C57Bl/6, Fvb, and CD1 should only be used to designate pure wild type mice.';
 end
 
-if (strcmp(m.line3, 'C57Bl/6') || strcmp(m.line3,'Fvb') || strcmp(m.line3,'CD1')) && (~isempty(m.line1) || ~isempty(m.line2))
+if (strcmp(m.line3, 'C57Bl/6') || strcmp(m.line3,'Fvb') || strcmp(m.line3,'CD1')|| strcmp(m.line3,'Crl-CD1')) && (~isempty(m.line1) || ~isempty(m.line2))
     errorCount = errorCount + 1;
     errorString{errorCount} = 'Lines C57Bl/6, Fvb, and CD1 should only be used to designate pure wild type mice.';
 end
 
-if strcmp(m.line4, 'C57Bl/6') || strcmp(m.line4,'Fvb') || strcmp(m.line4, 'CD1')
+if strcmp(m.line4, 'C57Bl/6') || strcmp(m.line4,'Fvb') || strcmp(m.line4, 'CD1') || strcmp(m.line4,'Crl-CD1')
     errorCount = errorCount + 1;
     errorString{errorCount} = 'Lines C57Bl/6, Fvb, and CD1 should only be used to designate pure wild type mice.';
 end
 
-if strcmp(m.line5, 'C57Bl/6') || strcmp(m.line5,'Fvb') || strcmp(m.line5, 'CD1')
+if strcmp(m.line5, 'C57Bl/6') || strcmp(m.line5,'Fvb') || strcmp(m.line5, 'CD1') || strcmp(m.line5,'Crl-CD1')
     errorCount = errorCount + 1;
     errorString{errorCount} = 'Lines C57Bl/6, Fvb, and CD1 should only be used to designate pure wild type mice.';
 end
 
-if strcmp(m.line6, 'C57Bl/6') || strcmp(m.line6,'Fvb') || strcmp(m.line6, 'CD1')
+if strcmp(m.line6, 'C57Bl/6') || strcmp(m.line6,'Fvb') || strcmp(m.line6, 'CD1') || strcmp(m.line6,'Crl-CD1')
     errorCount = errorCount + 1;
     errorString{errorCount} = 'Lines C57Bl/6, Fvb, and CD1 should only be used to designate pure wild type mice.';
 end
 
 % wild type genotype can only be used for C57Bl/6 or Fvb lines.  
 
-if strcmp(m.genotype1,'wild type') && ~strcmp(m.line1,'C57Bl/6') && ~strcmp(m.line1,'Fvb') && ~strcmp(m.line1,'CD1')
+if strcmp(m.genotype1,'wild type') && ~strcmp(m.line1,'C57Bl/6') && ~strcmp(m.line1,'Fvb') && ~strcmp(m.line1,'CD1') && ~strcmp(m.line1,'Crl-CD1')
     errorCount = errorCount + 1;
     errorString{errorCount} = 'The wild type genotype should only be used to describe pure C57Bl/6, Fvb, or CD1 lines.';
 end
 
-if strcmp(m.genotype2,'wild type') && ~strcmp(m.line2,'C57Bl/6') && ~strcmp(m.line2,'Fvb') && ~strcmp(m.line2,'CD1')
+if strcmp(m.genotype2,'wild type') && ~strcmp(m.line2,'C57Bl/6') && ~strcmp(m.line2,'Fvb') && ~strcmp(m.line2,'CD1') && ~strcmp(m.line2,'Crl-CD1')
     errorCount = errorCount + 1;
     errorString{errorCount} = 'The wild type genotype should only be used to describe pure C57Bl/6, Fvb, or CD1 lines.';
 end
 
-if strcmp(m.genotype3,'wild type') && ~strcmp(m.line3,'C57Bl/6') && ~strcmp(m.line3,'Fvb') && ~strcmp(m.line3,'CD1')
+if strcmp(m.genotype3,'wild type') && ~strcmp(m.line3,'C57Bl/6') && ~strcmp(m.line3,'Fvb') && ~strcmp(m.line3,'CD1') && ~strcmp(m.line3,'Crl-CD1')
     errorCount = errorCount + 1;
     errorString{errorCount} = 'The wild type genotype should only be used to describe pure C57Bl/6, Fvb, or CD1 lines.';
 end
 
-if strcmp(m.genotype4,'wild type') && ~strcmp(m.line4,'C57Bl/6') && ~strcmp(m.line4,'Fvb') && ~strcmp(m.line4,'CD1')
+if strcmp(m.genotype4,'wild type') && ~strcmp(m.line4,'C57Bl/6') && ~strcmp(m.line4,'Fvb') && ~strcmp(m.line4,'CD1') && ~strcmp(m.line4,'Crl-CD1')
     errorCount = errorCount + 1;
     errorString{errorCount} = 'The wild type genotype should only be used to describe pure C57Bl/6, Fvb, or CD1 lines.';
 end
 
-if strcmp(m.genotype5,'wild type') && ~strcmp(m.line5,'C57Bl/6') && ~strcmp(m.line5,'Fvb') && ~strcmp(m.line5,'CD1')
+if strcmp(m.genotype5,'wild type') && ~strcmp(m.line5,'C57Bl/6') && ~strcmp(m.line5,'Fvb') && ~strcmp(m.line5,'CD1') && ~strcmp(m.line5,'Crl-CD1')
     errorCount = errorCount + 1;
     errorString{errorCount} = 'The wild type genotype should only be used to describe pure C57Bl/6, Fvb, or CD1 lines.';
 end
 
-if strcmp(m.genotype6,'wild type') && ~strcmp(m.line6,'C57Bl/6') && ~strcmp(m.line6,'Fvb') && ~strcmp(m.line6,'CD1')
+if strcmp(m.genotype6,'wild type') && ~strcmp(m.line6,'C57Bl/6') && ~strcmp(m.line6,'Fvb') && ~strcmp(m.line6,'CD1') && ~strcmp(m.line6,'Crl-CD1')
     errorCount = errorCount + 1;
     errorString{errorCount} = 'The wild type genotype should only be used to describe pure C57Bl/6, Fvb, or CD1 lines.';
 end
@@ -358,27 +358,27 @@ end
 
 if ~isempty(a)
     a = fetch(mice.Genotypes & a & 'genotype = "homozygous"');
-    if ~isempty(m.line1) && ~isempty(a) && strcmp(m.line1,a.line) && strcmp('negative',m.genotype1);
+    if ~isempty(m.line1) && ~isempty(a) && any(strcmp(m.line1,{a.line})) && strcmp('negative',m.genotype1);
         errorCount = errorCount + 1;
         errorString{errorCount} = ['Animal cannot be negative for ' m.line1 ' if a parent is homozygous.'];
     end
-    if ~isempty(m.line2) && ~isempty(a) && strcmp(m.line2,a.line) && strcmp('negative',m.genotype2);
+    if ~isempty(m.line2) && ~isempty(a) && any(strcmp(m.line2,{a.line})) && strcmp('negative',m.genotype2);
         errorCount = errorCount + 1;
         errorString{errorCount} = ['Animal cannot be negative for ' m.line2 ' if a parent is homozygous.'];
     end
-    if ~isempty(m.line3) && ~isempty(a) && strcmp(m.line3,a.line) && strcmp('negative',m.genotype3);
+    if ~isempty(m.line3) && ~isempty(a) && any(strcmp(m.line3,{a.line})) && strcmp('negative',m.genotype3);
         errorCount = errorCount + 1;
         errorString{errorCount} = ['Animal cannot be negative for ' m.line3 ' if a parent is homozygous.'];
     end
-    if ~isempty(m.line4) && ~isempty(a) && strcmp(m.line4,a.line) && strcmp('negative',m.genotype4);
+    if ~isempty(m.line4) && ~isempty(a) && any(strcmp(m.line4,{a.line})) && strcmp('negative',m.genotype4);
         errorCount = errorCount + 1;
         errorString{errorCount} = ['Animal cannot be negative for ' m.line4 ' if a parent is homozygous.'];
     end
-    if ~isempty(m.line5) && ~isempty(a) && strcmp(m.line5,a.line) && strcmp('negative',m.genotype5);
+    if ~isempty(m.line5) && ~isempty(a) && any(strcmp(m.line5,{a.line})) && strcmp('negative',m.genotype5);
         errorCount = errorCount + 1;
         errorString{errorCount} = ['Animal cannot be negative for ' m.line5 ' if a parent is homozygous.'];
     end
-    if ~isempty(m.line6) && ~isempty(a) && strcmp(m.line6,a.line) && strcmp('negative',m.genotype6);
+    if ~isempty(m.line6) && ~isempty(a) && any(strcmp(m.line6,{a.line})) && strcmp('negative',m.genotype6);
         errorCount = errorCount + 1;
         errorString{errorCount} = ['Animal cannot be negative for ' m.line6 ' if a parent is homozygous.'];
     end
@@ -386,27 +386,27 @@ end
 
 if ~isempty(b)
     b = fetch(mice.Genotypes & b & 'genotype = "homozygous"');
-    if ~isempty(m.line1) && ~isempty(b) && strcmp(m.line1,b.line) && strcmp('negative',m.genotype1);
+    if ~isempty(m.line1) && ~isempty(b) && any(strcmp(m.line1,{b.line})) && strcmp('negative',m.genotype1);
         errorCount = errorCount + 1;
         errorString{errorCount} = ['Animal cannot be negative for ' m.line1 ' if a parent is homozygous.'];
     end
-    if ~isempty(m.line2) && ~isempty(b) && strcmp(m.line2,b.line) && strcmp('negative',m.genotype2);
+    if ~isempty(m.line2) && ~isempty(b) && any(strcmp(m.line2,{b.line})) && strcmp('negative',m.genotype2);
         errorCount = errorCount + 1;
         errorString{errorCount} = ['Animal cannot be negative for ' m.line2 ' if a parent is homozygous.'];
     end
-    if ~isempty(m.line3) && ~isempty(b) && strcmp(m.line3,b.line) && strcmp('negative',m.genotype3);
+    if ~isempty(m.line3) && ~isempty(b) && any(strcmp(m.line3,{b.line})) && strcmp('negative',m.genotype3);
         errorCount = errorCount + 1;
         errorString{errorCount} = ['Animal cannot be negative for ' m.line3 ' if a parent is homozygous.'];
     end
-    if ~isempty(m.line4) && ~isempty(b) && strcmp(m.line4,b.line) && strcmp('negative',m.genotype4);
+    if ~isempty(m.line4) && ~isempty(b) && any(strcmp(m.line4,{b.line})) && strcmp('negative',m.genotype4);
         errorCount = errorCount + 1;
         errorString{errorCount} = ['Animal cannot be negative for ' m.line4 ' if a parent is homozygous.'];
     end
-    if ~isempty(m.line5) && ~isempty(b) && strcmp(m.line5,b.line) && strcmp('negative',m.genotype5);
+    if ~isempty(m.line5) && ~isempty(b) && any(strcmp(m.line5,{b.line})) && strcmp('negative',m.genotype5);
         errorCount = errorCount + 1;
         errorString{errorCount} = ['Animal cannot be negative for ' m.line5 ' if a parent is homozygous.'];
     end
-    if ~isempty(m.line6) && ~isempty(b) && strcmp(m.line6,b.line) && strcmp('negative',m.genotype6);
+    if ~isempty(m.line6) && ~isempty(b) && any(strcmp(m.line6,{b.line})) && strcmp('negative',m.genotype6);
         errorCount = errorCount + 1;
         errorString{errorCount} = ['Animal cannot be negative for ' m.line6 ' if a parent is homozygous.'];
     end
@@ -414,27 +414,27 @@ end
 
 if ~isempty(c)
     c = fetch(mice.Genotypes & c & 'genotype = "homozygous"');
-    if ~isempty(m.line1) && ~isempty(c) && strcmp(m.line1,c.line) && strcmp('negative',m.genotype1);
+    if ~isempty(m.line1) && ~isempty(c) && any(strcmp(m.line1,{c.line})) && strcmp('negative',m.genotype1);
         errorCount = errorCount + 1;
         errorString{errorCount} = ['Animal cannot be negative for ' m.line1 ' if a parent is homozygous.'];
     end
-    if ~isempty(m.line2) && ~isempty(c) && strcmp(m.line2,c.line) && strcmp('negative',m.genotype2);
+    if ~isempty(m.line2) && ~isempty(c) && any(strcmp(m.line2,{c.line})) && strcmp('negative',m.genotype2);
         errorCount = errorCount + 1;
         errorString{errorCount} = ['Animal cannot be negative for ' m.line2 ' if a parent is homozygous.'];
     end
-    if ~isempty(m.line3) && ~isempty(c) && strcmp(m.line3,c.line) && strcmp('negative',m.genotype3);
+    if ~isempty(m.line3) && ~isempty(c) && any(strcmp(m.line3,{c.line})) && strcmp('negative',m.genotype3);
         errorCount = errorCount + 1;
         errorString{errorCount} = ['Animal cannot be negative for ' m.line3 ' if a parent is homozygous.'];
     end
-    if ~isempty(m.line4) && ~isempty(c) && strcmp(m.line4,c.line) && strcmp('negative',m.genotype4);
+    if ~isempty(m.line4) && ~isempty(c) && any(strcmp(m.line4,{c.line})) && strcmp('negative',m.genotype4);
         errorCount = errorCount + 1;
         errorString{errorCount} = ['Animal cannot be negative for ' m.line4 ' if a parent is homozygous.'];
     end
-    if ~isempty(m.line5) && ~isempty(c) && strcmp(m.line5,c.line) && strcmp('negative',m.genotype5);
+    if ~isempty(m.line5) && ~isempty(c) && any(strcmp(m.line5,{c.line})) && strcmp('negative',m.genotype5);
         errorCount = errorCount + 1;
         errorString{errorCount} = ['Animal cannot be negative for ' m.line5 ' if a parent is homozygous.'];
     end
-    if ~isempty(m.line6) && ~isempty(c) && strcmp(m.line6,c.line) && strcmp('negative',m.genotype6);
+    if ~isempty(m.line6) && ~isempty(c) && any(strcmp(m.line6,{c.line})) && strcmp('negative',m.genotype6);
         errorCount = errorCount + 1;
         errorString{errorCount} = ['Animal cannot be negative for ' m.line6 ' if a parent is homozygous.'];
     end
