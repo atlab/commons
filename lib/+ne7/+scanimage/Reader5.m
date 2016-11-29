@@ -292,6 +292,8 @@ classdef Reader5 < handle
                 self.scanimage_version = 5;
                 temp = regexp(hdr, '^scanimage\.SI\.(?<attr>[\.\w]*)\s*=\s*(?<value>.*\S)\s*$', 'names');
             end
+            framenums = regexp(hdr, '^(?<attr>[\.frameNumbers]*)\s*=\s*(?<value>.*\S)\s*$', 'names');
+            framenums = [framenums{~cellfun(@isempty, framenums)}];
             hdr = temp;
             hdr = [hdr{~cellfun(@isempty, hdr)}];
             if isempty(hdr) % in case we have used scanimage 5.2 
@@ -302,6 +304,7 @@ classdef Reader5 < handle
                 hdr = temp;
                 hdr = [hdr{~cellfun(@isempty, hdr)}];
             end
+            hdr(end+1) = framenums;
             assert(~isempty(hdr), 'empty header -- possibly wrong ScanImage version.')
             self.header = cell2struct(cellfun(@(x) {evaluate(x)}, {hdr.value})', strrep({hdr.attr}, '.', '_'));
  

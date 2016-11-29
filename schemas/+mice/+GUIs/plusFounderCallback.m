@@ -155,14 +155,14 @@ end
 % If any line is C57Bl/6 or Fvb then it must be the only line and the
 % genotype must be wild type
 
-if (strcmp(m.line,'C57Bl/6') || strcmp(m.line,'Fvb') || strcmp(m.line,'CD1')) && ~strcmp(m.genotype, 'wild type')
+if (strcmp(m.line,'C57Bl/6') || strcmp(m.line,'Fvb') || strcmp(m.line,'CD1') || strcmp(m.line,'Crl-CD1')) && ~strcmp(m.genotype, 'wild type')
     errorCount = errorCount + 1;
     errorString{errorCount} = 'Lines C57Bl/6, Fvb, and CD1 should only be used to designate pure wild type mice.';
 end
 
 % wild type genotype can only be used for C57Bl/6 or Fvb lines.  
 
-if strcmp(m.genotype,'wild type') && ~strcmp(m.line,'C57Bl/6') && ~strcmp(m.line,'Fvb') && ~strcmp(m.line,'CD1')
+if strcmp(m.genotype,'wild type') && ~strcmp(m.line,'C57Bl/6') && ~strcmp(m.line,'Fvb') && ~strcmp(m.line,'CD1') && ~strcmp(m.line,'Crl-CD1')
     errorCount = errorCount + 1;
     errorString{errorCount} = 'The wild type genotype should only be used to describe pure C57Bl/6, Fvb, or CD1 lines.';
 end
