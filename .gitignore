@@ -3,5 +3,5 @@
 .idea
 *__pycache__*
 *.edd-info*
-*.egg_info*
+*.egg-info*
 *.asv
