@@ -2,6 +2,5 @@
 .DS_Store
 .idea
 *__pycache__*
-*.edd-info*
 *.egg-info*
 *.asv
