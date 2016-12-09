@@ -21,8 +21,8 @@ def test_paths():
     else:
         path_info['hdf_file'] = tmp[0][:-1] + '0.' + tmp[-1]
 
-    hdf_path = lab.Paths().getLocalPath('{behavior_path}/{hdf_file}'.format(**path_info))
-    avi_path = lab.Paths().getLocalPath('{behavior_path}/{filename}'.format(**path_info))
+    hdf_path = lab.Paths().get_local_path('{behavior_path}/{hdf_file}'.format(**path_info))
+    avi_path = lab.Paths().get_local_path('{behavior_path}/{filename}'.format(**path_info))
 
     assert_true(os.path.isfile(avi_path) and os.path.isfile(hdf_path))
 

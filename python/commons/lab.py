@@ -10,7 +10,7 @@ schema = dj.schema('common_lab', locals())
 class Paths(dj.Lookup):
     definition = ...
 
-    def getLocalPath(self, path, local_os=None):
+    def get_local_path(self, path, local_os=None):
 
         # determine local os
         if local_os is None:
