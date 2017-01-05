@@ -66,7 +66,8 @@ h.rack = uicontrol('style','edit','position',[383 595 90 35],'fontunits','normal
 h.row = uicontrol('style','edit','position',[478 595 90 35],'fontunits','normalized','fontsize',.4,'tag','rowField');
 h.mouse_notes = uicontrol('style','edit','position',[573 595 470 35],'fontunits','normalized','fontsize',.4,'HorizontalAlignment','left','tag','notesField'); 
 
-s = getEnumValues(mice.Lines.table,'line');
+s = fetch(mice.Lines,'line');
+s = struct2cell(s);
 s = {'' s{:}};
 v = find(strcmp('',s));
 h.line1 = uicontrol('style','popupmenu','string',s,'value',v,'position',[1048 660 166 35],'fontunits','normalized','fontsize',.4,'tag','line1Field');

@@ -1,5 +1,5 @@
 %{
-mice.Founders (manual) # Additional info about founder mice$
+mice.Founders (manual) # Additional info about founder mice
 -> mice.Mice
 -> mice.Lines
 ---

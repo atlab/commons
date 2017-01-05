@@ -30,7 +30,8 @@ m.seq = get(h.seq,'string');
 m.line_notes = get(h.line_notes,'string');
 m.modify_box = get(h.modify_box,'value');
 
-s = getEnumValues(mice.Lines.table, 'line');
+s = fetch(mice.Lines,'line');
+s = struct2cell(s);
 s = [' ' s];
 
 if m.modify_box == 1
@@ -96,7 +97,8 @@ fields = {'modify_box','nstring'};
 lineStruct = rmfield(m,fields);
 
 if m.modify_box == 0
-    s = getEnumValues(mice.Lines.table,'line');
+    s = fetch(mice.Lines,'line');
+    s = struct2cell(s);
     s = [s m.line];
     str= ['line : enum(''' s{1} ''''];
     for i=2:length(s)
@@ -105,29 +107,7 @@ if m.modify_box == 0
     str=[str ') # Mouse Line Abbreviation'];
     v = dj.set('suppressPrompt');
     dj.set('suppressPrompt',true);
-    alterAttribute(mice.Lines.table,'line',str);
-    alterAttribute(mice.Genotypes.table,'line',str);
-    alterAttribute(mice.Founders.table,'line',str);
     makeTuples(mice.Lines,lineStruct);
-    s = [' ' s];
-    str = ['line1=null : enum(''' s{1} ''''];
-    for i = 2:length(s)
-        str = [str ', ''' s{i} ''''];
-    end
-    str = [str ') # Mouse Line 1 Abbreviation'];
-    alterAttribute(mice.Requests.table,'line1',str);
-    str = ['line2=null : enum(''' s{1} ''''];
-    for i = 2:length(s)
-        str = [str ', ''' s{i} ''''];
-    end
-    str = [str ') # Mouse Line 2 Abbreviation'];
-    alterAttribute(mice.Requests.table,'line2',str);
-    str = ['line3=null : enum(''' s{1} ''''];
-    for i = 2:length(s)
-        str = [str ', ''' s{i} ''''];
-    end
-    str = [str ') # Mouse Line 3 Abbreviation'];
-    alterAttribute(mice.Requests.table,'line3',str);
     dj.set('suppressPrompt',v);
 end
 schema.conn.commitTransaction
