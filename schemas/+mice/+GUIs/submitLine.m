@@ -30,8 +30,8 @@ m.seq = get(h.seq,'string');
 m.line_notes = get(h.line_notes,'string');
 m.modify_box = get(h.modify_box,'value');
 
-s = fetchn(mice.Lines,'line');
-s = [' ' s];
+s = fetchn(mice.Lines, 'line');
+s = [{''} s'];
 
 if m.modify_box == 1
     v = get(h.line,'value');
@@ -96,8 +96,8 @@ fields = {'modify_box','nstring'};
 lineStruct = rmfield(m,fields);
 
 if m.modify_box == 0
-    s = fetchn(mice.Lines,'line');
-    s = [s m.line];
+    s = fetchn(mice.Lines, 'line');
+    s = [{''} s'];
     str= ['line : enum(''' s{1} ''''];
     for i=2:length(s)
         str = [str ', ''' s{i} ''''];

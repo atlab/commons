@@ -11,7 +11,9 @@ genotype_ts=CURRENT_TIMESTAMP: timestamp                    # automatic
 
 
 classdef Genotypes < dj.Relvar
-
+	properties(Constant)
+		table = dj.Table('mice.Genotypes')
+	end
 	methods
 		function self = Genotypes(varargin)
 			self.restrict(varargin)

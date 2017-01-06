@@ -61,8 +61,8 @@ s = {'' s{:}};
 v = find(strcmp('',s));
 h.room = uicontrol('style','popupmenu','string',s,'value',v,'position',[272 590 106 35],'fontunits','normalized','fontsize',.4,'tag','roomField');
 
-s = fetchn(mice.Lines,'line');
-s = {'' s{:}};
+s = fetchn(mice.Lines, 'line');
+s = [{''} s'];
 v = find(strcmp('',s));
 h.line1 = uicontrol('style','popupmenu','string',s,'value',v,'position',[763 660 166 35],'fontunits','normalized','fontsize',.4,'tag','line1Field');
 h.line2 = uicontrol('style','popupmenu','string',s,'value',v,'position',[763 590 166 35],'fontunits','normalized','fontsize',.4,'tag','line2Field');

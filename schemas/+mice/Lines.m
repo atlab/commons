@@ -14,7 +14,10 @@ line_ts=CURRENT_TIMESTAMP   : timestamp                     # automatic
 
 
 classdef Lines < dj.Relvar
-
+	properties(Constant)
+		table = dj.Table('mice.Lines')
+	end
+    
 	methods
 		function self = Lines(varargin)
 			self.restrict(varargin)
