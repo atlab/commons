@@ -13,10 +13,6 @@ founder_ts=CURRENT_TIMESTAMP: timestamp                     # automatic
 
 classdef Founders < dj.Relvar
 
-	properties(Constant)
-		table = dj.Table('mice.Founders')
-	end
-
 	methods
 		function self = Founders(varargin)
 			self.restrict(varargin)

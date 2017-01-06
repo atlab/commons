@@ -30,8 +30,7 @@ m.seq = get(h.seq,'string');
 m.line_notes = get(h.line_notes,'string');
 m.modify_box = get(h.modify_box,'value');
 
-s = fetch(mice.Lines,'line');
-s = struct2cell(s);
+s = fetchn(mice.Lines,'line');
 s = [' ' s];
 
 if m.modify_box == 1

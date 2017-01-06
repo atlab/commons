@@ -28,8 +28,7 @@ s = {'' s{:}};
 v = find(strcmp('',s));
 h.age = uicontrol('style','popupmenu','string',s,'value',v,'position',[160 310 106 35],'fontunits','normalized','fontsize',.3,'tag','ageField');
 
-s = fetch(mice.Lines,'line');
-s = struct2cell(s);
+s = fetchn(mice.Lines,'line');
 s = {'' s{:}};
 v = find(strcmp('',s));
 h.line1 = uicontrol('style','popupmenu','string',s,'value',v,'position',[350 400 166 35],'fontunits','normalized','fontsize',.4,'tag','line1Field');

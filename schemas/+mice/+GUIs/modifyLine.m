@@ -30,8 +30,7 @@ m.line_notes = get(h.line_notes,'string');
 m.modify_box = get(h.modify_box,'value');
 
 if m.modify_box == 1
-    s = fetch(mice.Lines,'line');
-    s = struct2cell(s);
+    s = fetchn(mice.Lines,'line');
     s = [' ' s];
     set(h.line,'style','popupmenu','string',s,'Callback',@mice.GUIs.populateLine);
 end
