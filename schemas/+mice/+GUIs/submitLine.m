@@ -96,8 +96,7 @@ fields = {'modify_box','nstring'};
 lineStruct = rmfield(m,fields);
 
 if m.modify_box == 0
-    s = fetch(mice.Lines,'line');
-    s = struct2cell(s);
+    s = fetchn(mice.Lines,'line');
     s = [s m.line];
     str= ['line : enum(''' s{1} ''''];
     for i=2:length(s)
