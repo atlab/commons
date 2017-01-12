@@ -1,6 +1,6 @@
 %{
 mice.Lines (manual) # Basic mouse line info$
-line            : enum('Nestin-Cre','Nestin-CreER(W)','Nestin-CreER(J)','Wfs1-CreER','ChAT-Cre','Viaat-Cre','SST-Cre','PV-Cre','VIP-Cre','GAD67-GFP','KOPRCS','Ai9','R-EYFP','R-ChR2-EYFP','R-ChR2-tdTomato','R-TVA/G','R-Arch','R-GCaMP3','Confetti','Nuc4','Nuc24','Cyt47','C57Bl/6','Fvb','Etv1-CreER','TH-Cre','Hist GFP','Ntsr1-Cre','CamKII-Cre','DBH Cre','Ai96_GCaMP6s','tetO-GCaMP6s','PronucRosaTw','mESC Twitch','Halo','Emx-1 Cre','Ai93_GCamp6','Ai94_GCamp6','Camk2a-tTA','ZtTA','CD1','Thy1 (GP5.17)','mCherry (H2B-mCherry)','DREADD','Bact-Cre','FRT-EGFP','Ai148_GCamp6')  # Mouse Line Abbreviation
+line            : enum('Nestin-Cre','Nestin-CreER(W)','Nestin-CreER(J)','Wfs1-CreER','ChAT-Cre','Viaat-Cre','SST-Cre','PV-Cre','VIP-Cre','GAD67-GFP','KOPRCS','Ai9','R-EYFP','R-ChR2-EYFP','R-ChR2-tdTomato','R-TVA/G','R-Arch','R-GCaMP3','Confetti','Nuc4','Nuc24','Cyt47','C57Bl/6','Fvb','Etv1-CreER','TH-Cre','Hist GFP','Ntsr1-Cre','CamKII-Cre','DBH Cre','Ai96_GCaMP6s','tetO-GCaMP6s','PronucRosaTw','mESC Twitch','Halo','Emx-1 Cre','Ai93_GCamp6','Ai94_GCamp6','Camk2a-tTA','ZtTA','CD1','Thy1 (GP5.17)','mCherry (H2B-mCherry)','DREADD','Bact-Cre','FRT-EGFP','Ai148_GCamp6','RosaCreER','PV-FlpO','Crl-CD1','UBC-CreER','CAG-CreER','testlimr','hjhjjj','vbnbn','cvbvbv','SST-FlpO','NestinFlpOER','CaMKIIa-CreER')  # Mouse Line Abbreviation
 ---
 line_full                   : varchar(100)                  # full line name
 rec_strain                  : varchar(20)                   # recipient strain

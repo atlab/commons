@@ -1,7 +1,7 @@
 %{
-mice.Primers (manual) # info about each primer set
+mice.Primers (manual) # info about each primer
 
-primer_set          : varchar(20)               # primer set
+primer              : varchar(20)                # primer
 ---
 f_primer            : varchar(100)               # forward primer
 r_primer            : varchar(100)               # reverse primer
@@ -16,14 +16,14 @@ primer_ts=CURRENT_TIMESTAMP : timestamp        # automatic
 
 
 classdef Primers < dj.Relvar
+% 
+% 	properties(Constant)
+% 		table = dj.Table('mice.Primers')
+% 	end
 
-	properties(Constant)
-		table = dj.Table('mice.Primers')
-	end
-
-	methods
-		function self = Primers(varargin)
-			self.restrict(varargin)
-		end
-	end
+% 	methods
+% 		function self = Primers(varargin)
+% 			self.restrict(varargin)
+% 		end
+% 	end
 end
