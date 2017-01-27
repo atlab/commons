@@ -12,17 +12,18 @@ sat_tog = 0.5;
 undoBuffer = {masks};
 winsz = 32; % max size of the pointer window
 running = true;
+drawing = false;
 
 % Plot
 hf = figure('NumberTitle','off',...
     'Name','Paint cells',...
     'KeyPressFcn',@dispkeyevent,...
-    'WindowScrollWheelFcn', @adjMaskSize);
-set(hf,'HitTest','off')
+    'WindowScrollWheelFcn', @adjMaskSize,...
+    'HitTest','off');
 h = image(im);
 set(h,'buttondownfcn',@updateMasks)
 printInstructions
-% redraw
+redraw
 updatePointer
 
 % wait until done
@@ -76,14 +77,16 @@ function dispkeyevent(~, event)
 end
 
 % update masks
-function updateMasks(hh,~)
+function updateMasks(~,~)
     coordinates = get (gca, 'CurrentPoint');
     xLoc = coordinates(1,1);
     yLoc = coordinates(1,2);
     neuron = masks(round(yLoc),round(xLoc));
-    if neuron == 0
+    if neuron == 0 && ~drawing
         neuron = max(masks(:))+1;
         colors(end+1) = rand(1);
+    else
+        neuron = max(masks(:));
     end
     [gx, gy] = meshgrid(1:sz(2),1:sz(1));
     data = (gx(:) - xLoc).^2 + (gy(:) - yLoc).^2;
@@ -94,28 +97,25 @@ function updateMasks(hh,~)
         masks(idx)=neuron;
     end
     redraw
-    
-    % get the values and store them in the figure's appdata
-    props.WindowButtonMotionFcn = get(hf,'WindowButtonMotionFcn');
-    props.WindowButtonUpFcn = get(hf,'WindowButtonUpFcn');
-    setappdata(hf,'TestGuiCallbacks',props);
 
     % set the new values for the WindowButtonMotionFcn and
     % WindowButtonUpFcn
-    set(hf,'WindowButtonMotionFcn',{@updateMasks})
+    set(hf,'WindowButtonMotionFcn',@(h,e)(cellfun(@(x)feval(x,h,e),{@updateMasks,@wm})))
     set(hf,'WindowButtonUpFcn',{@wbu})
+end
+
+function wm(~,~)
+    drawing = true;
 end
 
 % executes when the mouse button is released
 function wbu(hh,~)
-    % get the properties and restore them
-    props = getappdata(hh,'TestGuiCallbacks');
-    set(hh,props);
+    set(hh,'WindowButtonMotionFcn','','WindowButtonUpFcn','');
+    drawing = false;
 end
 
 % draw image with masks
 function redraw
-    disp drawing
     % make image with colored masks
     map(:,:,1) = colors(masks+1);
     map(:,:,2) = sat*(masks>0);
