@@ -20,15 +20,13 @@ hf = figure('NumberTitle','off',...
     'WindowScrollWheelFcn', @adjMaskSize);
 set(hf,'HitTest','off')
 h = image(im);
-set(gca,'buttondownfcn',@updateMasks)
+set(h,'buttondownfcn',@updateMasks)
 printInstructions
-redraw
+% redraw
 updatePointer
 
 % wait until done
-while running
-   pause(0.1)
-end
+while running && nargout>0; pause(0.1);end
 
 function dispkeyevent(~, event)
     switch event.Key
@@ -98,14 +96,14 @@ function updateMasks(hh,~)
     redraw
     
     % get the values and store them in the figure's appdata
-    props.WindowButtonMotionFcn = get(hh,'WindowButtonMotionFcn');
-    props.WindowButtonUpFcn = get(hh,'WindowButtonUpFcn');
-    setappdata(hh,'TestGuiCallbacks',props);
+    props.WindowButtonMotionFcn = get(hf,'WindowButtonMotionFcn');
+    props.WindowButtonUpFcn = get(hf,'WindowButtonUpFcn');
+    setappdata(hf,'TestGuiCallbacks',props);
 
     % set the new values for the WindowButtonMotionFcn and
     % WindowButtonUpFcn
-    set(hh,'WindowButtonMotionFcn',{@updateMasks})
-    set(hh,'WindowButtonUpFcn',{@wbu})
+    set(hf,'WindowButtonMotionFcn',{@updateMasks})
+    set(hf,'WindowButtonUpFcn',{@wbu})
 end
 
 % executes when the mouse button is released
@@ -117,6 +115,7 @@ end
 
 % draw image with masks
 function redraw
+    disp drawing
     % make image with colored masks
     map(:,:,1) = colors(masks+1);
     map(:,:,2) = sat*(masks>0);
@@ -205,7 +204,8 @@ function ppitch = pixelPitch
     end
 
     % Convert plot box position to the units used by the axis
-    temp = axes('Units', 'Pixels', 'Position', pos, 'Visible', 'off', 'parent', get(h, 'parent'));
+    temp = axes('Units', 'Pixels', 'Position', pos, 'Visible', 'off',...
+        'parent', get(ah, 'parent'));
     set(temp, 'Units', currunit);
     pos = get(temp, 'position');
     delete(temp);
