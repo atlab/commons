@@ -18,6 +18,8 @@ h = figure('NumberTitle','off',...
     'Name','Paint cells',...
     'KeyPressFcn',@dispkeyevent,...
     'WindowScrollWheelFcn', @adjMaskSize);
+set(h,'HitTest','off')
+set(gca,'buttondownfcn',@updateMasks)
 printInstructions
 redraw
 updatePointer
@@ -120,11 +122,7 @@ function redraw
     map(:,:,3) = im;
     
     % show image
-    clf
-    hh = image(hsv2rgb(map));
-    axis image
-    set(hh,'HitTest','off')
-    set(gca,'buttondownfcn',@updateMasks)
+    h.CData = hsv2rgb(map);
     set(gcf,'name',sprintf('Cell#: %d', max(masks(:))))
 end
 
@@ -154,25 +152,25 @@ end
 
 % Returns the pixel pitch of the image
 function ppitch = pixelPitch 
-    h = gca;
+    ah = gca;
         
     % Get position of axis in pixels
-    currunit = get(h, 'units');
-    set(h, 'units', 'pixels');
-    axisPos = get(h, 'Position');
-    set(h, 'Units', currunit);
+    currunit = get(ah, 'units');
+    set(ah, 'units', 'pixels');
+    axisPos = get(ah, 'Position');
+    set(ah, 'Units', currunit);
 
     % Calculate box position based axis limits and aspect ratios
-    darismanual  = strcmpi(get(h, 'DataAspectRatioMode'),    'manual');
-    pbarismanual = strcmpi(get(h, 'PlotBoxAspectRatioMode'), 'manual');
+    darismanual  = strcmpi(get(ah, 'DataAspectRatioMode'),    'manual');
+    pbarismanual = strcmpi(get(ah, 'PlotBoxAspectRatioMode'), 'manual');
 
     if ~darismanual && ~pbarismanual
         pos = axisPos;
     else
-        dx = diff(get(h, 'XLim'));
-        dy = diff(get(h, 'YLim'));
-        dar = get(h, 'DataAspectRatio');
-        pbar = get(h, 'PlotBoxAspectRatio');
+        dx = diff(get(ah, 'XLim'));
+        dy = diff(get(ah, 'YLim'));
+        dar = get(ah, 'DataAspectRatio');
+        pbar = get(ah, 'PlotBoxAspectRatio');
 
         limDarRatio = (dx/dar(1))/(dy/dar(2));
         pbarRatio = pbar(1)/pbar(2);
@@ -212,7 +210,7 @@ function ppitch = pixelPitch
     delete(temp);
     
     % compute pixel pitch
-    p = get(gcf,'Position');
+    p = get(h,'Position');
     ppitch = pos(3)*p(3)/sz(2);
 end
 
