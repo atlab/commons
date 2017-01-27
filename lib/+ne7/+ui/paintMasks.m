@@ -1,5 +1,5 @@
-function masks = paintCells(im)
-% lets the user outline cells in the image on the current axis
+function masks = paintMasks(im)
+% lets the user outline masks in the image on the current axis
 
 % process image for assisted segmentation
 processed_image = (imfilter(imfill(im),gausswin(2)*gausswin(2)'));
@@ -28,7 +28,7 @@ hp =[];
 
 % Plot
 hf = figure('NumberTitle','off',...
-    'Name','Paint cells',...
+    'Name','Paint masks',...
     'KeyPressFcn',@dispkeyevent,...
     'WindowScrollWheelFcn', @adjMaskSize,...
     'HitTest','off');
@@ -114,7 +114,6 @@ end
 
 % update masks
 function updateMasks(~,~)
-    disp updating
     % get click coordinates
     coordinates = get (gca, 'CurrentPoint');
     xLoc = coordinates(1,1);
@@ -182,7 +181,7 @@ function redraw
     
     % show image
     h.CData = hsv2rgb(map);
-    set(gcf,'name',sprintf('Cell#: %d', length(unique(masks(:)))-1))
+    set(gcf,'name',sprintf('Mask#: %d', length(unique(masks(:)))-1))
 end
 
 function idx = getMaskIdx
