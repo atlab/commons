@@ -14,11 +14,12 @@ winsz = 32; % max size of the pointer window
 running = true;
 
 % Plot
-h = figure('NumberTitle','off',...
+hf = figure('NumberTitle','off',...
     'Name','Paint cells',...
     'KeyPressFcn',@dispkeyevent,...
     'WindowScrollWheelFcn', @adjMaskSize);
-set(h,'HitTest','off')
+set(hf,'HitTest','off')
+h = image(im);
 set(gca,'buttondownfcn',@updateMasks)
 printInstructions
 redraw
@@ -77,7 +78,7 @@ function dispkeyevent(~, event)
 end
 
 % update masks
-function updateMasks(h,~)
+function updateMasks(hh,~)
     coordinates = get (gca, 'CurrentPoint');
     xLoc = coordinates(1,1);
     yLoc = coordinates(1,2);
@@ -97,21 +98,21 @@ function updateMasks(h,~)
     redraw
     
     % get the values and store them in the figure's appdata
-    props.WindowButtonMotionFcn = get(h,'WindowButtonMotionFcn');
-    props.WindowButtonUpFcn = get(h,'WindowButtonUpFcn');
-    setappdata(h,'TestGuiCallbacks',props);
+    props.WindowButtonMotionFcn = get(hh,'WindowButtonMotionFcn');
+    props.WindowButtonUpFcn = get(hh,'WindowButtonUpFcn');
+    setappdata(hh,'TestGuiCallbacks',props);
 
     % set the new values for the WindowButtonMotionFcn and
     % WindowButtonUpFcn
-    set(h,'WindowButtonMotionFcn',{@updateMasks})
-    set(h,'WindowButtonUpFcn',{@wbu})
+    set(hh,'WindowButtonMotionFcn',{@updateMasks})
+    set(hh,'WindowButtonUpFcn',{@wbu})
 end
 
 % executes when the mouse button is released
-function wbu(h,~)
+function wbu(hh,~)
     % get the properties and restore them
-    props = getappdata(h,'TestGuiCallbacks');
-    set(h,props);
+    props = getappdata(hh,'TestGuiCallbacks');
+    set(hh,props);
 end
 
 % draw image with masks
@@ -210,7 +211,7 @@ function ppitch = pixelPitch
     delete(temp);
     
     % compute pixel pitch
-    p = get(h,'Position');
+    p = get(hf,'Position');
     ppitch = pos(3)*p(3)/sz(2);
 end
 
