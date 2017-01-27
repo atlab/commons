@@ -13,6 +13,7 @@ undoBuffer = {masks};
 winsz = 32; % max size of the pointer window
 running = true;
 drawing = false;
+neuron = 0;
 
 % Plot
 hf = figure('NumberTitle','off',...
@@ -21,6 +22,8 @@ hf = figure('NumberTitle','off',...
     'WindowScrollWheelFcn', @adjMaskSize,...
     'HitTest','off');
 h = image(im);
+axis image
+set(gca,'xtick',[],'ytick',[])
 set(h,'buttondownfcn',@updateMasks)
 printInstructions
 redraw
@@ -78,20 +81,30 @@ end
 
 % update masks
 function updateMasks(~,~)
+    % get click coordinates
     coordinates = get (gca, 'CurrentPoint');
     xLoc = coordinates(1,1);
     yLoc = coordinates(1,2);
+    
+    % handle out of boundaries clicks
+    if xLoc>sz(2) || yLoc>sz(1) || xLoc<0 || yLoc<0
+        return
+    end
+    
+    % get neuron info
     neuron = masks(round(yLoc),round(xLoc));
-    if neuron == 0 && ~drawing
+    if drawing % use neuron id of first mouse down click
+        neuron = drawing;
+    elseif neuron == 0 % new cell
         neuron = max(masks(:))+1;
         colors(end+1) = rand(1);
-    else
-        neuron = max(masks(:));
     end
+    
+    % update mask
     [gx, gy] = meshgrid(1:sz(2),1:sz(1));
     data = (gx(:) - xLoc).^2 + (gy(:) - yLoc).^2;
     idx =  data < (radius/pixelPitch)^2;
-    if strcmp('alt',get(gcf,'Selectiontype'))
+    if strcmp('alt',get(gcf,'Selectiontype')) % right click delete
         masks(idx)=0;
     else
         masks(idx)=neuron;
@@ -100,12 +113,13 @@ function updateMasks(~,~)
 
     % set the new values for the WindowButtonMotionFcn and
     % WindowButtonUpFcn
-    set(hf,'WindowButtonMotionFcn',@(h,e)(cellfun(@(x)feval(x,h,e),{@updateMasks,@wm})))
+    set(hf,'WindowButtonMotionFcn',@(h,e)(cellfun(@(x)feval(x,h,e),...
+        {@updateMasks,@wmt})))
     set(hf,'WindowButtonUpFcn',{@wbu})
 end
 
-function wm(~,~)
-    drawing = true;
+function wmt(~,~)
+    drawing = neuron;
 end
 
 % executes when the mouse button is released
@@ -219,11 +233,11 @@ end
 function printInstructions
     disp INSTRUCTIONS:
     disp 'Click to add pixels to mask'
-    disp 'Shift-click to delete pixels from mask'
-    disp 'Press BACKSPACE to undo'
-    disp 'Press 1-9 to set brush size'
+    disp 'Right-click to delete pixels from mask'
+    disp 'Scroll to set brush size'
     disp '[ to reduce brightness'
     disp '] to increase brightness'
+    disp 'Press BACKSPACE to undo'
     disp 'Press SPACE to toggle outlines'
     disp 'Press ESC to discard all edits'
     disp 'Press ENTER to commit'
