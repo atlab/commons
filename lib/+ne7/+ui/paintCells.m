@@ -1,6 +1,9 @@
 function masks = paintCells(im)
 % lets the user outline cells in the image on the current axis
 
+% process image for assisted segmentation
+processed_image = (imfilter(imfill(im),gausswin(2)*gausswin(2)'));
+
 % initialize parameters
 radius = 10; % mask pixel radius
 sz = size(im);
@@ -14,6 +17,14 @@ winsz = 32; % max size of the pointer window
 running = true;
 drawing = false;
 neuron = 0;
+xLoc = 0;
+yLoc = 0;
+assisted = false;
+thresh = 0.01;
+fit_center = false(winsz,winsz);fit_center(round(winsz/2),round(winsz/2))=true;
+fit_mask = zeros(winsz,winsz);
+ppitch = 1;
+hp =[];
 
 % Plot
 hf = figure('NumberTitle','off',...
@@ -27,13 +38,35 @@ set(gca,'xtick',[],'ytick',[])
 set(h,'buttondownfcn',@updateMasks)
 printInstructions
 redraw
-updatePointer
+adjMaskSize
+hold on
 
 % wait until done
-while running && nargout>0; pause(0.1);end
+while running && nargout>0
+    try if ~ishandle(h);break;end;catch;break;end
+    pause(0.1);
+end
 
 function dispkeyevent(~, event)
     switch event.Key
+        case 'a' % assisted segmentation
+            if assisted
+                assisted = false;
+                try delete(hp);end
+                set(hf,'WindowButtonMotionFcn','','WindowButtonUpFcn','');
+                set(hf,'WindowScrollWheelFcn', @adjMaskSize)
+                set(gcf,'pointer','custom','PointerShapeHotSpot',[winsz winsz]/2)
+                adjMaskSize
+            else
+                c = nan(16,16);
+                c(8,4:12)=2;
+                c(4:12,8)=2;
+                assisted = true;
+                adjMaskFit
+                set(hf,'WindowScrollWheelFcn', @adjMaskFit)
+                set(hf,'WindowButtonMotionFcn',@adjMaskFit)
+                set(gcf,'PointerShapeCData',c,'pointer','custom','PointerShapeHotSpot',[8 8])
+            end
         case 'backspace' % UNDO
             if length(undoBuffer)>1
                 masks = undoBuffer{end-1};
@@ -81,6 +114,7 @@ end
 
 % update masks
 function updateMasks(~,~)
+    disp updating
     % get click coordinates
     coordinates = get (gca, 'CurrentPoint');
     xLoc = coordinates(1,1);
@@ -101,9 +135,7 @@ function updateMasks(~,~)
     end
     
     % update mask
-    [gx, gy] = meshgrid(1:sz(2),1:sz(1));
-    data = (gx(:) - xLoc).^2 + (gy(:) - yLoc).^2;
-    idx =  data < (radius/pixelPitch)^2;
+    idx = getMaskIdx;
     if strcmp('alt',get(gcf,'Selectiontype')) % right click delete
         masks(idx)=0;
     else
@@ -113,13 +145,26 @@ function updateMasks(~,~)
 
     % set the new values for the WindowButtonMotionFcn and
     % WindowButtonUpFcn
-    set(hf,'WindowButtonMotionFcn',@(h,e)(cellfun(@(x)feval(x,h,e),...
-        {@updateMasks,@wmt})))
-    set(hf,'WindowButtonUpFcn',{@wbu})
+    if assisted
+        set(hf,'WindowButtonMotionFcn',@(h,e)(cellfun(@(x)feval(x,h,e),...
+            {@wmt,@adjMaskFit, @updateMasks})))
+        set(hf,'WindowButtonUpFcn',{@wbu_assisted})
+    else
+        set(hf,'WindowButtonMotionFcn',@(h,e)(cellfun(@(x)feval(x,h,e),...
+            {@wmt,@updateMasks})))
+        set(hf,'WindowButtonUpFcn',{@wbu})
+    end
+    
 end
 
 function wmt(~,~)
     drawing = neuron;
+end
+
+% executes when the mouse button is released
+function wbu_assisted(hh,~)
+    set(hh,'WindowButtonUpFcn','','WindowButtonMotionFcn',@adjMaskFit);
+    drawing = false;
 end
 
 % executes when the mouse button is released
@@ -137,25 +182,32 @@ function redraw
     
     % show image
     h.CData = hsv2rgb(map);
-    set(gcf,'name',sprintf('Cell#: %d', max(masks(:))))
+    set(gcf,'name',sprintf('Cell#: %d', length(unique(masks(:)))-1))
+end
+
+function idx = getMaskIdx
+    if assisted
+        idx = fit_mask>0;
+    else
+        [gx, gy] = meshgrid(1:sz(2),1:sz(1));
+        data = (gx(:) - xLoc).^2 + (gy(:) - yLoc).^2;
+        idx =  data < (radius/pixelPitch)^2;
+    end
 end
 
 % change selection size
-function adjMaskSize(~,e)
-    if e.VerticalScrollCount<0
-        if radius~=1
-            radius = radius-1;
-        end
-    elseif e.VerticalScrollCount>0
-        if winsz/2 ~= radius
-            radius = radius+1;
+function adjMaskSize(varargin)
+    if nargin>1
+        if varargin{2}.VerticalScrollCount<0
+            if radius~=1
+                radius = radius-1;
+            end
+        elseif varargin{2}.VerticalScrollCount>0
+            if winsz/2 ~= radius
+                radius = radius+1;
+            end
         end
     end
-    updatePointer
-end
-
-% update selection size
-function updatePointer
     c = nan(winsz,winsz);
     [gy, gx] = meshgrid(1:winsz,1:winsz);
     data = (gx(:) - winsz/2).^2 + (gy(:) - winsz/2).^2;
@@ -164,8 +216,38 @@ function updatePointer
     set(gcf,'PointerShapeCData',c,'pointer','custom','PointerShapeHotSpot',[winsz winsz]/2)
 end
 
+% change selection size
+function adjMaskFit(varargin)
+    %disp running
+    if nargin>1
+        try
+            if varargin{2}.VerticalScrollCount<0
+                if thresh>0.001
+                    thresh = thresh*0.9;
+                end
+            elseif varargin{2}.VerticalScrollCount>0
+                thresh = thresh*1.1;
+            end
+        end
+    end
+     % get click coordinates
+    coordinates = get (gca, 'CurrentPoint');
+    xLoc = round(coordinates(1,1));
+    yLoc = round(coordinates(1,2));
+    
+    if xLoc>sz(2) || yLoc>sz(1) || xLoc<=0 || yLoc<=0
+        return
+    end
+    try delete(hp);end
+    fit_center = zeros(sz);
+    fit_center(round(yLoc),round(xLoc)) = 1;
+    fit_mask = imsegfmm(processed_image, fit_center>0, thresh);
+    bounds = bwboundaries(fit_mask,4);
+    hp = plot(bounds{1}(:,2), bounds{1}(:,1),'r','buttondownfcn',@updateMasks);
+end
+
 % Returns the pixel pitch of the image
-function ppitch = pixelPitch 
+function pixpitch = pixelPitch
     ah = gca;
         
     % Get position of axis in pixels
@@ -227,6 +309,7 @@ function ppitch = pixelPitch
     % compute pixel pitch
     p = get(hf,'Position');
     ppitch = pos(3)*p(3)/sz(2);
+    pixpitch = ppitch;
 end
 
 % instructions
@@ -237,6 +320,7 @@ function printInstructions
     disp 'Scroll to set brush size'
     disp '[ to reduce brightness'
     disp '] to increase brightness'
+    disp 'Press "a" for assisted selection'
     disp 'Press BACKSPACE to undo'
     disp 'Press SPACE to toggle outlines'
     disp 'Press ESC to discard all edits'
