@@ -5,9 +5,9 @@ function masks = paintMasks(im)
 processed_image = (imfilter(imfill(im),gausswin(2)*gausswin(2)'));
 
 % initialize parameters
+original_im = im;
 radius = 10; % mask pixel radius
 sz = size(im);
-im = (im - min(im(:)))./(max(im(:))-min(im(:))); % normalize image
 masks = zeros(sz);
 colors = 0;
 sat = 0.5;
@@ -24,14 +24,22 @@ thresh = 0.01;
 fit_center = false(winsz,winsz);fit_center(round(winsz/2),round(winsz/2))=true;
 fit_mask = zeros(winsz,winsz);
 ppitch = 1;
+contrast = 0.5;
 hp =[];
+
+% normalize image
+normalize = @(x) (x - min(x(:)))./(max(x(:))-min(x(:))); 
+im = normalize(im.^contrast); 
 
 % Plot
 hf = figure('NumberTitle','off',...
     'Name','Paint masks',...
     'KeyPressFcn',@dispkeyevent,...
     'WindowScrollWheelFcn', @adjMaskSize,...
-    'HitTest','off');
+    'HitTest','off',...
+    'units','normalized');
+f_pos = get(hf,'outerposition');
+set(hf,'units','pixels')
 h = image(im);
 axis image
 set(gca,'xtick',[],'ytick',[])
@@ -67,10 +75,31 @@ function dispkeyevent(~, event)
                 set(hf,'WindowButtonMotionFcn',@adjMaskFit)
                 set(gcf,'PointerShapeCData',c,'pointer','custom','PointerShapeHotSpot',[8 8])
             end
+        case 'f' % toggle fullscreen
+            set(hf,'units','normalized')
+            p = get(hf,'outerposition');
+            if all(p~=[0 0 1 1])
+               set(hf,'outerposition',[0 0 1 1]);
+            else
+               set(hf,'outerposition',f_pos);
+            end
+            set(hf,'units','pixels')
+        case 'comma' % decrease contrast
+            if contrast>0.1
+                contrast = contrast-0.05;
+                im = normalize(original_im.^contrast);
+                redraw
+            end
+        case 'period' % increase contrast
+            if contrast<2
+                contrast = contrast+0.1;
+                im = normalize(original_im.^contrast);
+                redraw
+            end
         case 'backspace' % UNDO
             if length(undoBuffer)>1
                 masks = undoBuffer{end-1};
-                undoBuffer(end-1:end) = [];
+                undoBuffer(end) = [];
                 redraw
             end
         case 'space'  % SPACE - toggle outlines
@@ -140,6 +169,12 @@ function updateMasks(~,~)
     else
         masks(idx)=neuron;
     end
+    
+    % fill in undo buffer only if modified
+    if ~all(undoBuffer{end}(:)==masks(:))
+        undoBuffer = [undoBuffer(max(1,end-30):end) {masks}];  % append but limit buffer size
+    end
+    
     redraw
 
     % set the new values for the WindowButtonMotionFcn and
@@ -317,9 +352,12 @@ function printInstructions
     disp 'Click to add pixels to mask'
     disp 'Right-click to delete pixels from mask'
     disp 'Scroll to set brush size'
-    disp '[ to reduce brightness'
-    disp '] to increase brightness'
+    disp '[ to reduce saturation'
+    disp '] to increase saturation'
+    disp ', to reduce contrast'
+    disp '. to increase contrast'
     disp 'Press "a" for assisted selection'
+    disp 'Press "f" for full screen'
     disp 'Press BACKSPACE to undo'
     disp 'Press SPACE to toggle outlines'
     disp 'Press ESC to discard all edits'
