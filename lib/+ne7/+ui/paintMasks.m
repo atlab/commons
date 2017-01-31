@@ -38,7 +38,8 @@ hf = figure('NumberTitle','off',...
     'WindowScrollWheelFcn', @adjMaskSize,...
     'HitTest','off',...
     'units','normalized');
-f_pos = get(gcf,'outerposition');
+f_pos = get(hf,'outerposition');
+set(hf,'units','pixels')
 h = image(im);
 axis image
 set(gca,'xtick',[],'ytick',[])
@@ -75,12 +76,14 @@ function dispkeyevent(~, event)
                 set(gcf,'PointerShapeCData',c,'pointer','custom','PointerShapeHotSpot',[8 8])
             end
         case 'f' % toggle fullscreen
+            set(hf,'units','normalized')
             p = get(hf,'outerposition');
             if all(p~=[0 0 1 1])
                set(hf,'outerposition',[0 0 1 1]);
             else
                set(hf,'outerposition',f_pos);
             end
+            set(hf,'units','pixels')
         case 'comma' % decrease contrast
             if contrast>0.1
                 contrast = contrast-0.05;
