@@ -55,10 +55,10 @@ classdef Reader5 < handle
                 assert(self.header.scanAngleMultiplierSlow == 1 && ...
                     self.header.scanAngleMultiplierFast == 1, 'altered scanAngleMultipliers');
             else
-                assert(strcmp(self.header.hMotors_motorDimensionConfiguration, 'xyz-z'), ...
-                    'we assume xyz-z scanning')
+	      assert(strncmp(self.header.hMotors_motorDimensionConfiguration, 'xyz', 3), ...
+                   'we assume xyz* scanning')
                 % TODO: Figure out what the averaging fields are called in scanimage5
-                
+
             end
         end
         
