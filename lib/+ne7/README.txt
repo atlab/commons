@@ -14,4 +14,5 @@ permanent.
 +scanimage   -- utilities to process scanimage files (see scanimage.org)
 +ephys       -- electrophysiology 
 +rf          -- receptive field computations
++mat         -- general matlab helper functions
 +population  -- neural population analysis 

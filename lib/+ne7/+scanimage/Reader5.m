@@ -252,8 +252,8 @@ classdef Reader5 < handle
             % actually acquired frames or volumes
             if self.scanimage_version == 4
                 n = self.header.acqNumFrames;
-            else
-                n = (length(self.files)-1) * self.header.hScan2D_logFramesPerFile * self.nchannels;
+            else                
+                n = (length(self.files)-1) * min(1e30,self.header.hScan2D_logFramesPerFile) * self.nchannels;
                 % Reading number of frames in last file
                 k=1;
                 while ~lastDirectory(self.stacks{end})

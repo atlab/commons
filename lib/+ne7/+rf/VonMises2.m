@@ -186,7 +186,7 @@ classdef VonMises2 < handle
             % update the linear coefficients in ww
             [g1,g2] = self.getPeaks(ww);
             
-            % covariance matrix [a c; c b]
+            % Gram matrix [a c; c b]
             a = sum(g1.*g1,2);
             b = sum(g2.*g2,2);
             c = sum(g2.*g1,2);
@@ -197,6 +197,7 @@ classdef VonMises2 < handle
             c = idet.*c;
             
             % solve for linear coefficients
+            % orthogonalize g1 and g2 as h1 and h2
             h1 =  bsxfun(@times, b, g1) - bsxfun(@times, c, g2);
             h2 =  bsxfun(@times, b, g2) - bsxfun(@times, c, g1);
             ww(:,2) = max(0,sum(h1'.*F)');
