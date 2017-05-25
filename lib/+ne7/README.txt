@@ -12,6 +12,7 @@ permanent.
 +bayes       -- bayesian models 
 +micro       -- analysis of microscopy data
 +scanimage   -- utilities to process scanimage files (see scanimage.org)
++scanreader  -- utilities to read scanimage 5 and multiroi files
 +ephys       -- electrophysiology 
 +rf          -- receptive field computations
 +mat         -- general matlab helper functions
