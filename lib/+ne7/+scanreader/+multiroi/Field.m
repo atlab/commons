@@ -1,4 +1,4 @@
-classdef Field < handle & Scanfield
+classdef Field < ne7.scanreader.multiroi.Scanfield
     % FIELD Two-dimensional scanning plane. An extension of scanfield with some 
     %   functionality.
     %
@@ -21,7 +21,8 @@ classdef Field < handle & Scanfield
         xSlices
         outputYSlices % array of slices. Where to paste this field in the output field
         outputXSlices % array of slices. Where to paste this field in the output field
-        roiId % index of the ROI to which this field belong.
+        roiId % index of the ROI in the scan to which this field belongs.
+        sliceId % index of the slice in the scan to which this field belongs.
     end
     properties(Dependent)
         hasContiguousSubfields % true if this field is made by joining two or more subfields
@@ -29,7 +30,7 @@ classdef Field < handle & Scanfield
     
     methods
         function obj = Field(height, width, depth, y, x, heightInDegrees, widthInDegrees,...
-                ySlices, xSlices, outputYSlices, outputXSlices, roiId)
+                ySlices, xSlices, outputYSlices, outputXSlices, roiId, sliceId)
             if nargin >= 1 obj.height = height; end
             if nargin >= 2 obj.width = width; end
             if nargin >= 3 obj.depth = depth; end
@@ -42,6 +43,7 @@ classdef Field < handle & Scanfield
             if nargin >= 10 obj.outputYSlices = outputYSlices; end
             if nargin >= 11 obj.outputXSlices = outputXSlices; end
             if nargin >= 12 obj.roiId = roiId; end
+            if nargin >= 13 obj.sliceId = sliceId; end
         end
         
         function hasContiguousSubfields = get.hasContiguousSubfields(obj)

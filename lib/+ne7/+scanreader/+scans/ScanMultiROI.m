@@ -16,6 +16,7 @@ classdef ScanMultiROI < ne7.scanreader.scans.BaseScan
         fieldHeights % array with field heights
         nRois % number of ROI volumes
         fieldRois % list of ROIs per field
+        fieldSlices % list of slices per field
         nFlyToLines %  number of lines between images in tiff page
         fieldHeightsInMicrons
         fieldWidthsInMicrons
@@ -58,6 +59,10 @@ classdef ScanMultiROI < ne7.scanreader.scans.BaseScan
             fieldRois = arrayfun(@(field) field.roiId, obj.fields);
         end
         
+        function fieldSlices = get.fieldSlices(obj)
+            fieldSlices = arrayfun(@(field) field.sliceId, obj.fields);
+        end
+        
         function flyToSeconds = get.flyToSeconds(obj)
             pattern = 'hScan2D\.flytoTimePerScanfield = (.*)';
             match = regexp(obj.header, pattern, 'tokens', 'dotexceptnewline');
@@ -91,12 +96,6 @@ classdef ScanMultiROI < ne7.scanreader.scans.BaseScan
             obj.rois = obj.createrois();
             obj.fields = obj.createfields();
             if obj.joinContiguous obj.joincontiguousfields(); end
-        end
-        
-        function sliceId = fieldtoslice(obj, fieldId)
-            % FIELDTOSLICE Given a field id return the corresponding slice id.
-            field_ = obj.fields(fieldId);
-            sliceId = find(obj.scanningDepths == field_.depth);
         end
         
         function index = end(obj, dim, ~)
@@ -146,7 +145,7 @@ classdef ScanMultiROI < ne7.scanreader.scans.BaseScan
             ne7.scanreader.utils.checkindexisinbounds(4, fullKey{4}, obj.nChannels)
             ne7.scanreader.utils.checkindexisinbounds(5, fullKey{5}, obj.nFrames)
             
-            % Get slices/scanning_depths, channels and frames as lists
+            % Get fields, channels and frames as lists
             fieldList = ne7.scanreader.utils.listifyindex(fullKey{1}, obj.nFields);
             yLists = arrayfun(@(fieldId) ne7.scanreader.utils.listifyindex(fullKey{2}, ...
                 obj.fieldHeights(fieldId)), fieldList, 'uniformOutput', false);
@@ -170,14 +169,9 @@ classdef ScanMultiROI < ne7.scanreader.scans.BaseScan
                 error('getitem:FieldDimensionMismatch', 'Image widths for all fields do not match')
             end
             
-            % Read the required pages
-            sliceList = arrayfun(@obj.fieldtoslice, fieldList);
-            pages = obj.readpages(sliceList, channelList, frameList);
-            
-            % Slice each field (this is not so memory efficient)
-            outputShape = [length(fieldList), length(yLists{1}), length(xLists{1}), ...
-                length(channelList), length(frameList)];
-            item = zeros(outputShape, obj.classname);
+            % Over each field, read required pages and slice
+            item = zeros([length(fieldList), length(yLists{1}), length(xLists{1}), ...
+                length(channelList), length(frameList)], obj.classname);
             for i = 1:length(fieldList)
                 fieldId = fieldList(i);
                 field = obj.fields(fieldId);
@@ -190,14 +184,18 @@ classdef ScanMultiROI < ne7.scanreader.scans.BaseScan
                     xSlice = field.xSlices{j};
                     outputYSlice = field.outputYSlices{j};
                     outputXSlice = field.outputXSlices{j};
-                                        
-                    % Get y, x indices that need to be accessed in this subfield
+                    
+                    % Read the required pages (and slice out the subfield)
+                    pages = obj.readpages(field.sliceId, ySlice, xSlice, channelList, frameList);                  
+            
+                    % Get x, y indices that need to be accessed in this subfield
                     yInSubfieldIndices = yList >= outputYSlice(1) & yList <= outputYSlice(end);
                     xInSubfieldIndices = xList >= outputXSlice(1) & xList <= outputXSlice(end);
-                    ys = yList(yInSubfieldIndices) - outputYSlice(1) + ySlice(1);
-                    xs = xList(xInSubfieldIndices) - outputXSlice(1) + xSlice(1);
+                    ys = yList(yInSubfieldIndices) - (outputYSlice(1) - 1);
+                    xs = xList(xInSubfieldIndices) - (outputXSlice(1) - 1);
                     
-                    item(i, yInSubfieldIndices, xInSubfieldIndices, :, :) = pages(i, ys, xs, :, :);
+                    % Index pages in y, x
+                    item(i, yInSubfieldIndices, xInSubfieldIndices, :, :) = pages(1, ys, xs, :, :);
                 end
             end
 
@@ -231,7 +229,8 @@ classdef ScanMultiROI < ne7.scanreader.scans.BaseScan
             % CREATEFIELDS Go over each slice depth and each roi generating the scanned
             % fields.
             fields_ = [];
-            for scanningDepth = obj.scanningDepths
+            for sliceId = 1:obj.nScanningDepths
+                scanningDepth = obj.scanningDepths(sliceId);
                 startingLine = 1;
                 for roiId = 1:obj.nRois
                     roi = obj.rois(roiId);
@@ -251,8 +250,9 @@ classdef ScanMultiROI < ne7.scanreader.scans.BaseScan
                         newField.outputYSlices = {1: newField.height};
                         newField.outputXSlices = {1: newField.width};
                         
-                        % Set roi id
+                        % Set roi and slice id
                         newField.roiId = roiId;
+                        newField.sliceId = sliceId;
                         
                         % Compute next starting y
                         startingLine = startingLine + newField.height + obj.nFlyToLines;

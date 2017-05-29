@@ -1,4 +1,4 @@
-classdef Scanfield
+classdef Scanfield < handle
     %SCANFIELD Small container for scanfield information. Used to define ROIs.
     
     properties
@@ -12,7 +12,7 @@ classdef Scanfield
     end
     
     methods
-        function obj = Field(height, width, depth, y, x, heightInDegrees, widthInDegrees)
+        function obj = Scanfield(height, width, depth, y, x, heightInDegrees, widthInDegrees)
             if nargin >= 1 obj.height = height; end
             if nargin >= 2 obj.width = width; end
             if nargin >= 3 obj.depth = depth; end

@@ -287,17 +287,17 @@ classdef (Abstract) BaseScan < handle
     end
     
     methods (Access = protected)
-        function pages = readpages(obj, sliceList, channelList, frameList)
+        function pages = readpages(obj, sliceList, yList, xList, channelList, frameList)
             % READPAGES Reads the tiff pages with the content of each slice, channel, 
-            % frame combination.
+            % frame combination and indexes them in the y, x dimension.
             %
-            % pages = READPAGES(SLICELIST, CHANNELLIST, FRAMELIST) returns a 5-d array
-            % shaped (nSlices, pageHeight, pageWidth, nChannels, nFrames): the pages
-            % specified by the slices in SLICELIST, channels in CHANNELLIST and frames in
-            % FRAMELIST. Array is reshaped to have slice, channel and frame as different 
-            % dimensions. Channel, slice and frame order received in the input lists are 
-            % respected; for instance, if slice_list = [2, 1, 3, 1], then the first 
-            % dimension will have four slices: [2, 1, 3, 1]. 
+            % pages = READPAGES(SLICELIST, YLIST, XLIST, CHANNELLIST, FRAMELIST) returns a
+            % 5-d array shaped (nSlices, outputHeight, outputWidth, nChannels, nFrames): 
+            % the pages specified by the slices in SLICELIST, channels in CHANNELLIST and 
+            % frames in FRAMELIST indexed using YLIST and XLIST. Array is reshaped to have
+            % slice, channel and frame as different dimensions. Channel, slice and frame 
+            % order received in the input lists are respected; for instance, if slice_list
+            % = [2, 1, 3, 1], then the first dimension will have four slices: [2, 1, 3, 1]. 
             %
             % Each tiff page holds a single depth/channel/frame combination. Channels
             % change first, slices/depths change second and timeframes change last.
@@ -323,7 +323,7 @@ classdef (Abstract) BaseScan < handle
             end
             
             % Read pages
-            pages = zeros([length(pagesToRead), obj.pageHeight, obj.pageWidth], obj.classname);
+            pages = zeros([length(pagesToRead), length(yList), length(xList)], obj.classname);
             startPage = 1;
             for i = 1:length(obj.tiffFiles)
                 tiffFile = obj.tiffFiles(i);
@@ -341,14 +341,15 @@ classdef (Abstract) BaseScan < handle
                     globalIndex = globalIndices(j);
                     
                     tiffFile.setDirectory(fileIndex)
-                    pages(globalIndex, :, :) = tiffFile.read();
+                    filePage = tiffFile.read();
+                    pages(globalIndex, :, :) = filePage(yList, xList);
                 end
                 startPage = startPage + nTiffPages; 
             end
             
             % Reshape the pages into slices, y, x, channels, frames
             newShape = [length(channelList), length(sliceList), length(frameList), ...
-                obj.pageHeight, obj.pageWidth];
+                length(yList), length(xList)];
             pages = permute(reshape(pages, newShape), [2, 4, 5, 1, 3]);
             
         end

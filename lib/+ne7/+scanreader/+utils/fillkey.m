@@ -14,7 +14,7 @@ if length(key) > numDimensions
     end
 end
 
-% Fill key (if empty output is full array, else fill missing dimensions with 1)
+% Fill key (if empty, output is full array; else fill missing dimensions with 1)
 if isempty(key)
      [fullKey{1:numDimensions}] = deal(':'); % {':', ':', ':', ..., ':'}
 else
