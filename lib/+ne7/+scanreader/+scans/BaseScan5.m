@@ -70,7 +70,7 @@ classdef (Abstract) BaseScan5 < ne7.scanreader.scans.BaseScan
                 ne7.scanreader.utils.checkindexisinbounds(i, index, dimSize)
             end
             
-            % Get slices/scanning_depths, channels and frames as lists
+            % Get fields, channels and frames as lists
             fieldList = ne7.scanreader.utils.listifyindex(fullKey{1}, obj.nFields);
             yList = ne7.scanreader.utils.listifyindex(fullKey{2}, obj.imageHeight);
             xList = ne7.scanreader.utils.listifyindex(fullKey{3}, obj.imageWidth);
@@ -83,11 +83,8 @@ classdef (Abstract) BaseScan5 < ne7.scanreader.scans.BaseScan
                 return
             end
             
-            % Read the required pages
-            pages = obj.readpages(fieldList, channelList, frameList);
-            
-            % Index on y, x
-            item = pages(:, fullKey{2}, fullKey{3}, :, :);
+            % Read the required pages (and index in y, x)
+            item = obj.readpages(fieldList, yList, xList, channelList, frameList);
 
             % If original index was a single integer delete that axis
             if ~isempty(key)
