@@ -218,8 +218,10 @@ classdef ScanMultiROI < ne7.scanreader.scans.BaseScan
         
         function rois_ = createrois(obj)
             % CREATEROIS Create scan rois from the configuration file.
-            scanimageMetadata = ne7.scanreader.utils.gettiffrois(obj.tiffFiles(1));
+            tiffFile = Tiff(obj.filenames{1});
+            scanimageMetadata = ne7.scanreader.utils.gettiffrois(tiffFile);
             roiInfos = scanimageMetadata.RoiGroups.imagingRoiGroup.rois;
+            tiffFile.close()
             
             roisAsCell = arrayfun(@ne7.scanreader.multiroi.ROI, roiInfos, 'uniformOutput', false);
             rois_ = [roisAsCell{:}];
