@@ -12,11 +12,12 @@ classdef ScanMultiROI < ne7.scanreader.scans.BaseScan
         fieldDepths % scaning depths per field
     end
     properties (SetAccess = private, Dependent)
-        fieldWidths % array with field widths
-        fieldHeights % array with field heights
         nRois % number of ROI volumes
-        fieldRois % list of ROIs per field
+        fieldHeights % array with field heights
+        fieldWidths % array with field widths
         fieldSlices % list of slices per field
+        fieldRois % list of ROIs per field
+        fieldMasks % list of ROI masks per field
         nFlyToLines %  number of lines between images in tiff page
         fieldHeightsInMicrons
         fieldWidthsInMicrons
@@ -39,28 +40,32 @@ classdef ScanMultiROI < ne7.scanreader.scans.BaseScan
             nFields = length(obj.fields);
         end
         
-        function fieldDepths = get.fieldDepths(obj)
-            fieldDepths = arrayfun(@(field) field.depth, obj.fields);
-        end
-
-        function fieldWidths = get.fieldWidths(obj)
-            fieldWidths = arrayfun(@(field) field.width, obj.fields);
+        function nRois = get.nRois(obj)
+            nRois = length(obj.rois);
         end
         
         function fieldHeights = get.fieldHeights(obj)
             fieldHeights = arrayfun(@(field) field.height, obj.fields);
         end
         
-        function nRois = get.nRois(obj)
-            nRois = length(obj.rois);
-        end
+        function fieldWidths = get.fieldWidths(obj)
+            fieldWidths = arrayfun(@(field) field.width, obj.fields);
+        end       
         
-        function fieldRois = get.fieldRois(obj)
-            fieldRois = arrayfun(@(field) field.roiId, obj.fields);
+        function fieldDepths = get.fieldDepths(obj)
+            fieldDepths = arrayfun(@(field) field.depth, obj.fields);
         end
         
         function fieldSlices = get.fieldSlices(obj)
             fieldSlices = arrayfun(@(field) field.sliceId, obj.fields);
+        end
+        
+        function fieldRois = get.fieldRois(obj)
+            fieldRois = arrayfun(@(field) field.roiIds, obj.fields, 'uniformOutput', false);
+        end
+        
+        function fieldMasks = get.fieldMasks(obj)
+            fieldMasks = arrayfun(@(field) field.roiMask, obj.fields, 'uniformOutput', false);
         end
         
         function flyToSeconds = get.flyToSeconds(obj)
@@ -252,9 +257,9 @@ classdef ScanMultiROI < ne7.scanreader.scans.BaseScan
                         newField.outputYSlices = {1: newField.height};
                         newField.outputXSlices = {1: newField.width};
                         
-                        % Set roi and slice id
-                        newField.roiId = roiId;
+                        % Set slice and roi id
                         newField.sliceId = sliceId;
+                        newField.roiIds = {roiId}; 
                         
                         % Compute next starting y
                         startingLine = startingLine + newField.height + obj.nFlyToLines;
