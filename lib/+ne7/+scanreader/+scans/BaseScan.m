@@ -107,11 +107,7 @@ classdef (Abstract) BaseScan < handle
             obj.pagesPerFile = cellfun(@(filename) length(imfinfo(filename)), obj.filenames);
             nPages = sum(obj.pagesPerFile);
             nFrames_ = nPages / (obj.nScanningDepths * obj.nChannels);
-            if mod(nFrames_, 1) ~= 0 % not an integer
-                error('updateNFrames:ValueError', ['total number of pages %d not' ...
-                    'divisible by nScanningDepths * nChannels'], nPages);
-            end
-            obj.nFrames = nFrames_;
+            obj.nFrames = floor(nFrames_); % discard last frame if incomplete
         end
                 
         function isMultiROI = get.isMultiROI(obj)
