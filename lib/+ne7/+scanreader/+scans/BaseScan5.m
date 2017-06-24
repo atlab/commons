@@ -1,6 +1,6 @@
 classdef (Abstract) BaseScan5 < ne7.scanreader.scans.BaseScan
-    % BASESCAN5 ScanImage 5 scans. Only one field per scanning depth and all fields have 
-    % the same y, x dimensions.
+    % BASESCAN5 ScanImage 5 scans: one field per scanning depth and all fields have the
+    % same height and width.
     
     properties (SetAccess = private, Dependent) % inherited abstract properties
         nFields % number of fields
