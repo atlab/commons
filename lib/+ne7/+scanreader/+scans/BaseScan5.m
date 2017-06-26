@@ -11,6 +11,10 @@ classdef (Abstract) BaseScan5 < ne7.scanreader.scans.BaseScan
        imageWidth
        zoom % amount of zoom used during scanning
     end
+    properties (setAccess = private, Dependent, Hidden)
+        yAngleScaleFactor % angle range in y is scaled by this factor
+        xAngleScaleFactor % angle range in x is scaled by this factor
+    end
 
     methods
         function nFields = get.nFields(obj)
@@ -37,6 +41,20 @@ classdef (Abstract) BaseScan5 < ne7.scanreader.scans.BaseScan
             pattern = 'hRoiManager\.scanZoomFactor = (.*)';
             match = regexp(obj.header, pattern, 'tokens', 'dotexceptnewline');
             if ~isempty(match) zoom = str2double(match{1}{1}); end 
+        end
+        
+        function yAngleScaleFactor = get.yAngleScaleFactor(obj)
+            % Scan angles in y are scaled by this factor, shrinking the angle range.
+            pattern = 'hRoiManager\.scanAngleMultiplierSlow = (.*)';
+            match = regexp(obj.header, pattern, 'tokens', 'dotexceptnewline');
+            if ~isempty(match) yAngleScaleFactor = str2double(match{1}{1}); end
+        end
+        
+        function xAngleScaleFactor = get.xAngleScaleFactor(obj)
+            % Scan angles in x are scaled by this factor, shrinking the angle range.
+            pattern = 'hRoiManager\.scanAngleMultiplierFast = (.*)';
+            match = regexp(obj.header, pattern, 'tokens', 'dotexceptnewline');
+            if ~isempty(match) xAngleScaleFactor = str2double(match{1}{1}); end
         end
         
         function index = end(obj, dim, ~)

@@ -45,8 +45,6 @@ classdef (Abstract) BaseScan < handle
     properties (SetAccess = private, Dependent, Hidden)
         pageHeight % height of the tiff page
         pageWidth % width of the tiff page
-        yAngleScaleFactor % angle range in y is scaled by this factor
-        xAngleScaleFactor % angle range in x is scaled by this factor
         nFlyBackLines % lines/mirror cycles it takes to move from one depth to the next
     end
     properties (SetAccess = private, Dependent, Abstract)
@@ -218,21 +216,7 @@ classdef (Abstract) BaseScan < handle
                 motorPositionAtZero = motorCoordinates(1:3);
             end
         end
-        
-        function yAngleScaleFactor = get.yAngleScaleFactor(obj)
-            % Scan angles in y are scaled by this factor, shrinking the angle range.
-            pattern = 'hRoiManager\.scanAngleMultiplierSlow = (.*)';
-            match = regexp(obj.header, pattern, 'tokens', 'dotexceptnewline');
-            if ~isempty(match) yAngleScaleFactor = str2double(match{1}{1}); end
-        end
-        
-        function xAngleScaleFactor = get.xAngleScaleFactor(obj)
-            % Scan angles in x are scaled by this factor, shrinking the angle range.
-            pattern = 'hRoiManager\.scanAngleMultiplierFast = (.*)';
-            match = regexp(obj.header, pattern, 'tokens', 'dotexceptnewline');
-            if ~isempty(match) xAngleScaleFactor = str2double(match{1}{1}); end
-        end
-        
+              
         function nFlyBackLines = get.nFlyBackLines(obj)
             % Lines/mirror cycles that it takes to move from one depth to the next.
             pattern = 'hScan2D\.flybackTimePerFrame = (.*)';
