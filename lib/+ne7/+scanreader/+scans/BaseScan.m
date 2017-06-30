@@ -37,7 +37,6 @@ classdef (Abstract) BaseScan < handle
         temporalFillFraction
         usesFastZ % whether scan was recorded with FastZ/Piezo on
         nRequestedFrames % number of requested frames
-        zStepInMicrons % factor to go from z depth units to microns
         scannerType % type of scanner
         scannerFrequency % scanner frequency (Hz)
         motorPositionAtZero % motor position (x, y and z in microns) at ScanImage's (0, 0)
@@ -186,12 +185,6 @@ classdef (Abstract) BaseScan < handle
             end
             match = regexp(obj.header, pattern, 'tokens', 'dotexceptnewline');
             if ~isempty(match) nRequestedFrames = str2double(match{1}{1}); end
-        end
-        
-        function zStepInMicrons = get.zStepInMicrons(obj)
-            pattern = 'hStackManager\.stackZStepSize = (.*)';
-            match = regexp(obj.header, pattern, 'tokens', 'dotexceptnewline');
-            if ~isempty(match) zStepInMicrons = str2double(match{1}{1}); end
         end
         
         function scannerType = get.scannerType(obj)
