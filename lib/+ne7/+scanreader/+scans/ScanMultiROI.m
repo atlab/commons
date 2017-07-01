@@ -18,12 +18,12 @@ classdef ScanMultiROI < ne7.scanreader.scans.BaseScan
         fieldSlices % list of slices per field
         fieldRois % list of ROIs per field
         fieldMasks % list of ROI masks per field
-        nFlyToLines %  number of lines between images in tiff page
+        fieldOffsets % seconds elapsed between start of frame scanning and each pixel.
         fieldHeightsInMicrons
         fieldWidthsInMicrons
     end
-    properties (SetAccess = private, Dependent, Hidden)
-        flyToSeconds % number of seconds it takes to move from one field to the next
+    properties (Access = protected, Dependent)
+        nFlyToLines %  number of lines between images in tiff page
     end
     
     methods
@@ -68,23 +68,10 @@ classdef ScanMultiROI < ne7.scanreader.scans.BaseScan
             fieldMasks = arrayfun(@(field) field.roiMask, obj.fields, 'uniformOutput', false);
         end
         
-        function flyToSeconds = get.flyToSeconds(obj)
-            pattern = 'hScan2D\.flytoTimePerScanfield = (.*)';
-            match = regexp(obj.header, pattern, 'tokens', 'dotexceptnewline');
-            if ~isempty(match) flyToSeconds = str2double(match{1}{1}); end
+        function fieldOffsets = get.fieldOffsets(obj)
+            fieldOffsets = arrayfun(@(field) field.offsetMask, obj.fields, 'uniformOutput', false);
         end
-        
-        function nFlyToLines = get.nFlyToLines(obj)
-            % Number of lines recorded in the tiff page while flying to a different field,
-            % i.e., distance between fields in the tiff page."""
-            nFlyToLines = obj.flyToSeconds / obj.secondsPerLine;
-            nFlyToLines = ceil(nFlyToLines);
-            if obj.isBidirectional
-                % line scanning always starts at one end of the image so this has to be even
-                nFlyToLines = nFlyToLines + mod(nFlyToLines, 2);
-            end
-        end
-        
+              
         function fieldHeightsInMicrons = get.fieldHeightsInMicrons(obj)
             fieldHeightsInDegrees = arrayfun(@(field) field.heightInDegrees, obj.fields);
             fieldHeightsInMicrons = arrayfun(@obj.degreestomicrons, fieldHeightsInDegrees);
@@ -93,6 +80,17 @@ classdef ScanMultiROI < ne7.scanreader.scans.BaseScan
         function fieldWidthsInMicrons = get.fieldWidthsInMicrons(obj)
             fieldWidthsInDegrees = arrayfun(@(field) field.widthInDegrees, obj.fields);
             fieldWidthsInMicrons = arrayfun(@obj.degreestomicrons, fieldWidthsInDegrees);
+        end
+        
+        function nFlyToLines = get.nFlyToLines(obj)
+            % Number of lines recorded in the tiff page while flying to a different field,
+            % i.e., distance between fields in the tiff page."""
+            pattern = 'hScan2D\.flytoTimePerScanfield = (.*)';
+            match = regexp(obj.header, pattern, 'tokens', 'dotexceptnewline');
+            if ~isempty(match) 
+                flyToSeconds = str2double(match{1}{1});
+                nFlyToLines = obj.secondstolines(flyToSeconds);
+            end
         end
         
         function readdata(obj, filenames, classname)
@@ -236,21 +234,23 @@ classdef ScanMultiROI < ne7.scanreader.scans.BaseScan
             % CREATEFIELDS Go over each slice depth and each roi generating the scanned
             % fields.
             fields_ = [];
+            previousLines = 0;
             for sliceId = 1:obj.nScanningDepths
                 scanningDepth = obj.scanningDepths(sliceId);
-                startingLine = 1;
+                nextLineInPage = 1;
                 for roiId = 1:obj.nRois
                     roi = obj.rois(roiId);
                     newField = roi.getfieldat(scanningDepth);
+                    
                     if ~isempty(newField) % if there was a field at that depth
-                        if startingLine + newField.height - 1 > obj.pageHeight
+                        if nextLineInPage + newField.height - 1 > obj.pageHeight
                             error('createfields:RuntimeErrror', ['Overestimated number'...
                                 'of fly to lines (%d) at scanning depth %d'], ...
                                 obj.nFlyToLines, scanningDepth)
                         end
                         
                         % Set xslice and yslice (from where in the page to cut it)
-                        newField.ySlices = {startingLine: startingLine + newField.height - 1};
+                        newField.ySlices = {nextLineInPage: nextLineInPage + newField.height - 1};
                         newField.xSlices = {1: newField.width};
                         
                         % Set output xslice and yslice (where to paste it in output)
@@ -259,15 +259,22 @@ classdef ScanMultiROI < ne7.scanreader.scans.BaseScan
                         
                         % Set slice and roi id
                         newField.sliceId = sliceId;
-                        newField.roiIds = {roiId}; 
+                        newField.roiIds = roiId;
+                        
+                        % Set timing offsets
+                        offsets = obj.computeoffsets(newField.height, previousLines + nextLineInPage - 1);
+                        newField.offsets = {offsets};
                         
                         % Compute next starting y
-                        startingLine = startingLine + newField.height + obj.nFlyToLines;
+                        nextLineInPage = nextLineInPage + newField.height + obj.nFlyToLines;
                         
                         % Add field to fields
                         fields_ = [fields_, newField];                      
                     end
                 end
+                
+                % Accumulate overall number of scanned lines
+                previousLines = previousLines + obj.pageHeight + obj.nFlyBackLines;
             end      
         end
         

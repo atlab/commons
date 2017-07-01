@@ -38,7 +38,7 @@ class Paths(dj.Lookup):
         path = path.replace(os.path.sep, '/')
         path = path.replace('~', home)
 
-        mapping = np.asarray(self.fetch['global', 'linux', 'windows', 'mac'])
+        mapping = np.asarray(self.fetch('global', 'linux', 'windows', 'mac'))
         size = mapping.shape
         for i in range(size[1]):
             for j in range(size[0]):

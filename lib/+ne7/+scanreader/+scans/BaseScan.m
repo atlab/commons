@@ -37,15 +37,14 @@ classdef (Abstract) BaseScan < handle
         temporalFillFraction
         usesFastZ % whether scan was recorded with FastZ/Piezo on
         nRequestedFrames % number of requested frames
-        zStepInMicrons % factor to go from z depth units to microns
         scannerType % type of scanner
         scannerFrequency % scanner frequency (Hz)
+        motorPositionAtZero % motor position (x, y and z in microns) at ScanImage's (0, 0)
     end
     properties (SetAccess = private, Dependent, Hidden)
         pageHeight % height of the tiff page
         pageWidth % width of the tiff page
-        yAngleScaleFactor % angle range in y is scaled by this factor
-        xAngleScaleFactor % angle range in x is scaled by this factor
+        nFlyBackLines % lines/mirror cycles it takes to move from one depth to the next
     end
     properties (SetAccess = private, Dependent, Abstract)
         nFields % number of fields
@@ -106,11 +105,7 @@ classdef (Abstract) BaseScan < handle
             obj.pagesPerFile = cellfun(@(filename) length(imfinfo(filename)), obj.filenames);
             nPages = sum(obj.pagesPerFile);
             nFrames_ = nPages / (obj.nScanningDepths * obj.nChannels);
-            if mod(nFrames_, 1) ~= 0 % not an integer
-                error('updateNFrames:ValueError', ['total number of pages %d not' ...
-                    'divisible by nScanningDepths * nChannels'], nPages);
-            end
-            obj.nFrames = nFrames_;
+            obj.nFrames = floor(nFrames_); % discard last frame if incomplete
         end
                 
         function isMultiROI = get.isMultiROI(obj)
@@ -192,12 +187,6 @@ classdef (Abstract) BaseScan < handle
             if ~isempty(match) nRequestedFrames = str2double(match{1}{1}); end
         end
         
-        function zStepInMicrons = get.zStepInMicrons(obj)
-            pattern = 'hStackManager\.stackZStepSize = (.*)';
-            match = regexp(obj.header, pattern, 'tokens', 'dotexceptnewline');
-            if ~isempty(match) zStepInMicrons = str2double(match{1}{1}); end
-        end
-        
         function scannerType = get.scannerType(obj)
             pattern = 'hScan2D\.scannerType = ''(.*)''';
             match = regexp(obj.header, pattern, 'tokens', 'dotexceptnewline');
@@ -210,18 +199,25 @@ classdef (Abstract) BaseScan < handle
             if ~isempty(match) scannerFrequency = str2double(match{1}{1}); end
         end
         
-        function yAngleScaleFactor = get.yAngleScaleFactor(obj)
-            % Scan angles in y are scaled by this factor, shrinking the angle range.
-            pattern = 'hRoiManager\.scanAngleMultiplierSlow = (.*)';
+        function motorPositionAtZero = get.motorPositionAtZero(obj)
+            % Motor position (x, y and z in microns) at ScanImage's (0, 0) point.
+            % For non-multiroi scans, (0, 0) is in the center of the FOV.
+            pattern = 'hMotors\.motorPosition = (.*)';
             match = regexp(obj.header, pattern, 'tokens', 'dotexceptnewline');
-            if ~isempty(match) yAngleScaleFactor = str2double(match{1}{1}); end
+            if ~isempty(match)
+                motorCoordinates = eval(match{1}{1});
+                motorPositionAtZero = motorCoordinates(1:3);
+            end
         end
-        
-        function xAngleScaleFactor = get.xAngleScaleFactor(obj)
-            % Scan angles in x are scaled by this factor, shrinking the angle range.
-            pattern = 'hRoiManager\.scanAngleMultiplierFast = (.*)';
+              
+        function nFlyBackLines = get.nFlyBackLines(obj)
+            % Lines/mirror cycles that it takes to move from one depth to the next.
+            pattern = 'hScan2D\.flybackTimePerFrame = (.*)';
             match = regexp(obj.header, pattern, 'tokens', 'dotexceptnewline');
-            if ~isempty(match) xAngleScaleFactor = str2double(match{1}{1}); end
+            if ~isempty(match)
+                flyBackSeconds = str2double(match{1}{1});
+                nFlyBackLines = obj.secondstolines(flyBackSeconds);
+            end
         end
         
         function readdata(obj, filenames, classname)
@@ -352,6 +348,42 @@ classdef (Abstract) BaseScan < handle
                 length(yList), length(xList)];
             pages = permute(reshape(pages, newShape), [2, 4, 5, 1, 3]);
             
+        end
+        
+        function nLines = secondstolines(obj, seconds)
+            % SECONDSTOLINES Compute how many lines would be scanned in the desired amount
+            % of seconds.
+            nLines = ceil(seconds/ obj.secondsPerLine);
+            if obj.isBidirectional
+                % scanning starts at one end of the line so nLines needs to be even
+                nLines = nLines + mod(nLines, 2);
+            end
+        end
+        
+        function fieldOffsets = computeoffsets(obj, fieldHeight, startLine)
+            % COMPUTEOFFSETS Computes the time offsets at which a given field was recorded.
+            %
+            % fieldOffsets = COMPUTEOFFSETS(FIELDHEIGHT, STARTLINE) returns a FIELDHEIGHT 
+            % x pageWidth mask with the time delay at which each pixel was recorded (using
+            % the start of the scan as zero) for a field that starts at STARTLINE line.
+            %
+            % It first creates an image with the number of lines scanned until that point
+            % and then uses obj.secondsPerLine to  transform it into seconds.
+            
+            % Compute offsets within a line (negligible if secondPerLine is small)
+            maxAngle = (pi / 2) * obj.temporalFillFraction;
+            lineAngles = linspace(-maxAngle, maxAngle, obj.pageWidth + 2);
+            lineAngles = lineAngles(2: end-1);
+            lineOffsets = (sin(lineAngles) + 1) / 2;
+            
+            % Compute offsets for entire field
+            fieldOffsets = (0:fieldHeight -1)' + lineOffsets;
+            if obj.isBidirectional % odd lines scanned from left to right
+                fieldOffsets(2:2:end, :) = fieldOffsets(2:2:end, :) - lineOffsets + (1 - lineOffsets);
+            end
+            
+            % Transform offsets from line counts to seconds
+            fieldOffsets = (fieldOffsets + startLine) * obj.secondsPerLine;     
         end
     end 
     

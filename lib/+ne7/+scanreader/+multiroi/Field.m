@@ -23,15 +23,17 @@ classdef Field < ne7.scanreader.multiroi.Scanfield
         outputXSlices % array of slices. Where to paste this field in the output field
         sliceId % index of the slice in the scan to which this field belongs.
         roiIds % array of ROI indices to which each subfield belongs (one if single field).
+        offsets % array of masks with time offsets per pixel (seconds, one if single field).
     end
     properties(Dependent)
         hasContiguousSubfields % true if this field is made by joining two or more subfields
         roiMask % mask with ROI positions. Each pixel is assigned the index of its ROI.
+        offsetMask % mask with time offsets (in seconds) for each pixel.
     end
     
     methods
         function obj = Field(height, width, depth, y, x, heightInDegrees, widthInDegrees,...
-                ySlices, xSlices, outputYSlices, outputXSlices, sliceId, roiIds)
+                ySlices, xSlices, outputYSlices, outputXSlices, sliceId, roiIds, offsets)
             if nargin >= 1 obj.height = height; end
             if nargin >= 2 obj.width = width; end
             if nargin >= 3 obj.depth = depth; end
@@ -45,6 +47,7 @@ classdef Field < ne7.scanreader.multiroi.Scanfield
             if nargin >= 11 obj.outputXSlices = outputXSlices; end
             if nargin >= 12 obj.sliceId = sliceId; end
             if nargin >= 13 obj.roiIds = roiIds; end
+            if nargin >= 14 obj.offsets = offsets; end
         end
         
         function hasContiguousSubfields = get.hasContiguousSubfields(obj)
@@ -56,14 +59,26 @@ classdef Field < ne7.scanreader.multiroi.Scanfield
             % ROIMASK Mask of the size of the field. Each pixel shows the ROI from where it comes.
             roiMask = -1 * ones(obj.height, obj.width);
             for i = 1:length(obj.roiIds)
-                roiId = obj.roiIds{i};
+                roiId = obj.roiIds(i);
                 outputYSlice = obj.outputYSlices{i};
                 outputXSlice = obj.outputXSlices{i};
                 
                 roiMask(outputYSlice, outputXSlice) = roiId;
             end
         end
-       
+        
+        function offsetMask = get.offsetMask(obj)
+            % OFFSETMASK Mask of the size of the field. Each pixel shows its time offset in seconds.
+            offsetMask = -1 * ones(obj.height, obj.width);
+            for i = 1:length(obj.offsets)
+                offsets_ = obj.offsets{i};
+                outputYSlice = obj.outputYSlices{i};
+                outputXSlice = obj.outputXSlices{i};
+                
+                offsetMask(outputYSlice, outputXSlice) = offsets_;
+            end
+        end
+
         function areContiguous = iscontiguousto(obj, field2)
             % ISCONTIGUOUSTO Whether this field is contiguous to field2.
             areContiguous = ~(obj.typeofcontiguity(field2) == ne7.scanreader.multiroi.Position.Noncontiguous);
@@ -119,8 +134,9 @@ classdef Field < ne7.scanreader.multiroi.Scanfield
             obj.ySlices = [obj.ySlices, field2.ySlices];
             obj.xSlices = [obj.xSlices, field2.xSlices];
             
-            % Append new roi_id
+            % Append roi ids and offsets
             obj.roiIds = [obj.roiIds, field2.roiIds];
+            obj.offsets = [obj.offsets, field2.offsets];
         end
     end
     
