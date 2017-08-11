@@ -31,6 +31,7 @@ classdef (Abstract) BaseScan < handle
         nScanningDepths % number of slices
         isMultiROI % true if scan is multiROI
         isBidirectional % true if scan is bidirectional
+        scannerFrequency % scanner frequency (Hz)
         secondsPerLine % time it takes to scan a line
         fps % frames per seconds
         spatialFillFraction
@@ -38,7 +39,6 @@ classdef (Abstract) BaseScan < handle
         usesFastZ % whether scan was recorded with FastZ/Piezo on
         nRequestedFrames % number of requested frames
         scannerType % type of scanner
-        scannerFrequency % scanner frequency (Hz)
         motorPositionAtZero % motor position (x, y and z in microns) at ScanImage's (0, 0)
     end
     properties (SetAccess = private, Dependent, Hidden)
@@ -129,10 +129,18 @@ classdef (Abstract) BaseScan < handle
             end
         end
         
-        function secondsPerLine = get.secondsPerLine(obj)
-            pattern = 'hRoiManager\.linePeriod = (.*)';
+        function scannerFrequency = get.scannerFrequency(obj)
+            pattern = 'hScan2D\.scannerFrequency = (.*)';
             match = regexp(obj.header, pattern, 'tokens', 'dotexceptnewline');
-            if ~isempty(match) secondsPerLine = str2double(match{1}{1}); end
+            if ~isempty(match) scannerFrequency = str2double(match{1}{1}); end
+        end
+        
+        function secondsPerLine = get.secondsPerLine(obj)
+            if obj.isBidirectional 
+                secondsPerLine = 1 / (2 * obj.scannerFrequency);
+            else
+                secondsPerLine = 1 / obj.scannerFrequency;
+            end
         end
         
         function pageHeight = get.pageHeight(obj)
@@ -191,12 +199,6 @@ classdef (Abstract) BaseScan < handle
             pattern = 'hScan2D\.scannerType = ''(.*)''';
             match = regexp(obj.header, pattern, 'tokens', 'dotexceptnewline');
             if ~isempty(match) scannerType = match{1}{1}; end
-        end
-        
-        function scannerFrequency = get.scannerFrequency(obj)
-            pattern = 'hScan2D\.scannerFrequency = (.*)';
-            match = regexp(obj.header, pattern, 'tokens', 'dotexceptnewline');
-            if ~isempty(match) scannerFrequency = str2double(match{1}{1}); end
         end
         
         function motorPositionAtZero = get.motorPositionAtZero(obj)
