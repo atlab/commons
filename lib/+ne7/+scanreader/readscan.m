@@ -2,7 +2,7 @@
 %
 % Example 1: Process a scan field by field
 %     scan = scanreader.readscan('my_scan_*.tif')
-%     for fieldId = scan.nFields
+%     for fieldId = 1:scan.nFields
 %         field = scan(fieldId, :, :, :, :)
 %         % process field
 %     end
@@ -33,7 +33,7 @@ switch nargin
 end
 
 % Expand wildcards
-filenames = expandwildcard(pathnames);
+filenames = ne7.scanreader.utils.expandwildcard(pathnames);
 if isempty(filenames)
     if iscellstr(pathnames)
         pathnamesAsString = strcat('{' , strjoin(pathnames, ', '), '}');
@@ -45,8 +45,8 @@ end
 
 % Read version from one of the tiff files
 tiffFile = Tiff(filenames{1});
-tiffInfo = ne7.scanreader.utils.gettiffinfo(tiffFile);
-version = getscanimageversion(tiffInfo);
+tiffInfo = ne7.scanreader.tiffutils.gettiffinfo(tiffFile);
+version = ne7.scanreader.tiffutils.getscanimageversion(tiffInfo);
 
 % Select the appropiate scan object
 switch version
@@ -55,7 +55,7 @@ switch version
     case '5.2'
         scan = ne7.scanreader.scans.Scan5Point2();
     case '2016b'
-        if isscanmultiROI(tiffInfo)
+        if ne7.scanreader.tiffutils.isscanmultiROI(tiffInfo)
             scan = ne7.scanreader.scans.ScanMultiROI(joinContiguous);
         else
             scan = ne7.scanreader.scans.Scan2016b();
@@ -70,61 +70,4 @@ scan.readdata(filenames, classname)
 % Close tiff file
 tiffFile.close()
 
-end
-
-function filenames = expandwildcard(wildcard)
-% EXPANDWILDCARD Expands a list of pathname patterns to form a sorted array of absolute
-% filenames
-%
-%   filenames = EXPANDWILDCARD(WILDCARD) returns an array of absolute filenames found when
-%   expanding WILDCARD.
-if ischar(wildcard)
-    wildcardList = {wildcard};
-elseif iscellstr(wildcard)
-    wildcardList = wildcard;
-else
-    error('expandwildcard:TypeError', 'Expected string or cell array of strings, received %s', class(wildcard))
-end
-
-% Expand wildcards
-directories = cellfun(@dir, wildcardList, 'UniformOutput', false);
-directories = vertcat(directories{:}); % flatten list
-
-% Make absolute filenames
-makeabsolute = @(dir) fullfile(dir.folder, dir.name);
-filenames = arrayfun(makeabsolute, directories, 'uniformOutput', false);
-
-% Sort them
-[~, newOrder] = sort({directories.name});
-filenames = filenames(newOrder);
-
-end
-
-function version = getscanimageversion(info)
-% GETSCANIMAGEVERSION Looks for the ScanImage version in the tiff file headers.
-%
-%   version = GETSCANIMAGEVERSION(INFO) returns the scanImage version as a string read
-%   from the headers provided in INFO.
-pattern = 'SI.?\.VERSION_MAJOR = ''(.*)''';
-match = regexp(info, pattern, 'tokens', 'dotexceptnewline');
-if isempty(match)
-    error('getscanimageversion:ScanImageVersionError', 'Could not find ScanImage version in the tiff header');
-else
-    version = match{1}{1};
-end
-end
-
-function isMultiROI = isscanmultiROI(info)
-% ISSCANMULTIROI Looks whether the scan is multiROI in the tiff file headers.
-%
-%   isMultiROI = ISSCANMULTIROI(INFO) returns a boolean indicating whether the scan is
-%   multiROI read from the headers provided in INFO.
-
-pattern = 'hRoiManager\.mroiEnable = (.)';
-match = regexp(info, pattern, 'tokens', 'dotexceptnewline');
-if isempty(match)
-    isMultiROI = false;
-else
-    isMultiROI = strcmp(match{1}{1}, '1');
-end
 end

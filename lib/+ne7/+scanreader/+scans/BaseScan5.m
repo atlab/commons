@@ -11,7 +11,7 @@ classdef (Abstract) BaseScan5 < ne7.scanreader.scans.BaseScan
        imageWidth
        zoom % amount of zoom used during scanning
     end
-    properties (setAccess = private, Dependent, Hidden)
+    properties (SetAccess = private, Dependent, Hidden)
         yAngleScaleFactor % angle range in y is scaled by this factor
         xAngleScaleFactor % angle range in x is scaled by this factor
     end

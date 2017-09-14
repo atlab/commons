@@ -21,7 +21,6 @@ classdef (Abstract) BaseScan < handle
         filenames % all tiff filenames
         classname % classname of the output array
         header % tiff header
-        nFrames % number of frames
     end
     properties (SetAccess = private, Dependent)
         tiffFiles % opened Tiff files
@@ -29,6 +28,7 @@ classdef (Abstract) BaseScan < handle
         nChannels % number of channels
         scanningDepths % relative z depths or slices
         nScanningDepths % number of slices
+        nFrames % number of frames
         isMultiROI % true if scan is multiROI
         isBidirectional % true if scan is bidirectional
         scannerFrequency % scanner frequency (Hz)
@@ -45,6 +45,7 @@ classdef (Abstract) BaseScan < handle
         pageHeight % height of the tiff page
         pageWidth % width of the tiff page
         nFlyBackLines % lines/mirror cycles it takes to move from one depth to the next
+        pagesPerFile % number of pages per tiff file
     end
     properties (SetAccess = private, Dependent, Abstract)
         nFields % number of fields
@@ -52,7 +53,7 @@ classdef (Abstract) BaseScan < handle
     end
     properties (Access = private)
         tiffFiles_
-        pagesPerFile
+        pagesPerFile_
     end
     
     methods
@@ -84,30 +85,35 @@ classdef (Abstract) BaseScan < handle
             if ~isempty(match) nChannels = length(eval(match{1}{1})); end
         end
         
-        function scanningDepths = get.scanningDepths(obj)
+        function pagesPerFile = get.pagesPerFile(obj)
+            if isempty(obj.pagesPerFile_)
+                obj.pagesPerFile_ = cellfun(@(filename) length(imfinfo(filename)), obj.filenames);
+            end
+            pagesPerFile = obj.pagesPerFile_;
+        end
+        
+        % Define getter as a diff method so I can override it in subclasses (get.* are not
+        % overridable)
+        function scanningDepths = get.scanningDepths(obj); scanningDepths = obj.getScanningDepths(); end
+        function scanningDepths = getScanningDepths(obj)
             pattern = 'hStackManager\.zs = (.*)';
             match = regexp(obj.header, pattern, 'tokens', 'dotexceptnewline');
             if ~isempty(match) scanningDepths = eval(match{1}{1}); end
         end
         
-        function nScanningDepths = get.nScanningDepths(obj)
+        function nScanningDepths = get.nScanningDepths(obj); nScanningDepths = obj.getNScanningDepths(); end
+        function nScanningDepths = getNScanningDepths(obj) 
             nScanningDepths = length(obj.scanningDepths);
         end
         
-        function set.filenames(obj, filenames)
-            % Add step to recompute number of frames if filenames are changed.
-            obj.filenames = filenames;
-            obj.updateNFrames(); % recompute number of frames
-        end
-        
-        function updateNFrames(obj)
+        function nFrames = get.nFrames(obj); nFrames = obj.getNFrames(); end 
+        function nFrames = getNFrames(obj)
             % Each tiff page is an image at a given channel, scanning depth combination.
-            obj.pagesPerFile = cellfun(@(filename) length(imfinfo(filename)), obj.filenames);
             nPages = sum(obj.pagesPerFile);
-            nFrames_ = nPages / (obj.nScanningDepths * obj.nChannels);
-            obj.nFrames = floor(nFrames_); % discard last frame if incomplete
+            nFrames = nPages / (obj.nScanningDepths * obj.nChannels);
+            nFrames = floor(nFrames); % discard last frame if incomplete
         end
-                
+                          
         function isMultiROI = get.isMultiROI(obj)
             % Only true if mroiEnable exists (2016b and up) and is set to true.
             pattern = 'hRoiManager\.mroiEnable = (.)';
@@ -231,7 +237,7 @@ classdef (Abstract) BaseScan < handle
 
             % Set header
             tiffFile = Tiff(filenames{1});
-            obj.header = ne7.scanreader.utils.gettiffinfo(tiffFile);
+            obj.header = ne7.scanreader.tiffutils.gettiffinfo(tiffFile);
             tiffFile.close();
             
             % Set classname
