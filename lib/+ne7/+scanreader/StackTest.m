@@ -4,12 +4,14 @@ classdef StackTest < matlab.unittest.TestCase
        dataDir = '/home/ecobost/Documents/scanreader/data'
        stackFile5_1 % 2 channels, 60 slices
        stackFile5_1Multifiles % second has 10 slices
+       stackFile2016bMultiroi % 2 channels, 50 slices, 4 fields per slice
     end
     
     methods (TestClassSetup)
         function createfilenames(testCase)
             testCase.stackFile5_1 = fullfile(testCase.dataDir, 'stack_5_1_001.tif');
             testCase.stackFile5_1Multifiles = {fullfile(testCase.dataDir, 'stack_5_1_001.tif'), fullfile(testCase.dataDir, 'stack_5_1_002.tif')};
+            testCase.stackFile2016bMultiroi = fullfile(testCase.dataDir, 'stack_2016b_multiroi_001.tif');
         end
     end
     
@@ -43,6 +45,35 @@ classdef StackTest < matlab.unittest.TestCase
             testCase.verifyEqual(scan.imageWidth, 512)
             testCase.verifyEqual(size(scan), [60, 512, 512, 2, 25])
             testCase.verifyEqual(scan.zoom, 2.1)
+            
+            % 2016b MultiROI
+            scan = ne7.scanreader.readstack(testCase.stackFile2016bMultiroi);
+            testCase.verifyEqual(scan.version, '2016b')
+            testCase.verifyEqual(scan.nFields, 204)
+            testCase.verifyEqual(scan.nChannels, 2)
+            testCase.verifyEqual(scan.nFrames, 10)
+            testCase.verifyEqual(scan.nScanningDepths, 51)
+            testCase.verifyEqual(scan.scanningDepths, 150:-1:100)
+            testCase.verifyEqual(scan.fieldDepths, reshape(repmat(150:-1:100, 4, 1), 1, 204))
+            testCase.verifyEqual(scan.isMultiROI, true)
+            testCase.verifyEqual(scan.isBidirectional, true)
+            testCase.verifyEqual(scan.scannerFrequency, 12039.1)
+            testCase.verifyEqual(scan.secondsPerLine, 4.15312e-05, 'absTol', 1e-5)
+            testCase.verifyEqual(scan.fps, 0.244914)
+            testCase.verifyEqual(scan.spatialFillFraction, 0.9)
+            testCase.verifyEqual(scan.temporalFillFraction, 0.712867)
+            testCase.verifyEqual(scan.usesFastZ, false)
+            testCase.verifyEqual(scan.nRequestedFrames, 10)
+            testCase.verifyEqual(scan.scannerType, 'Resonant')
+            testCase.verifyEqual(scan.motorPositionAtZero, [0, 0, 0])
+            
+            testCase.verifyEqual(scan.nRois, 4)
+            testCase.verifyEqual(scan.fieldHeights, repmat(360, 1, 204))
+            testCase.verifyEqual(scan.fieldWidths, repmat(120, 1, 204))
+            testCase.verifyEqual(scan.fieldSlices, reshape(repmat(1:51, 4, 1), 1, 204))
+            testCase.verifyEqual(scan.fieldRois, num2cell(repmat(1:4, 1, 51)))
+            testCase.verifyEqual(scan.fieldHeightsInMicrons, repmat(1800, 1, 204), 'absTol', 1e-4)
+            testCase.verifyEqual(scan.fieldWidthsInMicrons, repmat(600, 1, 204), 'absTol', 1e-4)
         end
         
         function test5_1(testCase)
@@ -83,6 +114,26 @@ classdef StackTest < matlab.unittest.TestCase
             testCase.assertequalshapeandsum(firstChannel, [70, 512, 512, 25], 1832276046863)
             firstFrame = scan(:, :, :, :, 1);
             testCase.assertequalshapeandsum(firstFrame, [70, 512, 512, 2], 79887927681)
+        end
+        
+        function test2016bmultiroi(testCase)
+            scan = ne7.scanreader.readstack(testCase.stackFile2016bMultiroi);
+            
+            % Test it can be obtained as array
+            scanAsArray = scan();
+            testCase.assertequalshapeandsum(scanAsArray, [204, 360, 120, 2, 10], 30797502048)
+            
+            % Test indexation
+            firstField = scan(1, :, :, :, :);
+            testCase.assertequalshapeandsum(firstField, [360, 120, 2, 10], 148674123)
+            firstRow = scan(:, 1,  :, :, :);
+            testCase.assertequalshapeandsum(firstRow, [204, 120, 2, 10], 70350224)
+            firstColumn = scan(:, :, 1, :, :);
+            testCase.assertequalshapeandsum(firstColumn, [204, 360, 2, 10], 160588726)
+            firstChannel = scan(:, :, :, 1, :);
+            testCase.assertequalshapeandsum(firstChannel, [204, 360, 120, 10], 26825949131)
+            firstFrame = scan(:, :, :, :, 1);
+            testCase.assertequalshapeandsum(firstFrame, [204, 360, 120, 2], 2952050950)
         end
     end
     
