@@ -1,4 +1,4 @@
-classdef BaseStack < ne7.scanreader.scans.BaseScan
+classdef (Abstract) BaseStack < ne7.scanreader.scans.BaseScan
     % BASESTACK Properties and methods shared among all stack versions.
 
     properties (Dependent)

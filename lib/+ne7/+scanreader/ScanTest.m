@@ -88,7 +88,7 @@ classdef ScanTest < matlab.unittest.TestCase
             % 2016b MultiROI
             scan = ne7.scanreader.readscan(testCase.scanFile2016bMultiroiHard);
             testCase.verifyEqual(scan.version, '2016b')
-            testCase.verifyEqual(scan.nFields,4)
+            testCase.verifyEqual(scan.nFields, 4)
             testCase.verifyEqual(scan.nChannels, 2)
             testCase.verifyEqual(scan.nFrames, 10)
             testCase.verifyEqual(scan.nScanningDepths, 3)
@@ -318,6 +318,7 @@ classdef ScanTest < matlab.unittest.TestCase
             testCase.verifyEqual(scan.usesFastZ, true)
             testCase.verifyEqual(scan.nRequestedFrames, 500)
             testCase.verifyEqual(scan.scannerType, 'Resonant')
+            testCase.verifyEqual(scan.motorPositionAtZero, [0, 0, 0])
             
             testCase.verifyEqual(scan.nRois, 2)
             testCase.verifyEqual(scan.fieldHeights, [500, 500, 500, 500, 500])
