@@ -39,13 +39,14 @@ classdef (Abstract) BaseScan < handle
         usesFastZ % whether scan was recorded with FastZ/Piezo on
         nRequestedFrames % number of requested frames
         scannerType % type of scanner
-        motorPositionAtZero % motor position (x, y and z in microns) at ScanImage's (0, 0)
+        motorPositionAtZero % motor position (x, y and z in microns) at ScanImage's (0, 0)   
     end
     properties (SetAccess = private, Dependent, Hidden)
         pageHeight % height of the tiff page
         pageWidth % width of the tiff page
         nFlyBackLines % lines/mirror cycles it takes to move from one depth to the next
         pagesPerFile % number of pages per tiff file
+        initialFrameNumber % number of the first scanimage frame in scan.
     end
     properties (SetAccess = private, Dependent, Abstract)
         nFields % number of fields
@@ -159,6 +160,12 @@ classdef (Abstract) BaseScan < handle
             pattern = 'Image Width: (.*)';
             match = regexp(obj.header, pattern, 'tokens', 'dotexceptnewline');
             if ~isempty(match) pageWidth = str2double(match{1}{1}); end
+        end
+        
+        function initialFrameNumber = get.initialFrameNumber(obj)
+            pattern = 'frameNumbers = (.*)';
+            match = regexp(obj.header, pattern, 'tokens', 'dotexceptnewline');
+            if ~isempty(match) initialFrameNumber = str2double(match{1}{1}); end
         end
         
         
