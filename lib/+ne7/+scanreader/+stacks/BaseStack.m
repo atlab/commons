@@ -2,7 +2,10 @@ classdef (Abstract) BaseStack < ne7.scanreader.scans.BaseScan
     % BASESTACK Properties and methods shared among all stack versions.
 
     properties (Dependent)
-        requestedScanningDepths
+        requestedScanningDepths  % number of planes requested for this stack
+    end
+    properties (SetAccess = private, Dependent, Hidden)
+        nAveragedFrames  % how many requested frames are averaged to form one saved frame
     end
     properties
         requestedScanningDepths_
@@ -10,7 +13,7 @@ classdef (Abstract) BaseStack < ne7.scanreader.scans.BaseScan
     
     methods    
         function nFrames = getNFrames(obj)
-            nFrames = obj.nRequestedFrames;
+            nFrames = obj.nRequestedFrames / obj.nAveragedFrames;
         end
         
         function nScanningDepths = getNScanningDepths(obj)
@@ -34,6 +37,12 @@ classdef (Abstract) BaseStack < ne7.scanreader.scans.BaseScan
             end
             
             scanningDepths = obj.requestedScanningDepths(1:obj.nScanningDepths);
+        end
+        
+        function nAveragedFrames = get.nAveragedFrames(obj)
+            pattern = 'hScan2D\.logAverageFactor = (.*)';
+            match = regexp(obj.header, pattern, 'tokens', 'dotexceptnewline');
+            if ~isempty(match) nAveragedFrames = str2double(match{1}{1}); end
         end
     end
     
