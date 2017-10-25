@@ -31,9 +31,9 @@ classdef (Abstract) BaseScan < handle
         nFrames % number of frames
         isMultiROI % true if scan is multiROI
         isBidirectional % true if scan is bidirectional
+        scannerFrequency % scanner frequency (Hz)
         secondsPerLine % time it takes to scan a line
         fps % frames per seconds
-        scannerFrequency % scanner frequency (Hz)
         spatialFillFraction
         temporalFillFraction
         usesFastZ % whether scan was recorded with FastZ/Piezo on
@@ -136,10 +136,24 @@ classdef (Abstract) BaseScan < handle
             end
         end
         
-        function secondsPerLine = get.secondsPerLine(obj)
-            pattern = 'hRoiManager\.linePeriod = (.*)';
+        function scannerFrequency = get.scannerFrequency(obj)
+            pattern = 'hScan2D\.scannerFrequency = (.*)';
             match = regexp(obj.header, pattern, 'tokens', 'dotexceptnewline');
-            if ~isempty(match) secondsPerLine = str2double(match{1}{1}); end
+            if ~isempty(match) scannerFrequency = str2double(match{1}{1}); end
+        end      
+        
+        function secondsPerLine = get.secondsPerLine(obj)
+            if ~isnan(obj.scannerFrequency)
+                if obj.isBidirectional 
+                    secondsPerLine = 1 / (2 * obj.scannerFrequency);
+                else
+                    secondsPerLine = 1 / obj.scannerFrequency;
+                end
+            else
+                pattern = 'hRoiManager\.linePeriod = (.*)';
+                match = regexp(obj.header, pattern, 'tokens', 'dotexceptnewline');
+                if ~isempty(match) secondsPerLine = str2double(match{1}{1}); end
+            end
         end
         
         function pageHeight = get.pageHeight(obj)
@@ -166,12 +180,6 @@ classdef (Abstract) BaseScan < handle
             pattern = 'hRoiManager\.scanVolumeRate = (.*)';
             match = regexp(obj.header, pattern, 'tokens', 'dotexceptnewline');
             if ~isempty(match) fps = str2double(match{1}{1}); end
-        end
-        
-        function scannerFrequency = get.scannerFrequency(obj)
-            pattern = 'hScan2D\.scannerFrequency = (.*)';
-            match = regexp(obj.header, pattern, 'tokens', 'dotexceptnewline');
-            if ~isempty(match) scannerFrequency = str2double(match{1}{1}); end
         end
         
         function spatialFillFraction = get.spatialFillFraction(obj)

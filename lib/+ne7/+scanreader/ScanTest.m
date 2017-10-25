@@ -42,7 +42,7 @@ classdef ScanTest < matlab.unittest.TestCase
             testCase.verifyEqual(scan.isMultiROI, false)
             testCase.verifyEqual(scan.isBidirectional, true)
             testCase.verifyEqual(scan.scannerFrequency, 7920.62)
-            testCase.verifyEqual(scan.secondsPerLine, 6.31264e-05)
+            testCase.verifyEqual(scan.secondsPerLine, 6.31264e-05, 'relTol', 1e-5)
             testCase.verifyEqual(scan.fps, 11.0467)
             testCase.verifyEqual(scan.spatialFillFraction, 0.9)
             testCase.verifyEqual(scan.temporalFillFraction, 0.712867)
@@ -68,7 +68,7 @@ classdef ScanTest < matlab.unittest.TestCase
             testCase.verifyEqual(scan.isMultiROI, false)
             testCase.verifyEqual(scan.isBidirectional, false)
             testCase.verifyEqual(scan.scannerFrequency, 7926.87)
-            testCase.verifyEqual(scan.secondsPerLine, 0.000126153)
+            testCase.verifyEqual(scan.secondsPerLine, 0.000126153, 'relTol', 1e-5)
             testCase.verifyEqual(scan.fps, 30.0255)
             testCase.verifyEqual(scan.spatialFillFraction, 0.9)
             testCase.verifyEqual(scan.temporalFillFraction, 0.712867)
@@ -97,7 +97,7 @@ classdef ScanTest < matlab.unittest.TestCase
             testCase.verifyEqual(scan.isMultiROI, true)
             testCase.verifyEqual(scan.isBidirectional, true)
             testCase.verifyEqual(scan.scannerFrequency, 12045.5)
-            testCase.verifyEqual(scan.secondsPerLine, 4.15092e-05)
+            testCase.verifyEqual(scan.secondsPerLine, 4.15092e-05, 'relTol', 1e-5)
             testCase.verifyEqual(scan.fps, 5.00651)
             testCase.verifyEqual(scan.spatialFillFraction, 0.9)
             testCase.verifyEqual(scan.temporalFillFraction, 0.712867)
@@ -114,9 +114,9 @@ classdef ScanTest < matlab.unittest.TestCase
             testCase.verifyEqual(scan.fieldMasks, {ones(800, 512), ones(800, 512), ...
                 2 * ones(512, 512), 2 * ones(512, 512)});
             testCase.verifyEqual(cellfun(@(offsets) max(max(offsets)), scan.fieldOffsets), ...
-                [0.033205, 0.099786, 0.127099, 0.154412], 'absTol', 1e-4)
-            testCase.verifyEqual(scan.fieldHeightsInMicrons, [800, 800, 500, 613.21963], 'absTol', 1e-4)
-            testCase.verifyEqual(scan.fieldWidthsInMicrons, [400, 400, 400, 400], 'absTol', 1e-4)
+                [0.033205, 0.099786, 0.127099, 0.154412], 'relTol', 1e-5)
+            testCase.verifyEqual(scan.fieldHeightsInMicrons, [800, 800, 500, 613.21963], 'relTol', 1e-5)
+            testCase.verifyEqual(scan.fieldWidthsInMicrons, [400, 400, 400, 400], 'relTol', 1e-5)
             
         end
         
@@ -311,7 +311,7 @@ classdef ScanTest < matlab.unittest.TestCase
             testCase.verifyEqual(scan.isMultiROI, true)
             testCase.verifyEqual(scan.isBidirectional, true)
             testCase.verifyEqual(scan.scannerFrequency, 12045.4)
-            testCase.verifyEqual(scan.secondsPerLine, 4.15097e-05)
+            testCase.verifyEqual(scan.secondsPerLine, 4.15097e-05, 'relTol', 1e-5)
             testCase.verifyEqual(scan.fps, 3.72926)
             testCase.verifyEqual(scan.spatialFillFraction, 0.9)
             testCase.verifyEqual(scan.temporalFillFraction, 0.712867)
@@ -328,9 +328,9 @@ classdef ScanTest < matlab.unittest.TestCase
             roiMask = ones(500, 500); roiMask(:, 251:500) = 2;
             testCase.verifyEqual(scan.fieldMasks, {roiMask, roiMask, roiMask, roiMask, roiMask})
             testCase.verifyEqual(cellfun(@(offsets) max(max(offsets)), scan.fieldOffsets), ...
-                [0.047568, 0.101198, 0.154829, 0.208460, 0.262090], 'absTol', 1e-4)
-            testCase.verifyEqual(scan.fieldHeightsInMicrons, [1000, 1000, 1000, 1000, 1000], 'absTol', 1e-4)
-            testCase.verifyEqual(scan.fieldWidthsInMicrons, [1000, 1000, 1000, 1000, 1000], 'absTol', 1e-4)
+                [0.047568, 0.101198, 0.154829, 0.208460, 0.262090], 'relTol', 1e-5)
+            testCase.verifyEqual(scan.fieldHeightsInMicrons, [1000, 1000, 1000, 1000, 1000], 'relTol', 1e-5)
+            testCase.verifyEqual(scan.fieldWidthsInMicrons, [1000, 1000, 1000, 1000, 1000], 'relTol', 1e-5)
             
             % Test it can be obtained as array
             scanAsArray = scan();

@@ -32,7 +32,7 @@ classdef StackTest < matlab.unittest.TestCase
             testCase.verifyEqual(scan.isMultiROI, false)
             testCase.verifyEqual(scan.isBidirectional, false)
             testCase.verifyEqual(scan.scannerFrequency, 7919.95)
-            testCase.verifyEqual(scan.secondsPerLine, 0.000126264)
+            testCase.verifyEqual(scan.secondsPerLine, 0.000126264, 'relTol', 1e-5)
             testCase.verifyEqual(scan.fps, 0.0486657)
             testCase.verifyEqual(scan.spatialFillFraction, 0.9)
             testCase.verifyEqual(scan.temporalFillFraction, 0.712867)
@@ -58,7 +58,7 @@ classdef StackTest < matlab.unittest.TestCase
             testCase.verifyEqual(scan.isMultiROI, true)
             testCase.verifyEqual(scan.isBidirectional, true)
             testCase.verifyEqual(scan.scannerFrequency, 12039.1)
-            testCase.verifyEqual(scan.secondsPerLine, 4.15312e-05)
+            testCase.verifyEqual(scan.secondsPerLine, 4.15312e-05, 'relTol', 1e-5)
             testCase.verifyEqual(scan.fps, 0.244914)
             testCase.verifyEqual(scan.spatialFillFraction, 0.9)
             testCase.verifyEqual(scan.temporalFillFraction, 0.712867)
@@ -72,8 +72,8 @@ classdef StackTest < matlab.unittest.TestCase
             testCase.verifyEqual(scan.fieldWidths, repmat(120, 1, 204))
             testCase.verifyEqual(scan.fieldSlices, reshape(repmat(1:51, 4, 1), 1, 204))
             testCase.verifyEqual(scan.fieldRois, num2cell(repmat(1:4, 1, 51)))
-            testCase.verifyEqual(scan.fieldHeightsInMicrons, repmat(1800, 1, 204), 'absTol', 1e-4)
-            testCase.verifyEqual(scan.fieldWidthsInMicrons, repmat(600, 1, 204), 'absTol', 1e-4)
+            testCase.verifyEqual(scan.fieldHeightsInMicrons, repmat(1800, 1, 204), 'relTol', 1e-5)
+            testCase.verifyEqual(scan.fieldWidthsInMicrons, repmat(600, 1, 204), 'relTol', 1e-5)
         end
         
         function test5_1(testCase)
