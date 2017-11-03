@@ -69,7 +69,9 @@ classdef ScanMultiROI < ne7.scanreader.scans.BaseScan
         end
         
         function fieldOffsets = get.fieldOffsets(obj)
-            fieldOffsets = arrayfun(@(field) field.offsetMask, obj.fields, 'uniformOutput', false);
+            if ~obj.isSlowStack
+                fieldOffsets = arrayfun(@(field) field.offsetMask, obj.fields, 'uniformOutput', false);
+            end
         end
               
         function fieldHeightsInMicrons = get.fieldHeightsInMicrons(obj)
