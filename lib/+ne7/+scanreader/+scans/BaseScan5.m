@@ -46,13 +46,11 @@ classdef (Abstract) BaseScan5 < ne7.scanreader.scans.BaseScan
         
         function fieldOffsets = get.fieldOffsets(obj)
             % Seconds elapsed between start of frame scanning and each pixel.
-            if ~obj.isSlowStack
-                nextLine = 0;
-                fieldOffsets = {};
-                for i = 1:obj.nFields
-                    fieldOffsets = [fieldOffsets, obj.computeoffsets(obj.imageHeight, nextLine)];
-                    nextLine = nextLine + obj.imageHeight + obj.nFlyBackLines;
-                end
+            nextLine = 0;
+            fieldOffsets = {};
+            for i = 1:obj.nFields
+                fieldOffsets = [fieldOffsets, obj.computeoffsets(obj.imageHeight, nextLine)];
+                nextLine = nextLine + obj.nLinesBetweenFields;
             end
         end
         

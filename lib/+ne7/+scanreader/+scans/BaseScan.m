@@ -49,6 +49,7 @@ classdef (Abstract) BaseScan < handle
         nAveragedFrames % number of requested frames are averaged to form one saved frame
         initialFrameNumber % number of the first scanimage frame in scan
         nFlyBackLines % lines/mirror cycles it takes to move from one depth to the next
+        nLinesBetweenFields % lines/mirror cycles scanned from the start of one field to the next.
     end
     properties (SetAccess = private, Dependent, Abstract)
         nFields % number of fields
@@ -256,6 +257,16 @@ classdef (Abstract) BaseScan < handle
             if ~isempty(match)
                 flyBackSeconds = str2double(match{1}{1});
                 nFlyBackLines = obj.secondstolines(flyBackSeconds);
+            end
+        end
+        
+        function nLinesBetweenFields = get.nLinesBetweenFields(obj)
+            % Lines/mirror cycles scanned from the start of one field to the start of the next.
+            if obj.isSlowStack
+                nLinesBetweenFields = (obj.pageHeight + obj.nFlyBackLines) * ...
+                    (obj.nFrames * obj.nAveragedFrames);
+            else
+                nLinesBetweenFields = obj.pageHeight + obj.nFlyBackLines;
             end
         end
         

@@ -69,9 +69,7 @@ classdef ScanMultiROI < ne7.scanreader.scans.BaseScan
         end
         
         function fieldOffsets = get.fieldOffsets(obj)
-            if ~obj.isSlowStack
-                fieldOffsets = arrayfun(@(field) field.offsetMask, obj.fields, 'uniformOutput', false);
-            end
+            fieldOffsets = arrayfun(@(field) field.offsetMask, obj.fields, 'uniformOutput', false);
         end
               
         function fieldHeightsInMicrons = get.fieldHeightsInMicrons(obj)
@@ -277,7 +275,7 @@ classdef ScanMultiROI < ne7.scanreader.scans.BaseScan
                 end
                 
                 % Accumulate overall number of scanned lines
-                previousLines = previousLines + obj.pageHeight + obj.nFlyBackLines;
+                previousLines = previousLines + obj.nLinesBetweenFields;
             end      
         end
         
