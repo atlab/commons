@@ -5,11 +5,12 @@ classdef (Abstract) BaseScan5 < ne7.scanreader.scans.BaseScan
     properties (SetAccess = private, Dependent) % inherited abstract properties
         nFields % number of fields
         fieldDepths % scaning depths per field
+        fieldOffsets % seconds elapsed between start of frame scanning and each pixel.
     end
     properties (SetAccess = private, Dependent)
-       imageHeight 
-       imageWidth
-       zoom % amount of zoom used during scanning
+        imageHeight 
+        imageWidth
+        zoom % amount of zoom used during scanning
     end
     properties (SetAccess = private, Dependent, Hidden)
         yAngleScaleFactor % angle range in y is scaled by this factor
@@ -41,6 +42,16 @@ classdef (Abstract) BaseScan5 < ne7.scanreader.scans.BaseScan
             pattern = 'hRoiManager\.scanZoomFactor = (.*)';
             match = regexp(obj.header, pattern, 'tokens', 'dotexceptnewline');
             if ~isempty(match) zoom = str2double(match{1}{1}); end 
+        end
+        
+        function fieldOffsets = get.fieldOffsets(obj)
+            % Seconds elapsed between start of frame scanning and each pixel.
+            nextLine = 0;
+            fieldOffsets = {};
+            for i = 1:obj.nFields
+                fieldOffsets = [fieldOffsets, obj.computeoffsets(obj.imageHeight, nextLine)];
+                nextLine = nextLine + obj.nLinesBetweenFields;
+            end
         end
         
         function yAngleScaleFactor = get.yAngleScaleFactor(obj)

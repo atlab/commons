@@ -275,7 +275,7 @@ classdef ScanMultiROI < ne7.scanreader.scans.BaseScan
                 end
                 
                 % Accumulate overall number of scanned lines
-                previousLines = previousLines + obj.pageHeight + obj.nFlyBackLines;
+                previousLines = previousLines + obj.nLinesBetweenFields;
             end      
         end
         

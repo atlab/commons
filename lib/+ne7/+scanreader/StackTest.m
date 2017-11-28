@@ -3,6 +3,7 @@ classdef StackTest < matlab.unittest.TestCase
     properties
        dataDir = '/home/ecobost/Documents/scanreader/data'
        stackFile5_1 % 2 channels, 60 slices
+       stackFile2016b % 1 channel, 1 slice, mroiEnable = false
        stackFile5_1Multifiles % second has 10 slices
        stackFile2016bMultiroi % 2 channels, 50 slices, 4 fields per slice
     end
@@ -10,6 +11,7 @@ classdef StackTest < matlab.unittest.TestCase
     methods (TestClassSetup)
         function createfilenames(testCase)
             testCase.stackFile5_1 = fullfile(testCase.dataDir, 'stack_5_1_001.tif');
+            testCase.stackFile2016b = fullfile(testCase.dataDir, 'stack_2016b.tif');
             testCase.stackFile5_1Multifiles = {fullfile(testCase.dataDir, 'stack_5_1_001.tif'), fullfile(testCase.dataDir, 'stack_5_1_002.tif')};
             testCase.stackFile2016bMultiroi = fullfile(testCase.dataDir, 'stack_2016b_multiroi_001.tif');
         end
@@ -20,24 +22,24 @@ classdef StackTest < matlab.unittest.TestCase
         function testattributes (testCase)
             
             % 5.1
-            scan = ne7.scanreader.readstack(testCase.stackFile5_1);
+            scan = ne7.scanreader.readscan(testCase.stackFile5_1);
             testCase.verifyEqual(scan.version, '5.1')
-            testCase.verifyEqual(scan.nFields, 60)
-            testCase.verifyEqual(scan.nChannels, 2)
-            testCase.verifyEqual(scan.nFrames, 25)
-            testCase.verifyEqual(scan.nScanningDepths, 60)
-            testCase.verifyEqual(scan.requestedScanningDepths, 0:309)
-            testCase.verifyEqual(scan.scanningDepths, 0:59)
-            testCase.verifyEqual(scan.fieldDepths, 0:59)
+            testCase.verifyEqual(scan.isSlowStack, true)
             testCase.verifyEqual(scan.isMultiROI, false)
+            testCase.verifyEqual(scan.nChannels, 2)
+            testCase.verifyEqual(scan.requestedScanningDepths, 0:309)
+            testCase.verifyEqual(scan.nScanningDepths, 60)
+            testCase.verifyEqual(scan.scanningDepths, 0:59)
+            testCase.verifyEqual(scan.nRequestedFrames, 25)
+            testCase.verifyEqual(scan.nFrames, 25)
             testCase.verifyEqual(scan.isBidirectional, false)
             testCase.verifyEqual(scan.scannerFrequency, 7919.95)
-            testCase.verifyEqual(scan.secondsPerLine, 0.000126264, 'absTol', 1e-5)
+            testCase.verifyEqual(scan.secondsPerLine, 0.000126264, 'relTol', 1e-5)
+            testCase.verifyEqual(scan.nFields, 60)
+            testCase.verifyEqual(scan.fieldDepths, 0:59)
             testCase.verifyEqual(scan.fps, 0.0486657)
             testCase.verifyEqual(scan.spatialFillFraction, 0.9)
             testCase.verifyEqual(scan.temporalFillFraction, 0.712867)
-            testCase.verifyEqual(scan.usesFastZ, false)
-            testCase.verifyEqual(scan.nRequestedFrames, 25)
             testCase.verifyEqual(scan.scannerType, 'Resonant')
             testCase.verifyEqual(scan.motorPositionAtZero, [0.5, 0, -320.4])
             
@@ -46,24 +48,54 @@ classdef StackTest < matlab.unittest.TestCase
             testCase.verifyEqual(size(scan), [60, 512, 512, 2, 25])
             testCase.verifyEqual(scan.zoom, 2.1)
             
-            % 2016b MultiROI
-            scan = ne7.scanreader.readstack(testCase.stackFile2016bMultiroi);
+            % 2016b
+            scan = ne7.scanreader.readscan(testCase.stackFile2016b);
             testCase.verifyEqual(scan.version, '2016b')
-            testCase.verifyEqual(scan.nFields, 204)
+            testCase.verifyEqual(scan.isSlowStack, true)
+            testCase.verifyEqual(scan.isMultiROI, false)
+            testCase.verifyEqual(scan.nChannels, 1)
+            testCase.verifyEqual(scan.requestedScanningDepths, [0])
+            testCase.verifyEqual(scan.nScanningDepths, 1)
+            testCase.verifyEqual(scan.scanningDepths, [0])
+            testCase.verifyEqual(scan.nRequestedFrames, 4000)
+            testCase.verifyEqual(scan.nFrames, 200)
+            testCase.verifyEqual(scan.isBidirectional, false)
+            testCase.verifyEqual(scan.scannerFrequency, 7926.87)
+            testCase.verifyEqual(scan.secondsPerLine, 0.000126153, 'relTol', 1e-5)
+            testCase.verifyEqual(scan.nFields, 1)
+            testCase.verifyEqual(scan.fieldDepths, [0])
+            testCase.verifyEqual(scan.fps, 30.0255)
+            testCase.verifyEqual(scan.spatialFillFraction, 0.9)
+            testCase.verifyEqual(scan.temporalFillFraction, 0.712867)
+            testCase.verifyEqual(scan.scannerType, 'Resonant')
+            testCase.verifyEqual(scan.motorPositionAtZero, [1359.5, 46710.5, -5323])
+            
+            testCase.verifyEqual(scan.imageHeight, 256)
+            testCase.verifyEqual(scan.imageWidth, 256)
+            testCase.verifyEqual(size(scan), [1, 256, 256, 1, 200])
+            testCase.verifyEqual(scan.zoom, 1.9)
+            testCase.verifyEqual(scan.imageHeightInMicrons, 307.08)
+            testCase.verifyEqual(scan.imageWidthInMicrons, 307.08)
+            
+            % 2016b MultiROI
+            scan = ne7.scanreader.readscan(testCase.stackFile2016bMultiroi);
+            testCase.verifyEqual(scan.version, '2016b')
+            testCase.verifyEqual(scan.isSlowStack, true)
+            testCase.verifyEqual(scan.isMultiROI, true)
             testCase.verifyEqual(scan.nChannels, 2)
-            testCase.verifyEqual(scan.nFrames, 10)
+            testCase.verifyEqual(scan.requestedScanningDepths, 150:-1:100)
             testCase.verifyEqual(scan.nScanningDepths, 51)
             testCase.verifyEqual(scan.scanningDepths, 150:-1:100)
-            testCase.verifyEqual(scan.fieldDepths, reshape(repmat(150:-1:100, 4, 1), 1, 204))
-            testCase.verifyEqual(scan.isMultiROI, true)
+            testCase.verifyEqual(scan.nRequestedFrames, 10)
+            testCase.verifyEqual(scan.nFrames, 10)
             testCase.verifyEqual(scan.isBidirectional, true)
             testCase.verifyEqual(scan.scannerFrequency, 12039.1)
-            testCase.verifyEqual(scan.secondsPerLine, 4.15312e-05, 'absTol', 1e-5)
+            testCase.verifyEqual(scan.secondsPerLine, 4.15312e-05, 'relTol', 1e-5)
+            testCase.verifyEqual(scan.nFields, 204)
+            testCase.verifyEqual(scan.fieldDepths, reshape(repmat(150:-1:100, 4, 1), 1, 204))
             testCase.verifyEqual(scan.fps, 0.244914)
             testCase.verifyEqual(scan.spatialFillFraction, 0.9)
             testCase.verifyEqual(scan.temporalFillFraction, 0.712867)
-            testCase.verifyEqual(scan.usesFastZ, false)
-            testCase.verifyEqual(scan.nRequestedFrames, 10)
             testCase.verifyEqual(scan.scannerType, 'Resonant')
             testCase.verifyEqual(scan.motorPositionAtZero, [0, 0, 0])
             
@@ -72,12 +104,12 @@ classdef StackTest < matlab.unittest.TestCase
             testCase.verifyEqual(scan.fieldWidths, repmat(120, 1, 204))
             testCase.verifyEqual(scan.fieldSlices, reshape(repmat(1:51, 4, 1), 1, 204))
             testCase.verifyEqual(scan.fieldRois, num2cell(repmat(1:4, 1, 51)))
-            testCase.verifyEqual(scan.fieldHeightsInMicrons, repmat(1800, 1, 204), 'absTol', 1e-4)
-            testCase.verifyEqual(scan.fieldWidthsInMicrons, repmat(600, 1, 204), 'absTol', 1e-4)
+            testCase.verifyEqual(scan.fieldHeightsInMicrons, repmat(1800, 1, 204), 'relTol', 1e-5)
+            testCase.verifyEqual(scan.fieldWidthsInMicrons, repmat(600, 1, 204), 'relTol', 1e-5)
         end
         
         function test5_1(testCase)
-            scan = ne7.scanreader.readstack(testCase.stackFile5_1);
+            scan = ne7.scanreader.readscan(testCase.stackFile5_1);
             
             % Test it can be obtained as array
             scanAsArray = scan();
@@ -97,7 +129,7 @@ classdef StackTest < matlab.unittest.TestCase
         end
         
         function test5_1multifile(testCase)
-            scan = ne7.scanreader.readstack(testCase.stackFile5_1Multifiles);
+            scan = ne7.scanreader.readscan(testCase.stackFile5_1Multifiles);
             
             % Test it can be obtained as array
             scanAsArray = scan();
@@ -116,8 +148,28 @@ classdef StackTest < matlab.unittest.TestCase
             testCase.assertequalshapeandsum(firstFrame, [70, 512, 512, 2], 79887927681)
         end
         
+        function test2016b(testCase)
+            scan = ne7.scanreader.readscan(testCase.stackFile2016b);
+            
+            % Test it can be obtained as array
+            scanAsArray = scan();
+            testCase.assertequalshapeandsum(scanAsArray, [1, 256, 256, 1, 200], -7855587)
+            
+            % Test indexation
+            firstField = scan(1, :, :, :, :);
+            testCase.assertequalshapeandsum(firstField, [256, 256, 1, 200], -7855587)
+            firstRow = scan(:, 1,  :, :, :);
+            testCase.assertequalshapeandsum(firstRow, [1, 256, 1, 200], -30452)
+            firstColumn = scan(:, :, 1, :, :);
+            testCase.assertequalshapeandsum(firstColumn, [1, 256, 1, 200], -31680)
+            firstChannel = scan(:, :, :, 1, :);
+            testCase.assertequalshapeandsum(firstChannel, [1, 256, 256, 200], -7855587)
+            firstFrame = scan(:, :, :, :, 1);
+            testCase.assertequalshapeandsum(firstFrame, [1, 256, 256], -42389)
+        end
+        
         function test2016bmultiroi(testCase)
-            scan = ne7.scanreader.readstack(testCase.stackFile2016bMultiroi);
+            scan = ne7.scanreader.readscan(testCase.stackFile2016bMultiroi);
             
             % Test it can be obtained as array
             scanAsArray = scan();
