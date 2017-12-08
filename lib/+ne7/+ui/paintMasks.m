@@ -1,22 +1,32 @@
-function masks = paintMasks(im)
+function masks = paintMasks(im , masks)
 % lets the user outline masks in the image on the current axis
 
+% use masks if provided 
+if nargin<2
+    masks = zeros(size(im,1),size(im,2)); 
+    colors = 0;
+    neuron = 0;
+else
+    neuron = max(masks(:));
+    colors = [0 rand(1,neuron)];
+end
+
 % process image for assisted segmentation
-processed_image = (imfilter(imfill(im),gausswin(2)*gausswin(2)'));
+processed_image = im;  if size(im,3)>1; processed_image = mean(rgb2gray(im),3);end
+processed_image = (imfilter(imfill(processed_image),gausswin(2)*gausswin(2)'));
 
 % initialize parameters
-original_im = im;
+original_im = im; 
+hthr = 99.9; % highlights threshold value
 radius = 10; % mask pixel radius
 sz = size(im);
-masks = zeros(sz);
-colors = 0;
 sat = 0.5;
+val = 0.5;
 sat_tog = 0.5;
 undoBuffer = {masks};
 winsz = 32; % max size of the pointer window
 running = true;
 drawing = false;
-neuron = 0;
 xLoc = 0;
 yLoc = 0;
 assisted = false;
@@ -26,6 +36,7 @@ fit_mask = zeros(winsz,winsz);
 ppitch = 1;
 contrast = 0.5;
 hp =[];
+threshold = false;
 
 % normalize image
 normalize = @(x) (x - min(x(:)))./(max(x(:))-min(x(:))); 
@@ -39,6 +50,7 @@ hf = figure('NumberTitle','off',...
     'HitTest','off',...
     'units','normalized');
 f_pos = get(hf,'outerposition');
+set(gcf,'color',[0.3 0.3 0.3])
 set(hf,'units','pixels')
 h = image(im);
 axis image
@@ -51,7 +63,7 @@ hold on
 
 % wait until done
 while running && nargout>0
-    try if ~ishandle(h);break;end;catch;break;end
+    try if ~ishandle(h);masks = [];break;end;catch;break;end
     pause(0.1);
 end
 
@@ -86,16 +98,37 @@ function dispkeyevent(~, event)
             set(hf,'units','pixels')
         case 'comma' % decrease contrast
             if contrast>0.1
+                im = normalize(original_im);
+                if threshold
+                    im(im>prctile(im(:),hthr)) = prctile(im(:),hthr);
+                    im = normalize(im);
+                end
                 contrast = contrast-0.05;
-                im = normalize(original_im.^contrast);
+                im = normalize(im.^contrast);
                 redraw
             end
         case 'period' % increase contrast
             if contrast<2
+                im = normalize(original_im);
+                if threshold
+                    im(im>prctile(im(:),hthr)) = prctile(im(:),hthr);
+                    im = normalize(im);
+                end
                 contrast = contrast+0.1;
-                im = normalize(original_im.^contrast);
+                im = normalize(im.^contrast);
                 redraw
             end
+        case 't' % threshold
+            im = normalize(original_im);
+            if ~threshold
+                threshold = true;
+                im(im>prctile(im(:),hthr)) = prctile(im(:),hthr);
+            else
+                threshold = false;
+            end
+            processed_image = (imfilter(imfill(im),gausswin(2)*gausswin(2)'));
+            im = normalize(im.^contrast);
+            redraw
         case 'backspace' % UNDO
             if length(undoBuffer)>1
                 masks = undoBuffer{end-1};
@@ -119,6 +152,16 @@ function dispkeyevent(~, event)
         case 'rightbracket'
             if sat<=0.9
                 sat = sat+0.1;
+                redraw
+            end
+        case 'leftbracket'
+            if val>=0.1
+                val = val-0.1;
+                redraw
+            end
+        case 'rightbracket'
+            if val<=0.9
+                val = val+0.1;
                 redraw
             end
         case 'escape'
@@ -212,10 +255,12 @@ function redraw
     % make image with colored masks
     map(:,:,1) = colors(masks+1);
     map(:,:,2) = sat*(masks>0);
-    map(:,:,3) = im;
+    map(:,:,3) = val*(masks>0);
+    
+    map = imfuse(hsv2rgb(map),im,'blend');
     
     % show image
-    h.CData = hsv2rgb(map);
+    h.CData = map;
     set(gcf,'name',sprintf('Mask#: %d', length(unique(masks(:)))-1))
 end
 
@@ -273,7 +318,7 @@ function adjMaskFit(varargin)
         return
     end
     try delete(hp);end
-    fit_center = zeros(sz);
+    fit_center = zeros(sz(1),sz(2));
     fit_center(round(yLoc),round(xLoc)) = 1;
     fit_mask = imsegfmm(processed_image, fit_center>0, thresh);
     bounds = bwboundaries(fit_mask,4);
@@ -358,6 +403,7 @@ function printInstructions
     disp '. to increase contrast'
     disp 'Press "a" for assisted selection'
     disp 'Press "f" for full screen'
+    fprintf('Press "t" to limit values under %.1f%%\n',hthr)
     disp 'Press BACKSPACE to undo'
     disp 'Press SPACE to toggle outlines'
     disp 'Press ESC to discard all edits'
