@@ -1,6 +1,10 @@
 function masks = paintMasks(im , masks)
 % lets the user outline masks in the image on the current axis
 
+% store backgrounds if multiple provided
+all_images = im;
+im = im(:,:,:,1);
+
 % use masks if provided 
 if nargin<2
     masks = zeros(size(im,1),size(im,2)); 
@@ -11,18 +15,16 @@ else
     colors = [0 rand(1,neuron)];
 end
 
-% process image for assisted segmentation
-processed_image = im;  if size(im,3)>1; processed_image = mean(rgb2gray(im),3);end
-processed_image = (imfilter(imfill(processed_image),gausswin(2)*gausswin(2)'));
-
 % initialize parameters
-original_im = im; 
+processed_image = [];
+original_im = []; 
 hthr = 99.9; % highlights threshold value
 radius = 10; % mask pixel radius
 sz = size(im);
 sat = 0.5;
 val = 0.5;
 sat_tog = 0.5;
+val_tog = 0.5;
 undoBuffer = {masks};
 winsz = 32; % max size of the pointer window
 running = true;
@@ -40,9 +42,9 @@ threshold = false;
 
 % normalize image
 normalize = @(x) (x - min(x(:)))./(max(x(:))-min(x(:))); 
-im = normalize(im.^contrast); 
 
 % Plot
+prepareImage
 hf = figure('NumberTitle','off',...
     'Name','Paint masks',...
     'KeyPressFcn',@dispkeyevent,...
@@ -138,10 +140,13 @@ function dispkeyevent(~, event)
         case 'space'  % SPACE - toggle outlines
             if sat>0
                 sat_tog = sat;
+                val_tog = val;
                 sat = 0;
+                val = 0;
                 redraw
             else
                 sat = sat_tog;
+                val = val_tog;
                 redraw
             end
         case 'leftbracket'
@@ -154,12 +159,12 @@ function dispkeyevent(~, event)
                 sat = sat+0.1;
                 redraw
             end
-        case 'leftbracket'
+        case 'semicolon'
             if val>=0.1
                 val = val-0.1;
                 redraw
             end
-        case 'rightbracket'
+        case 'quote'
             if val<=0.9
                 val = val+0.1;
                 redraw
@@ -177,11 +182,24 @@ function dispkeyevent(~, event)
                 running = false;
                 close(gcf)
             end
+        case cellfun(@(x) num2str(x),num2cell(1:size(all_images,4)),'uni',0)
+            im = all_images(:,:,:,str2num(event.Key));
+            prepareImage
+            redraw
         otherwise
             disp '---'
             disp(['key: "' event.Key '" not assigned!'])
             printInstructions
     end
+end
+
+% prepare image
+function prepareImage
+    % process image for assisted segmentation
+    processed_image = im;  if size(im,3)>1; processed_image = mean(rgb2gray(im),3);end
+    processed_image = (imfilter(imfill(processed_image),gausswin(2)*gausswin(2)'));
+    original_im = im; 
+    im = normalize(im.^contrast); 
 end
 
 % update masks
@@ -257,7 +275,12 @@ function redraw
     map(:,:,2) = sat*(masks>0);
     map(:,:,3) = val*(masks>0);
     
-    map = imfuse(hsv2rgb(map),im,'blend');
+    if size(im,3)>2
+        map = imfuse(hsv2rgb(map),im,'blend');
+    else
+        map(:,:,3) = im;
+        map = hsv2rgb(map);
+    end
     
     % show image
     h.CData = map;
