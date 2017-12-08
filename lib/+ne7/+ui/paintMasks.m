@@ -424,6 +424,9 @@ function printInstructions
     disp '] to increase saturation'
     disp ', to reduce contrast'
     disp '. to increase contrast'
+    disp '; to reduce mask brightness'
+    disp ''' to increase mask brightness'
+    disp 'Any number to switch backgrounds'
     disp 'Press "a" for assisted selection'
     disp 'Press "f" for full screen'
     fprintf('Press "t" to limit values under %.1f%%\n',hthr)
