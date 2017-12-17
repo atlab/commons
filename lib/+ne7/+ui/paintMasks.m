@@ -1,30 +1,34 @@
-function masks = paintMasks(im , masks)
-% lets the user outline masks in the image on the current axis
+function masks = paintMasks(all_images , masks)
+% function masks = paintMasks(all_images , masks)
+%
+% paintMasks allows for manual mask creation
+%
+% INPUT
+% all_images      : Can be 2D or RGB image or can have multiple images in the 4rth dimention
+% masks(optional) : 2D labeled image
+%
+% OUTPUT
+% masks           : 2D labeled image
 
-% store backgrounds if multiple provided
-all_images = im;
-im = im(:,:,:,1);
-
-% use masks if provided 
-if nargin<2
-    masks = zeros(size(im,1),size(im,2)); 
-    colors = 0;
-    neuron = 0;
-else
-    neuron = max(masks(:));
-    colors = [0 rand(1,neuron)];
-end
-
-% initialize parameters
-processed_image = [];
-original_im = []; 
+% set default values
 hthr = 99.9; % highlights threshold value
 radius = 10; % mask pixel radius
+mix = 0;if size(all_images,3)>1;mix = 0.5;end %  mixing ratio with background
+sat = 0.5; %  saturation of masks
+val = 1;   %  intensity value for masks
+thresh = 0.01; %  automatic border detection threshold
+contrast = 0.5; % background contrast
+
+% initialize parameters
+im = all_images(:,:,:,1);
+if nargin<2; masks = zeros(size(im,1),size(im,2));end
+neuron = max(masks(:));
+colors = [0 rand(1,neuron)];
+processed_image = [];
+original_im = []; 
 sz = size(im);
-sat = 0.5;
-val = 0.5;
-sat_tog = 0.5;
-val_tog = 0.5;
+sat_tog = [];
+val_tog = [];
 undoBuffer = {masks};
 winsz = 32; % max size of the pointer window
 running = true;
@@ -32,11 +36,9 @@ drawing = false;
 xLoc = 0;
 yLoc = 0;
 assisted = false;
-thresh = 0.01;
 fit_center = false(winsz,winsz);fit_center(round(winsz/2),round(winsz/2))=true;
 fit_mask = zeros(winsz,winsz);
 ppitch = 1;
-contrast = 0.5;
 hp =[];
 threshold = false;
 
@@ -45,15 +47,11 @@ normalize = @(x) (x - min(x(:)))./(max(x(:))-min(x(:)));
 
 % Plot
 prepareImage
-hf = figure('NumberTitle','off',...
-    'Name','Paint masks',...
-    'KeyPressFcn',@dispkeyevent,...
-    'WindowScrollWheelFcn', @adjMaskSize,...
-    'HitTest','off',...
-    'units','normalized');
+hf = figure('NumberTitle','off','Name','Paint masks',...
+    'KeyPressFcn',@EvalEvent,'WindowScrollWheelFcn', @adjMaskSize,...
+    'HitTest','off','units','normalized');
 f_pos = get(hf,'outerposition');
-set(gcf,'color',[0.3 0.3 0.3])
-set(hf,'units','pixels')
+set(hf,'color',[0.3 0.3 0.3],'units','pixels')
 h = image(im);
 axis image
 set(gca,'xtick',[],'ytick',[])
@@ -69,7 +67,7 @@ while running && nargout>0
     pause(0.1);
 end
 
-function dispkeyevent(~, event)
+function EvalEvent(~, event)
     switch event.Key
         case 'a' % assisted segmentation
             if assisted
@@ -157,6 +155,16 @@ function dispkeyevent(~, event)
         case 'rightbracket'
             if sat<=0.9
                 sat = sat+0.1;
+                redraw
+            end
+        case 'equal'
+            if mix>=0.1
+                mix = mix-0.1;
+                redraw
+            end
+        case 'hyphen'
+            if mix<=0.9
+                mix = mix+0.1;
                 redraw
             end
         case 'semicolon'
@@ -276,9 +284,9 @@ function redraw
     map(:,:,3) = val*(masks>0);
     
     if size(im,3)>2
-        map = imfuse(hsv2rgb(map),im,'blend');
+        map = hsv2rgb(map)*mix+im*(1-mix);
     else
-        map(:,:,3) = im;
+        map(:,:,3) = im*(1-mix) + map(:,:,3)*mix;
         map = hsv2rgb(map);
     end
     
@@ -416,23 +424,26 @@ end
 
 % instructions
 function printInstructions
-    disp INSTRUCTIONS:
-    disp 'Click to add pixels to mask'
-    disp 'Right-click to delete pixels from mask'
-    disp 'Scroll to set brush size'
-    disp '[ to reduce saturation'
-    disp '] to increase saturation'
-    disp ', to reduce contrast'
-    disp '. to increase contrast'
-    disp '; to reduce mask brightness'
-    disp ''' to increase mask brightness'
-    disp 'Any number to switch backgrounds'
-    disp 'Press "a" for assisted selection'
-    disp 'Press "f" for full screen'
-    fprintf('Press "t" to limit values under %.1f%%\n',hthr)
-    disp 'Press BACKSPACE to undo'
-    disp 'Press SPACE to toggle outlines'
-    disp 'Press ESC to discard all edits'
-    disp 'Press ENTER to commit'
+    fprintf('\n%s INSTRUCTIONS %s\n\n',repmat('%',17,1),repmat('%',19,1))
+    disp ' CLICK        : add pixels to mask'
+    disp ' RIGHT-CLICK  : delete pixels from mask'
+    disp ' SCROLL       : set brush size'
+    disp ' BACKSPACE    : undo'
+    disp ' SPACE        : toggle outlines'
+    disp ' ESC          : discard all edits'
+    disp ' ENTER        : export masks'
+    disp ' [            : reduce saturation'
+    disp ' ]            : increase saturation'
+    disp ' ;            : reduce mask brightness'
+    disp ' ''            : increase mask brightness'
+    disp ' -            : increase background '
+    disp ' =            : decrease background'
+    disp ' ,            : reduce background contrast'
+    disp ' .            : increase background contrast'
+    disp ' 1-9          : switch backgrounds'
+    disp ' a            : assisted selection'
+    disp ' f            : full screen'
+    fprintf(' t            : limit values to %.1f%%\n',hthr)
+    fprintf('\n%s\n\n',repmat('%',50,1))
 end
 end
