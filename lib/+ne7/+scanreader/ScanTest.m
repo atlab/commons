@@ -49,6 +49,7 @@ classdef ScanTest < matlab.unittest.TestCase
             testCase.verifyEqual(scan.temporalFillFraction, 0.712867)
             testCase.verifyEqual(scan.scannerType, 'Resonant')
             testCase.verifyEqual(scan.motorPositionAtZero, [-1025, -495.5, -202.8])
+            testCase.verifyEqual(scan.initialSecondaryZ, 0)
             testCase.verifyEqual(cellfun(@(offsets) max(max(offsets)), scan.fieldOffsets), ...
                 [0.01615707, 0.03421122, 0.05226535], 'relTol', 1e-5)
             

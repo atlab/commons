@@ -42,6 +42,7 @@ classdef StackTest < matlab.unittest.TestCase
             testCase.verifyEqual(scan.temporalFillFraction, 0.712867)
             testCase.verifyEqual(scan.scannerType, 'Resonant')
             testCase.verifyEqual(scan.motorPositionAtZero, [0.5, 0, -320.4])
+            testCase.verifyEqual(scan.initialSecondaryZ, 0)
             
             testCase.verifyEqual(scan.imageHeight, 512)
             testCase.verifyEqual(scan.imageWidth, 512)
