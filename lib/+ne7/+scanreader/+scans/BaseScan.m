@@ -55,6 +55,7 @@ classdef (Abstract) BaseScan < handle
     properties (SetAccess = private, Dependent, Abstract)
         nFields % number of fields
         fieldDepths % scaning depths per field
+        isSlowStackWithFastZ % slow stack using the secondary/fastZ motor
         fieldOffsets % seconds elapsed between start of frame scanning and each pixel
     end
     properties (Access = private)
