@@ -1,45 +1,57 @@
-function masks = paintMasks(im)
-% lets the user outline masks in the image on the current axis
+function masks = paintMasks(all_images , masks)
+% function masks = paintMasks(all_images , masks)
+%
+% paintMasks allows for manual mask creation
+%
+% INPUT
+% all_images      : Can be 2D or RGB image or can have multiple images in the 4rth dimention
+% masks(optional) : 2D labeled image
+%
+% OUTPUT
+% masks           : 2D labeled image
 
-% process image for assisted segmentation
-processed_image = (imfilter(imfill(im),gausswin(2)*gausswin(2)'));
+% set default values
+hthr = 99.9; % highlights threshold value
+radius = 10; % mask pixel radius
+mix = 0;if size(all_images,3)>1;mix = 0.5;end %  mixing ratio with background
+sat = 0.5; %  saturation of masks
+val = 1;   %  intensity value for masks
+thresh = 0.01; %  automatic border detection threshold
+contrast = 0.5; % background contrast
 
 % initialize parameters
-original_im = im;
-radius = 10; % mask pixel radius
+im = all_images(:,:,:,1);
+if nargin<2; masks = zeros(size(im,1),size(im,2));end
+neuron = max(masks(:));
+colors = [0 rand(1,neuron)];
+processed_image = [];
+original_im = []; 
 sz = size(im);
-masks = zeros(sz);
-colors = 0;
-sat = 0.5;
-sat_tog = 0.5;
+sat_tog = [];
+val_tog = [];
 undoBuffer = {masks};
 winsz = 32; % max size of the pointer window
 running = true;
 drawing = false;
-neuron = 0;
 xLoc = 0;
 yLoc = 0;
 assisted = false;
-thresh = 0.01;
 fit_center = false(winsz,winsz);fit_center(round(winsz/2),round(winsz/2))=true;
 fit_mask = zeros(winsz,winsz);
 ppitch = 1;
-contrast = 0.5;
 hp =[];
+threshold = false;
 
 % normalize image
 normalize = @(x) (x - min(x(:)))./(max(x(:))-min(x(:))); 
-im = normalize(im.^contrast); 
 
 % Plot
-hf = figure('NumberTitle','off',...
-    'Name','Paint masks',...
-    'KeyPressFcn',@dispkeyevent,...
-    'WindowScrollWheelFcn', @adjMaskSize,...
-    'HitTest','off',...
-    'units','normalized');
+prepareImage
+hf = figure('NumberTitle','off','Name','Paint masks',...
+    'KeyPressFcn',@EvalEvent,'WindowScrollWheelFcn', @adjMaskSize,...
+    'HitTest','off','units','normalized');
 f_pos = get(hf,'outerposition');
-set(hf,'units','pixels')
+set(hf,'color',[0.3 0.3 0.3],'units','pixels')
 h = image(im);
 axis image
 set(gca,'xtick',[],'ytick',[])
@@ -51,11 +63,11 @@ hold on
 
 % wait until done
 while running && nargout>0
-    try if ~ishandle(h);break;end;catch;break;end
+    try if ~ishandle(h);masks = [];break;end;catch;break;end
     pause(0.1);
 end
 
-function dispkeyevent(~, event)
+function EvalEvent(~, event)
     switch event.Key
         case 'a' % assisted segmentation
             if assisted
@@ -86,16 +98,37 @@ function dispkeyevent(~, event)
             set(hf,'units','pixels')
         case 'comma' % decrease contrast
             if contrast>0.1
+                im = normalize(original_im);
+                if threshold
+                    im(im>prctile(im(:),hthr)) = prctile(im(:),hthr);
+                    im = normalize(im);
+                end
                 contrast = contrast-0.05;
-                im = normalize(original_im.^contrast);
+                im = normalize(im.^contrast);
                 redraw
             end
         case 'period' % increase contrast
             if contrast<2
+                im = normalize(original_im);
+                if threshold
+                    im(im>prctile(im(:),hthr)) = prctile(im(:),hthr);
+                    im = normalize(im);
+                end
                 contrast = contrast+0.1;
-                im = normalize(original_im.^contrast);
+                im = normalize(im.^contrast);
                 redraw
             end
+        case 't' % threshold
+            im = normalize(original_im);
+            if ~threshold
+                threshold = true;
+                im(im>prctile(im(:),hthr)) = prctile(im(:),hthr);
+            else
+                threshold = false;
+            end
+            processed_image = (imfilter(imfill(im),gausswin(2)*gausswin(2)'));
+            im = normalize(im.^contrast);
+            redraw
         case 'backspace' % UNDO
             if length(undoBuffer)>1
                 masks = undoBuffer{end-1};
@@ -105,10 +138,13 @@ function dispkeyevent(~, event)
         case 'space'  % SPACE - toggle outlines
             if sat>0
                 sat_tog = sat;
+                val_tog = val;
                 sat = 0;
+                val = 0;
                 redraw
             else
                 sat = sat_tog;
+                val = val_tog;
                 redraw
             end
         case 'leftbracket'
@@ -119,6 +155,26 @@ function dispkeyevent(~, event)
         case 'rightbracket'
             if sat<=0.9
                 sat = sat+0.1;
+                redraw
+            end
+        case 'equal'
+            if mix>=0.1
+                mix = mix-0.1;
+                redraw
+            end
+        case 'hyphen'
+            if mix<=0.9
+                mix = mix+0.1;
+                redraw
+            end
+        case 'semicolon'
+            if val>=0.1
+                val = val-0.1;
+                redraw
+            end
+        case 'quote'
+            if val<=0.9
+                val = val+0.1;
                 redraw
             end
         case 'escape'
@@ -134,11 +190,24 @@ function dispkeyevent(~, event)
                 running = false;
                 close(gcf)
             end
+        case cellfun(@(x) num2str(x),num2cell(1:size(all_images,4)),'uni',0)
+            im = all_images(:,:,:,str2num(event.Key));
+            prepareImage
+            redraw
         otherwise
             disp '---'
             disp(['key: "' event.Key '" not assigned!'])
             printInstructions
     end
+end
+
+% prepare image
+function prepareImage
+    % process image for assisted segmentation
+    processed_image = im;  if size(im,3)>1; processed_image = mean(rgb2gray(im),3);end
+    processed_image = (imfilter(imfill(processed_image),gausswin(2)*gausswin(2)'));
+    original_im = im; 
+    im = normalize(im.^contrast); 
 end
 
 % update masks
@@ -212,10 +281,17 @@ function redraw
     % make image with colored masks
     map(:,:,1) = colors(masks+1);
     map(:,:,2) = sat*(masks>0);
-    map(:,:,3) = im;
+    map(:,:,3) = val*(masks>0);
+    
+    if size(im,3)>2
+        map = hsv2rgb(map)*mix+im*(1-mix);
+    else
+        map(:,:,3) = im*(1-mix) + map(:,:,3)*mix;
+        map = hsv2rgb(map);
+    end
     
     % show image
-    h.CData = hsv2rgb(map);
+    h.CData = map;
     set(gcf,'name',sprintf('Mask#: %d', length(unique(masks(:)))-1))
 end
 
@@ -273,7 +349,7 @@ function adjMaskFit(varargin)
         return
     end
     try delete(hp);end
-    fit_center = zeros(sz);
+    fit_center = zeros(sz(1),sz(2));
     fit_center(round(yLoc),round(xLoc)) = 1;
     fit_mask = imsegfmm(processed_image, fit_center>0, thresh);
     bounds = bwboundaries(fit_mask,4);
@@ -348,19 +424,26 @@ end
 
 % instructions
 function printInstructions
-    disp INSTRUCTIONS:
-    disp 'Click to add pixels to mask'
-    disp 'Right-click to delete pixels from mask'
-    disp 'Scroll to set brush size'
-    disp '[ to reduce saturation'
-    disp '] to increase saturation'
-    disp ', to reduce contrast'
-    disp '. to increase contrast'
-    disp 'Press "a" for assisted selection'
-    disp 'Press "f" for full screen'
-    disp 'Press BACKSPACE to undo'
-    disp 'Press SPACE to toggle outlines'
-    disp 'Press ESC to discard all edits'
-    disp 'Press ENTER to commit'
+    fprintf('\n%s INSTRUCTIONS %s\n\n',repmat('%',17,1),repmat('%',19,1))
+    disp ' CLICK        : add pixels to mask'
+    disp ' RIGHT-CLICK  : delete pixels from mask'
+    disp ' SCROLL       : set brush size'
+    disp ' BACKSPACE    : undo'
+    disp ' SPACE        : toggle outlines'
+    disp ' ESC          : discard all edits'
+    disp ' ENTER        : export masks'
+    disp ' [            : reduce saturation'
+    disp ' ]            : increase saturation'
+    disp ' ;            : reduce mask brightness'
+    disp ' ''            : increase mask brightness'
+    disp ' -            : increase background '
+    disp ' =            : decrease background'
+    disp ' ,            : reduce background contrast'
+    disp ' .            : increase background contrast'
+    disp ' 1-9          : switch backgrounds'
+    disp ' a            : assisted selection'
+    disp ' f            : full screen'
+    fprintf(' t            : limit values to %.1f%%\n',hthr)
+    fprintf('\n%s\n\n',repmat('%',50,1))
 end
 end
