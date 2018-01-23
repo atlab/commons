@@ -5,6 +5,7 @@ classdef (Abstract) BaseScan5 < ne7.scanreader.scans.BaseScan
     properties (SetAccess = private, Dependent) % inherited abstract properties
         nFields % number of fields
         fieldDepths % scaning depths per field
+        isSlowStackWithFastZ % slow stack using the secondary/fastZ motor
         fieldOffsets % seconds elapsed between start of frame scanning and each pixel.
     end
     properties (SetAccess = private, Dependent)
@@ -42,6 +43,21 @@ classdef (Abstract) BaseScan5 < ne7.scanreader.scans.BaseScan
             pattern = 'hRoiManager\.scanZoomFactor = (.*)';
             match = regexp(obj.header, pattern, 'tokens', 'dotexceptnewline');
             if ~isempty(match) zoom = str2double(match{1}{1}); end 
+        end
+        
+        % Define getter as a diff method so I can override it in subclasses (get.* are not
+        % overridable)
+        function isSlowStackWithFastZ = get.isSlowStackWithFastZ(obj)
+            isSlowStackWithFastZ = obj.getIsSlowStackWithFastZ();
+        end
+        function isSlowStackWithFastZ = getIsSlowStackWithFastZ(obj)
+            pattern = 'hMotors\.motorSecondMotorZEnable = (.*)';
+            match = regexp(obj.header, pattern, 'tokens', 'dotexceptnewline');
+            if isempty(match)
+                isSlowStackWithFastZ = false;
+            else
+                isSlowStackWithFastZ = strcmp(match{1}{1}, 'true') || strcmp(match{1}{1}, '1');
+            end
         end
         
         function fieldOffsets = get.fieldOffsets(obj)

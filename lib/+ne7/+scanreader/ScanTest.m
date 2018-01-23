@@ -49,6 +49,7 @@ classdef ScanTest < matlab.unittest.TestCase
             testCase.verifyEqual(scan.temporalFillFraction, 0.712867)
             testCase.verifyEqual(scan.scannerType, 'Resonant')
             testCase.verifyEqual(scan.motorPositionAtZero, [-1025, -495.5, -202.8])
+            testCase.verifyEqual(scan.initialSecondaryZ, 0)
             testCase.verifyEqual(cellfun(@(offsets) max(max(offsets)), scan.fieldOffsets), ...
                 [0.01615707, 0.03421122, 0.05226535], 'relTol', 1e-5)
             
@@ -56,6 +57,7 @@ classdef ScanTest < matlab.unittest.TestCase
             testCase.verifyEqual(scan.imageWidth, 256)
             testCase.verifyEqual(size(scan), [3, 256, 256, 2, 1000])
             testCase.verifyEqual(scan.zoom, 1.8)
+            testCase.verifyEqual(scan.isSlowStackWithFastZ, false)
             
             % 2016b MultiROI
             scan = ne7.scanreader.readscan(testCase.scanFile2016bMultiroiHard);
@@ -81,6 +83,7 @@ classdef ScanTest < matlab.unittest.TestCase
             testCase.verifyEqual(cellfun(@(offsets) max(max(offsets)), scan.fieldOffsets), ...
                 [0.03320531, 0.09978618, 0.12709929, 0.1544124], 'relTol', 1e-5)
             
+            testCase.verifyEqual(scan.isSlowStackWithFastZ, false)
             testCase.verifyEqual(scan.nRois, 2)
             testCase.verifyEqual(scan.fieldHeights, [800, 800, 512, 512])
             testCase.verifyEqual(scan.fieldWidths, [512, 512, 512, 512])
@@ -277,6 +280,7 @@ classdef ScanTest < matlab.unittest.TestCase
                 [0.04756787, 0.1011983, 0.15482873, 0.20845917, 0.26208961], 'relTol', 1e-5)
             
             
+            testCase.verifyEqual(scan.isSlowStackWithFastZ, false)
             testCase.verifyEqual(scan.nRois, 2)
             testCase.verifyEqual(scan.fieldHeights, [500, 500, 500, 500, 500])
             testCase.verifyEqual(scan.fieldWidths, [500, 500, 500, 500, 500])

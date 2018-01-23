@@ -40,7 +40,8 @@ classdef (Abstract) BaseScan < handle
         spatialFillFraction
         temporalFillFraction 
         scannerType % type of scanner
-        motorPositionAtZero % motor position (x, y and z in microns) at ScanImage's (0, 0)   
+        motorPositionAtZero % motor position (x, y and z in microns) at the scan's (0, 0, 0)
+        initialSecondaryZ % initial position in z (microns) of the secondary motor (if any)
     end
     properties (SetAccess = private, Dependent, Hidden)
         pagesPerFile % number of pages per tiff file
@@ -54,6 +55,7 @@ classdef (Abstract) BaseScan < handle
     properties (SetAccess = private, Dependent, Abstract)
         nFields % number of fields
         fieldDepths % scaning depths per field
+        isSlowStackWithFastZ % slow stack using the secondary/fastZ motor
         fieldOffsets % seconds elapsed between start of frame scanning and each pixel
     end
     properties (Access = private)
@@ -234,13 +236,24 @@ classdef (Abstract) BaseScan < handle
         end
         
         function motorPositionAtZero = get.motorPositionAtZero(obj)
-            % Motor position (x, y and z in microns) at ScanImage's (0, 0) point.
-            % For non-multiroi scans, (0, 0) is in the center of the FOV.
+            % Motor position (x, y and z in microns) corresponding to the scan's (0, 0, 0) 
+            % point. For non-multiroi scans, (x=0, y=0) marks the center of the FOV.
             pattern = 'hMotors\.motorPosition = (.*)';
             match = regexp(obj.header, pattern, 'tokens', 'dotexceptnewline');
             if ~isempty(match)
                 motorCoordinates = eval(match{1}{1});
                 motorPositionAtZero = motorCoordinates(1:3);
+            end
+        end
+        
+        function initialSecondaryZ = get.initialSecondaryZ(obj)
+            pattern = 'hMotors\.motorPosition = (.*)';
+            match = regexp(obj.header, pattern, 'tokens', 'dotexceptnewline');
+            if ~isempty(match)
+                motorCoordinates = eval(match{1}{1});
+                if length(motorCoordinates) > 3
+                    initialSecondaryZ = motorCoordinates(4);
+                end
             end
         end
         

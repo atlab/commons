@@ -21,6 +21,7 @@ classdef ScanMultiROI < ne7.scanreader.scans.BaseScan
         fieldOffsets % seconds elapsed between start of frame scanning and each pixel.
         fieldHeightsInMicrons
         fieldWidthsInMicrons
+        isSlowStackWithFastZ % slow stack using the secondary/fastZ motor
     end
     properties (Access = protected, Dependent)
         nFlyToLines %  number of lines between images in tiff page
@@ -80,6 +81,16 @@ classdef ScanMultiROI < ne7.scanreader.scans.BaseScan
         function fieldWidthsInMicrons = get.fieldWidthsInMicrons(obj)
             fieldWidthsInDegrees = arrayfun(@(field) field.widthInDegrees, obj.fields);
             fieldWidthsInMicrons = arrayfun(@obj.degreestomicrons, fieldWidthsInDegrees);
+        end
+        
+        function isSlowStackWithFastZ = get.isSlowStackWithFastZ(obj)
+            pattern = 'hStackManager\.slowStackWithFastZ = (.*)';
+            match = regexp(obj.header, pattern, 'tokens', 'dotexceptnewline');
+            if isempty(match)
+                isSlowStackWithFastZ = false;
+            else
+                isSlowStackWithFastZ = strcmp(match{1}{1}, 'true') || strcmp(match{1}{1}, '1');
+            end
         end
         
         function nFlyToLines = get.nFlyToLines(obj)

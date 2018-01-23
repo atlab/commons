@@ -42,11 +42,13 @@ classdef StackTest < matlab.unittest.TestCase
             testCase.verifyEqual(scan.temporalFillFraction, 0.712867)
             testCase.verifyEqual(scan.scannerType, 'Resonant')
             testCase.verifyEqual(scan.motorPositionAtZero, [0.5, 0, -320.4])
+            testCase.verifyEqual(scan.initialSecondaryZ, 0)
             
             testCase.verifyEqual(scan.imageHeight, 512)
             testCase.verifyEqual(scan.imageWidth, 512)
             testCase.verifyEqual(size(scan), [60, 512, 512, 2, 25])
             testCase.verifyEqual(scan.zoom, 2.1)
+            testCase.verifyEqual(scan.isSlowStackWithFastZ, false)
             
             % 2016b
             scan = ne7.scanreader.readscan(testCase.stackFile2016b);
@@ -74,6 +76,7 @@ classdef StackTest < matlab.unittest.TestCase
             testCase.verifyEqual(scan.imageWidth, 256)
             testCase.verifyEqual(size(scan), [1, 256, 256, 1, 200])
             testCase.verifyEqual(scan.zoom, 1.9)
+            testCase.verifyEqual(scan.isSlowStackWithFastZ, false)
             testCase.verifyEqual(scan.imageHeightInMicrons, 307.08)
             testCase.verifyEqual(scan.imageWidthInMicrons, 307.08)
             
@@ -99,6 +102,7 @@ classdef StackTest < matlab.unittest.TestCase
             testCase.verifyEqual(scan.scannerType, 'Resonant')
             testCase.verifyEqual(scan.motorPositionAtZero, [0, 0, 0])
             
+            testCase.verifyEqual(scan.isSlowStackWithFastZ, true)
             testCase.verifyEqual(scan.nRois, 4)
             testCase.verifyEqual(scan.fieldHeights, repmat(360, 1, 204))
             testCase.verifyEqual(scan.fieldWidths, repmat(120, 1, 204))
