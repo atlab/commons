@@ -237,7 +237,7 @@ classdef ScanMultiROI < ne7.scanreader.scans.BaseScan
             roiInfos = scanimageMetadata.RoiGroups.imagingRoiGroup.rois;
             tiffFile.close()
             
-            roiInfos = roiInfos(arrayfun(@(x) isnumeric(x.zs), roiInfos)); % discard empty/malformed ROIs
+            roiInfos = roiInfos(arrayfun(@(x) isnumeric(x.zs) && ~isempty(x.zs), roiInfos)); % discard empty/malformed ROIs
             roisAsCell = arrayfun(@ne7.scanreader.multiroi.ROI, roiInfos, 'uniformOutput', false);
             rois_ = [roisAsCell{:}];
         end
