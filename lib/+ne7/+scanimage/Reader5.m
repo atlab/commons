@@ -54,9 +54,11 @@ classdef Reader5 < handle
                 assert(self.header.acqNumAveragedFrames==1, 'averaging should be disabled')
                 assert(self.header.scanAngleMultiplierSlow == 1 && ...
                     self.header.scanAngleMultiplierFast == 1, 'altered scanAngleMultipliers');
+            elseif strcmp(self.header.VERSION_MAJOR,'2016b')
+                assert(self.header.hRoiManager_mroiEnable==0,'mROI not currently supported')
             else
-                assert(strcmp(self.header.hMotors_motorDimensionConfiguration, 'xyz-z'), ...
-                    'we assume xyz-z scanning')
+                assert(strncmp(self.header.hMotors_motorDimensionConfiguration, 'xyz', 3), ...
+                    'we assume xyz* scanning')
                 % TODO: Figure out what the averaging fields are called in scanimage5
                 
             end
@@ -253,14 +255,16 @@ classdef Reader5 < handle
             if self.scanimage_version == 4
                 n = self.header.acqNumFrames;
             else
-                n = (length(self.files)-1) * self.header.hScan2D_logFramesPerFile * self.nchannels;
+                FramesPerFile = self.header.hScan2D_logFramesPerFile;
+                if isinf(FramesPerFile); FramesPerFile = 0;end
+                n = (length(self.files)-1) * FramesPerFile * self.nchannels;
                 % Reading number of frames in last file
                 k=1;
                 while ~lastDirectory(self.stacks{end})
                     nextDirectory(self.stacks{end});
                     k=k+1;
                 end;
-                setDirectory(self.stacks{end},1);                
+                setDirectory(self.stacks{end},1);
                 n = n + k;
                 
             end
@@ -296,7 +300,7 @@ classdef Reader5 < handle
             framenums = [framenums{~cellfun(@isempty, framenums)}];
             hdr = temp;
             hdr = [hdr{~cellfun(@isempty, hdr)}];
-            if isempty(hdr) % in case we have used scanimage 5.2 
+            if isempty(hdr) % in case we have used scanimage 5.2
                 hdr = textscan(tiff.getTag('Software'),'%s','Delimiter',char(10));
                 hdr = strtrim(hdr{1});
                 self.scanimage_version = 5.2;
@@ -307,7 +311,7 @@ classdef Reader5 < handle
             hdr(end+1) = framenums;
             assert(~isempty(hdr), 'empty header -- possibly wrong ScanImage version.')
             self.header = cell2struct(cellfun(@(x) {evaluate(x)}, {hdr.value})', strrep({hdr.attr}, '.', '_'));
- 
+            
             function str = evaluate(str)
                 % if str is not in the form '<value>', then evaluate it.
                 if str(1)~='<' && str(end)~='>'

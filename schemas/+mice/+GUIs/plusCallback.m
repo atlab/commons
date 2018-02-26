@@ -347,7 +347,7 @@ if ~isempty(m.line6)
 end
 
 for i = 1:length(s)
-    if ~any(strcmp(s{i},m.lines)) && ~isempty(s{i}) && ~(strcmp(s{i},'C57Bl/6')) && ~(strcmp(s{i},'Fvb')) && ~(strcmp(s{i},'CD1'))
+    if ~any(strcmp(s{i},m.lines)) && ~isempty(s{i}) && ~(strcmp(s{i},'C57Bl/6')) && ~(strcmp(s{i},'Fvb')) && ~(strcmp(s{i},'CD1')) && ~strcmp(s{i},'Crl-CD1')
         errorCount = errorCount + 1;
         errorString{errorCount} = 'A line from the parents is not listed.';
     end
@@ -448,7 +448,7 @@ if strcmp(m.facility,'Taub') && strcmp(m.room,'VK3') && strcmp(m.room,'VH1')
     errorString{errorCount} = 'If the mouse is in Taub it cannot be in room VK3 or VH1.';
 end
 
-if strcmp(m.facility,'TMF') && ~strcmp(m.room,'VK3') && ~strcmp(m.room,'VK3')
+if strcmp(m.facility,'TMF') && ~strcmp(m.room,'VK3') && ~strcmp(m.room,'VH1')
     errorCount = errorCount + 1;
     errorString{errorCount} = 'If the mouse is in TMF it must be in room VK3 or VH1.';
 end
