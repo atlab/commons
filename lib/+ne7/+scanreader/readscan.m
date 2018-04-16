@@ -54,6 +54,8 @@ switch version
         scan = ne7.scanreader.scans.Scan5Point1();
     case '5.2'
         scan = ne7.scanreader.scans.Scan5Point2();
+    case '5.3'
+        scan = ne7.scanreader.scans.Scan5Point3();
     case '2016b'
         if ne7.scanreader.tiffutils.isscanmultiROI(tiffInfo)
             scan = ne7.scanreader.scans.ScanMultiROI(joinContiguous);

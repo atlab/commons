@@ -5,6 +5,7 @@ classdef ScanTest < matlab.unittest.TestCase
        dataDir = '/home/ecobost/Documents/scanreader/data'
        scanFile5_1 % 2 channels, 3 slices
        scanFile5_2 % 2 channels, 3 slices
+       scanFile5_3 % 2 channels, 1 slices
        scanFile2016bMultiroi % all rois have same dimensions, 1 channel 5 slices
        scanFile2016bMultiroiHard % rois have diff dimensions and they are volumes, 2 channels, 3 slices, roi1 at depth1, roi1 and 2 at depth 2, roi 2 at depth 2, thus 4 fields
        scanFile5_1Multifiles % second file has less pages
@@ -16,6 +17,7 @@ classdef ScanTest < matlab.unittest.TestCase
         function createfilenames(testCase)
             testCase.scanFile5_1 = fullfile(testCase.dataDir, 'scan_5_1_001.tif');
             testCase.scanFile5_2 = fullfile(testCase.dataDir, 'scan_5_2.tif');
+            testCase.scanFile5_3 = fullfile(testCase.dataDir, 'scan_5_3.tif');
             testCase.scanFile2016bMultiroi = fullfile(testCase.dataDir, 'scan_2016b_multiroi_001.tif');
             testCase.scanFile2016bMultiroiHard = fullfile(testCase.dataDir, 'scan_2016b_multiroi_hard.tif');
             testCase.scanFile5_1Multifiles = {fullfile(testCase.dataDir, 'scan_5_1_001.tif'), fullfile(testCase.dataDir, 'scan_5_1_002.tif')};
@@ -134,6 +136,26 @@ classdef ScanTest < matlab.unittest.TestCase
             testCase.assertequalshapeandsum(firstChannel, [3, 512, 512, 366], 468225501096)
             firstFrame = scan(:, :, :, :, 1);
             testCase.assertequalshapeandsum(firstFrame, [3, 512, 512, 2], 1381773476)
+        end
+                
+        function test5_3(testCase)
+            scan = ne7.scanreader.readscan(testCase.scanFile5_3);
+            
+            % Test it can be obtained as array
+            scanAsArray = scan();
+            testCase.assertequalshapeandsum(scanAsArray, [1, 256, 256, 2, 21], 1471837154)
+            
+            % Test indexation
+            firstField = scan(1, :, :, :, :);
+            testCase.assertequalshapeandsum(firstField, [256, 256, 2, 21], 1471837154)
+            firstRow = scan(:, 1,  :, :, :);
+            testCase.assertequalshapeandsum(firstRow, [1, 256, 2, 21], 5749516)
+            firstColumn = scan(:, :, 1, :, :);
+            testCase.assertequalshapeandsum(firstColumn, [1, 256, 2, 21], 5749625)
+            firstChannel = scan(:, :, :, 1, :);
+            testCase.assertequalshapeandsum(firstChannel, [1, 256, 256, 21], 923762774)
+            firstFrame = scan(:, :, :, :, 1);
+            testCase.assertequalshapeandsum(firstFrame, [1, 256, 256, 2], 70090210)
         end
         
         function test5_1multifile(testCase)

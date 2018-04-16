@@ -7,7 +7,8 @@ BaseScan
     BaseScan5
         Scan5Point1
         Scan5Point2
-            Scan2016b
-            Scan2017a
-            Scan2017b
+            Scan5Point3
+                Scan2016b
+                Scan2017a
+                Scan2017b
     ScanMultiRoi
