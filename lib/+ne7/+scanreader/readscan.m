@@ -74,6 +74,13 @@ switch version
         else
             scan = ne7.scanreader.scans.Scan2017b();
         end
+    case '2018a'
+        if scanreader.tiffutils.isscanmultiROI(tiffInfo)
+            scan = ne7.scanreader.scans.ScanMultiROI(joinContiguous);
+        else
+            scan = ne7.scanreader.scans.Scan2018a();
+        end
+        
     otherwise
         error('readscan:ScanImageVersionError', 'Sorry, ScanImage version %s is not supported', version)
 end

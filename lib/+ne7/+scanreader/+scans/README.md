@@ -11,4 +11,5 @@ BaseScan
                 Scan2016b
                 Scan2017a
                 Scan2017b
+                Scan2018a
     ScanMultiRoi

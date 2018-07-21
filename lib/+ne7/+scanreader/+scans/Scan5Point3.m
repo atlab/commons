@@ -13,4 +13,3 @@ classdef Scan5Point3 < ne7.scanreader.scans.Scan5Point2
         end
     end
 end
-
