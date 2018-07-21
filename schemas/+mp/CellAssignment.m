@@ -1,6 +1,6 @@
 %{
-mp.CellAssignment (manual) # my newest table
--> common.MpSession
+# assigns recording channel to a cell in slice
+-> mp.Cohort
 channel         : tinyint       # physical channel number
 -----
 -> mp.Cell
@@ -9,15 +9,5 @@ sketch_y        : float         # y position in sketch
 cell_assignment_ts = CURRENT_TIMESTAMP : timestamp   # don't edit
 %}
 
-classdef CellAssignment < dj.Relvar
-
-	properties(Constant)
-		table = dj.Table('mp.CellAssignment')
-	end
-
-	methods
-		function self = CellAssignment(varargin)
-			self.restrict(varargin)
-		end
-	end
+classdef CellAssignment < dj.Manual
 end

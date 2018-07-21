@@ -9,27 +9,27 @@ function params = getParams(params,vararginput)
 
 if ~isempty(vararginput)
 
-    char2 = zeros(1,length(vararginput));
-    struc2 = zeros(1,length(vararginput));
+    characters = zeros(1,length(vararginput));
+    structures = zeros(1,length(vararginput));
     
     % find single and multiple params
     for i = 1:length(vararginput)
-        char2(i) = ischar(vararginput{i});
-        struc2(i) = isstruct(vararginput{i});
+        characters(i) = ischar(vararginput{i});
+        structures(i) = isstruct(vararginput{i});
     end
 
     % assign params in structure
-    if ~sum(struc2)==0
-        a = fields(vararginput{struc2});
+    if ~sum(structures)==0
+        a = fields(vararginput{structures});
         for i = 1:size(a,1)
-            params.(cell2mat(a(i)))= vararginput{struc2}.(cell2mat(a(i)));
+            params.(cell2mat(a(i)))= vararginput{structures}.(cell2mat(a(i)));
         end
     end
 
     % assign single params
-    for i = 1:length(char2)-1
-        if char2(i)==1
-            char2(i+1)=0;
+    for i = 1:length(characters)-1
+        if characters(i)==1
+            characters(i+1)=0;
             params.(vararginput{i}) = vararginput{i+1};
         end
     end

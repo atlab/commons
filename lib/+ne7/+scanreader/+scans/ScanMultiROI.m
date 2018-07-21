@@ -153,7 +153,7 @@ classdef ScanMultiROI < ne7.scanreader.scans.BaseScan
             % Check each dimension is in bounds 
             ne7.scanreader.utils.checkindexisinbounds(1, fullKey{1}, obj.nFields)
             for fieldId = ne7.scanreader.utils.listifyindex(fullKey{1}, obj.nFields)
-                ne7.scanreader.utils.checkindexisinbounds(2, fullKey{2}, obj.fieldWidths(fieldId))
+                ne7.scanreader.utils.checkindexisinbounds(2, fullKey{2}, obj.fieldHeights(fieldId))
                 ne7.scanreader.utils.checkindexisinbounds(3, fullKey{3}, obj.fieldWidths(fieldId))
             end
             ne7.scanreader.utils.checkindexisinbounds(4, fullKey{4}, obj.nChannels)
