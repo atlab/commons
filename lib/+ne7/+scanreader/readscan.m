@@ -75,7 +75,7 @@ switch version
             scan = ne7.scanreader.scans.Scan2017b();
         end
     case '2018a'
-        if scanreader.tiffutils.isscanmultiROI(tiffInfo)
+        if ne7.scanreader.tiffutils.isscanmultiROI(tiffInfo)
             scan = ne7.scanreader.scans.ScanMultiROI(joinContiguous);
         else
             scan = ne7.scanreader.scans.Scan2018a();
