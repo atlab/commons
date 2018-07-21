@@ -90,7 +90,7 @@ classdef ROI < handle
             else
                 if length(obj.scanfields) == 1 % single scanfield extending from -inf to inf
                     field = obj.scanfields(1).asField();
-                    field.depth = round(scanningDepth);
+                    field.depth = scanningDepth;
                 else % interpolate between scanfields
                     scanfieldDepths = arrayfun(@(sf) sf.depth, obj.scanfields);
                     if scanningDepth >= min(scanfieldDepths) && scanningDepth <= max(scanfieldDepths)
@@ -104,7 +104,7 @@ classdef ROI < handle
                         field.width = interp1(scanfieldDepths, scanfieldWidths, scanningDepth);
                         field.width = round(field.width /2) * 2; % round to the closest even
                         
-                        field.depth = round(scanningDepth);
+                        field.depth = scanningDepth;
                         
                         scanfieldYs = arrayfun(@(sf) sf.y, obj.scanfields);
                         field.y = interp1(scanfieldDepths, scanfieldYs, scanningDepth);
