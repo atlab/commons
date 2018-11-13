@@ -10,19 +10,12 @@ sync_ts = CURRENT_TIMESTAMP : timestamp    # automatic
 
 %}
 
-classdef Sync < dj.Relvar & dj.AutoPopulate
+classdef Sync < dj.Imported
 
-	properties(Constant)
-		table = dj.Table('opt.Sync')
+	properties
 		popRel = common.OpticalMovie('purpose="stimulus"')
-	end
-
-	methods
-		function self = Sync(varargin)
-			self.restrict(varargin)
-		end
-	end
-
+    end
+    
 	methods(Access=protected)
 
         function makeTuples(self, key)

@@ -238,9 +238,9 @@ classdef plots
                 d.type = input('Please enter the type of the spotmap: ');
                 
                 if d.type==1
-                    d.key = fetch(opt.SpotMap(varargin{:}))';
+                    d.key = fetch(opt.SpotMap & varargin{:})';
                 else
-                    d.key = fetch(opt.SpotMap2(varargin{:}))';
+                    d.key = fetch(opt.SpotMap2 & varargin{:})';
                 end
                 if ~length(d.key)
                     warning('No tuples found');
@@ -259,21 +259,21 @@ classdef plots
             key = d.key(d.keyInd);
             % fetch spotmap
             if d.type==1
-                [amp, p] = fetch1(opt.SpotMap(key), 'spot_amp', 'spot_fp');
+                [amp, p] = fetch1(opt.SpotMap & key, 'spot_amp', 'spot_fp');
             else
-                amp = fetch1(opt.SpotMap2(key), 'spot_amp');
+                amp = fetch1(opt.SpotMap2 & key , 'spot_amp');
             end
             % fetch structure
             structKey.animal_id=key.animal_id;
             structKey.opt_sess=key.opt_sess;
-            structImg=fetchn(opt.Structure(structKey),'structure_img');
-            structMask=fetchn(opt.StructureMask(structKey),'structure_mask');
+            structImg = fetchn(opt.Structure & structKey,'structure_img');
+            structMask = fetchn(opt.StructureMask & structKey,'structure_mask');
             if length(structImg)>1
                 structNum = length(structImg);
                 num = input(['Please enter which structure image do you need 1-' num2str(structNum) ': ']);
-                structImg=structImg{num};
-                structMask=structMask{num};
-                structImg=double(structImg.*uint8(structMask));
+                structImg = structImg{num};
+                structMask = structMask{num};
+                structImg = double(structImg.*uint8(structMask));
                 amp = bsxfun(@times, amp, double(structMask));
             else
                 structImg=double(structImg{1}.*uint8(structMask{1}));

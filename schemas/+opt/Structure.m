@@ -6,10 +6,9 @@ structure_img  :  longblob   # image
 structure_mask :  longblob   # mask of craniotomy
 %}
 
-classdef Structure < dj.Relvar & dj.AutoPopulate
+classdef Structure < dj.Imported
 
-	properties(Constant)
-		table = dj.Table('opt.Structure')
+	properties
 		popRel = common.OpticalMovie('purpose="structure"')
 	end
 

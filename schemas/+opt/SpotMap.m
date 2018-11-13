@@ -9,18 +9,11 @@ spot_fp   : longblob  # total response p-value (F-test)
 %}
 
 %spot_psth : longblob  # average stimulus-locked response
-classdef SpotMap < dj.Relvar & dj.AutoPopulate
+classdef SpotMap < dj.Imported
 
-	properties(Constant)
-		table = dj.Table('opt.SpotMap')
-		popRel = opt.Sync & psy.Grating
-	end
-
-	methods
-		function self = SpotMap(varargin)
-			self.restrict(varargin)
-		end
-	end
+	properties
+		popRel = opt.Sync & psy.Grating      
+    end
 
 	methods(Access=protected)
 
