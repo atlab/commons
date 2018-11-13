@@ -5,7 +5,9 @@ classdef ScanTest < matlab.unittest.TestCase
        dataDir = '/home/ecobost/Documents/scanreader/data'
        scanFile5_1 % 2 channels, 3 slices
        scanFile5_2 % 2 channels, 3 slices
+       scanFile5_3 % 2 channels, 1 slices
        scanFile2016bMultiroi % all rois have same dimensions, 1 channel 5 slices
+       scanFile2018aMultiroi % all rois have same dimensions, 1 channel 3 slices, 5 fields per slice
        scanFile2016bMultiroiHard % rois have diff dimensions and they are volumes, 2 channels, 3 slices, roi1 at depth1, roi1 and 2 at depth 2, roi 2 at depth 2, thus 4 fields
        scanFile5_1Multifiles % second file has less pages
        scanFile2016bMultiroiMultifiles
@@ -16,7 +18,9 @@ classdef ScanTest < matlab.unittest.TestCase
         function createfilenames(testCase)
             testCase.scanFile5_1 = fullfile(testCase.dataDir, 'scan_5_1_001.tif');
             testCase.scanFile5_2 = fullfile(testCase.dataDir, 'scan_5_2.tif');
+            testCase.scanFile5_3 = fullfile(testCase.dataDir, 'scan_5_3.tif');
             testCase.scanFile2016bMultiroi = fullfile(testCase.dataDir, 'scan_2016b_multiroi_001.tif');
+            testCase.scanFile2018aMultiroi = fullfile(testCase.dataDir, 'scan_2018a_multiroi_001.tif');
             testCase.scanFile2016bMultiroiHard = fullfile(testCase.dataDir, 'scan_2016b_multiroi_hard.tif');
             testCase.scanFile5_1Multifiles = {fullfile(testCase.dataDir, 'scan_5_1_001.tif'), fullfile(testCase.dataDir, 'scan_5_1_002.tif')};
             testCase.scanFile2016bMultiroiMultifiles = {fullfile(testCase.dataDir, 'scan_2016b_multiroi_001.tif'), fullfile(testCase.dataDir, 'scan_2016b_multiroi_002.tif')};
@@ -94,6 +98,46 @@ classdef ScanTest < matlab.unittest.TestCase
             testCase.verifyEqual(scan.fieldHeightsInMicrons, [800, 800, 500, 613.21963], 'relTol', 1e-5)
             testCase.verifyEqual(scan.fieldWidthsInMicrons, [400, 400, 400, 400], 'relTol', 1e-5)
             
+            % 2016b MultiROI
+            scan = ne7.scanreader.readscan(testCase.scanFile2018aMultiroi);
+            testCase.verifyEqual(scan.version, '2018a')
+            testCase.verifyEqual(scan.isSlowStack, false)
+            testCase.verifyEqual(scan.isMultiROI, true)
+            testCase.verifyEqual(scan.nChannels, 1)
+            testCase.verifyEqual(scan.requestedScanningDepths, [0, 10, 50])
+            testCase.verifyEqual(scan.nScanningDepths, 3)
+            testCase.verifyEqual(scan.scanningDepths, [0, 10, 50])
+            testCase.verifyEqual(scan.nRequestedFrames, Inf)
+            testCase.verifyEqual(scan.nFrames, 159)
+            testCase.verifyEqual(scan.isBidirectional, true)
+            testCase.verifyEqual(scan.scannerFrequency, 12024.1)
+            testCase.verifyEqual(scan.secondsPerLine, 4.15832e-05, 'relTol', 1e-5)
+            testCase.verifyEqual(scan.nFields, 15)
+            testCase.verifyEqual(scan.fieldDepths, [0, 0, 0, 0, 0, 10, 10, 10, 10, 10, 50, 50, 50, 50, 50])
+            testCase.verifyEqual(scan.fps, 2.12628)
+            testCase.verifyEqual(scan.spatialFillFraction, 0.9)
+            testCase.verifyEqual(scan.temporalFillFraction, 0.712867)
+            testCase.verifyEqual(scan.scannerType, 'Resonant')
+            testCase.verifyEqual(scan.motorPositionAtZero, [0, 0, 0])
+            testCase.verifyEqual(cellfun(@(offsets) max(max(offsets)), scan.fieldOffsets), ...
+                [0.02128845, 0.05264215, 0.08399585, 0.11534955, 0.14670324, 0.17805694, ...
+                 0.20941064, 0.24076433, 0.27211803, 0.30347174, 0.33482543, 0.36617914, ...
+                 0.39753282, 0.42888653, 0.46024022], 'relTol', 1e-5)
+            
+            testCase.verifyEqual(scan.isSlowStackWithFastZ, true)
+            testCase.verifyEqual(scan.nRois, 5)
+            testCase.verifyEqual(scan.fieldHeights, repmat(512, 1, 15))
+            testCase.verifyEqual(scan.fieldWidths, repmat(512, 1, 15))
+            testCase.verifyEqual(scan.fieldSlices, [1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3])
+            testCase.verifyEqual(scan.fieldRois, {1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5})
+            testCase.verifyEqual(scan.fieldMasks, {ones(512, 512), 2 * ones(512, 512), ...
+                3 * ones(512, 512), 4 * ones(512, 512), 5 * ones(512, 512), ones(512, 512), ...
+                2 * ones(512, 512), 3 * ones(512, 512), 4 * ones(512, 512), 5 * ones(512, 512), ...
+                ones(512, 512), 2 * ones(512, 512), 3 * ones(512, 512), 4 * ones(512, 512), ...
+                5 * ones(512, 512)});
+            testCase.verifyEqual(scan.fieldHeightsInMicrons, repmat(2499.99999, 1, 15), 'relTol', 1e-5)
+            testCase.verifyEqual(scan.fieldWidthsInMicrons, repmat(555.55499, 1, 15), 'relTol', 1e-5)
+            
         end
         
         function test5_1(testCase)
@@ -134,6 +178,26 @@ classdef ScanTest < matlab.unittest.TestCase
             testCase.assertequalshapeandsum(firstChannel, [3, 512, 512, 366], 468225501096)
             firstFrame = scan(:, :, :, :, 1);
             testCase.assertequalshapeandsum(firstFrame, [3, 512, 512, 2], 1381773476)
+        end
+                
+        function test5_3(testCase)
+            scan = ne7.scanreader.readscan(testCase.scanFile5_3);
+            
+            % Test it can be obtained as array
+            scanAsArray = scan();
+            testCase.assertequalshapeandsum(scanAsArray, [1, 256, 256, 2, 21], 1471837154)
+            
+            % Test indexation
+            firstField = scan(1, :, :, :, :);
+            testCase.assertequalshapeandsum(firstField, [256, 256, 2, 21], 1471837154)
+            firstRow = scan(:, 1,  :, :, :);
+            testCase.assertequalshapeandsum(firstRow, [1, 256, 2, 21], 5749516)
+            firstColumn = scan(:, :, 1, :, :);
+            testCase.assertequalshapeandsum(firstColumn, [1, 256, 2, 21], 5749625)
+            firstChannel = scan(:, :, :, 1, :);
+            testCase.assertequalshapeandsum(firstChannel, [1, 256, 256, 21], 923762774)
+            firstFrame = scan(:, :, :, :, 1);
+            testCase.assertequalshapeandsum(firstFrame, [1, 256, 256, 2], 70090210)
         end
         
         function test5_1multifile(testCase)
@@ -218,6 +282,26 @@ classdef ScanTest < matlab.unittest.TestCase
             testCase.assertequalshapeandsum(firstChannel, [2, 512, 512, 10], 2944468254)
             firstFrame = scan(end - 1: end, :, :, :, 1);
             testCase.assertequalshapeandsum(firstFrame, [2, 512, 512, 2], 290883684)
+        end
+        
+        function test2018amultiroi(testCase)
+             scan = ne7.scanreader.readscan(testCase.scanFile2018aMultiroi);
+            
+            % Test it can be obtained as array
+            scanAsArray = scan();
+            testCase.assertequalshapeandsum(scanAsArray, [15, 512, 512, 1, 159], 5166089561)
+            
+            % Test indexation
+            firstField = scan(1, :, :, :, :);
+            testCase.assertequalshapeandsum(firstField, [512, 512, 1, 159], 958342536)
+            firstRow = scan(:, 1,  :, :, :);
+            testCase.assertequalshapeandsum(firstRow, [15, 512, 1, 159], -20472715)
+            firstColumn = scan(:, :, 1, :, :);
+            testCase.assertequalshapeandsum(firstColumn, [15, 512, 1, 159], -8517112)
+            firstChannel = scan(:, :, :, 1, :);
+            testCase.assertequalshapeandsum(firstChannel, [15, 512, 512, 159], 5166089561)
+            firstFrame = scan(:, :, :, :, 1);
+            testCase.assertequalshapeandsum(firstFrame, [15, 512, 512], 23273401)
         end
         
         function testadvancedindexing(testCase)
