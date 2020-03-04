@@ -1,5 +1,5 @@
 %{
-mc.Distances (computed) # compute distances betwee cell pairs
+mc.Distances (computed) # compute distances between cell pairs
 -> mc.Connections
 
 -----
