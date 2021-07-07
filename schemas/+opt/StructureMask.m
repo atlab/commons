@@ -5,11 +5,10 @@ opt.StructureMask (imported) # structural images from optical sessions
 structure_mask :  longblob   # mask of craniotomy
 %}
 
-classdef StructureMask < dj.Relvar & dj.AutoPopulate
+classdef StructureMask < dj.Imported
 
 	properties(Constant)
-		table = dj.Table('opt.StructureMask')
-		popRel = opt.Structure;
+		popRel = opt.Structure
 	end
 
 	methods
